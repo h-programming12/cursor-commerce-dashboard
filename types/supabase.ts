@@ -22,6 +22,9 @@ export type Database = {
           updated_at: string | null;
           additional_info: string | null;
           measurements: string | null;
+          categories: string[] | null;
+          rating_average: number | null;
+          review_summary: Json | null;
         };
         Insert: {
           id?: string;
@@ -35,6 +38,9 @@ export type Database = {
           updated_at?: string | null;
           additional_info?: string | null;
           measurements?: string | null;
+          categories?: string[] | null;
+          rating_average?: number | null;
+          review_summary?: Json | null;
         };
         Update: {
           id?: string;
@@ -48,6 +54,9 @@ export type Database = {
           updated_at?: string | null;
           additional_info?: string | null;
           measurements?: string | null;
+          categories?: string[] | null;
+          rating_average?: number | null;
+          review_summary?: Json | null;
         };
       };
       orders: {

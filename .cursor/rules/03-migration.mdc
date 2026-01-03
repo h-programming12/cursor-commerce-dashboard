@@ -36,13 +36,53 @@ globs:
 
 ### 2. package.json 스크립트
 
+마이그레이션과 seed는 **각각 독립적인 스크립트**로 분리하여 실행합니다.
+이전에 실행된 마이그레이션을 중복 실행하면 에러가 발생하므로, 각 파일별로 명령어를 분리합니다.
+
 ```json
 {
-  "db:run-migration": "tsx scripts/run-migration.ts"
+  "scripts": {
+    // 초기 스키마 생성 (최초 1회만 실행)
+    "db:init-schema": "tsx scripts/migrations/0001-init-schema.ts",
+
+    // Seed 데이터 삽입 (최초 1회만 실행)
+    "db:seed": "tsx scripts/migrations/0002-seed-data.ts",
+
+    // 새로운 마이그레이션 추가 시 (예시)
+    "db:add-categories": "tsx scripts/migrations/0003-add-categories.ts",
+    "db:add-payment-methods": "tsx scripts/migrations/0004-add-payment-methods.ts"
+  }
 }
 ```
 
-**실행**: `yarn db:run-migration`
+**실행 순서:**
+
+```bash
+# 1. 최초 스키마 생성 (딱 1번만)
+yarn db:init-schema
+
+# 2. 샘플 데이터 삽입 (딱 1번만)
+yarn db:seed
+
+# 3. 이후 추가 마이그레이션 (필요시)
+yarn db:add-categories
+```
+
+**주의사항:**
+
+- 각 스크립트는 **한 번만** 실행해야 합니다
+- 이미 실행한 스크립트를 재실행하면 중복 에러 발생
+- 새로운 마이그레이션 추가 시마다 새 스크립트 파일 + 새 package.json 명령어 생성
+
+**파일 구조:**
+
+```
+scripts/
+  migrations/
+    0001-init-schema.ts      → yarn db:init-schema
+    0002-seed-data.ts        → yarn db:seed
+    0003-add-categories.ts   → yarn db:add-categories
+```
 
 ### 3. 환경변수 검증
 
