@@ -1,0 +1,55 @@
+---
+alwaysApply: false
+---
+
+TypeScript로 Zustand를 사용하여 장바구니 전역 상태 관리 스토어를 생성해주세요.
+
+## 요구사항
+
+1. **패키지 설치**
+
+   - `yarn add zustand`
+   - `yarn add zustand/middleware` (persist 미들웨어 사용)
+
+2. **파일 경로**
+
+   - `commons/store/cart-store.ts`
+
+3. **타입 정의**
+
+   - Supabase products 테이블과 일치하도록 타입 정의
+   - `ProductStatus`: "visible" | "hidden" | "sold_out"
+   - `CartItem`:
+     - `id`: string (productId, Supabase products.id)
+     - `name`: string
+     - `price`: number (products.price와 매핑)
+     - `quantity`: number
+     - `imageUrl`: string | null (products.image_url와 매핑)
+     - `salePrice`: number | null (products.sale_price와 매핑)
+     - `status`: ProductStatus (선택)
+
+4. **스토어 인터페이스**
+
+   - `CartState`:
+     - `items`: CartItem[]
+     - `totalQuantity`: number (자동 계산)
+     - `totalAmount`: number (자동 계산, salePrice 우선)
+     - `addItem`: (product, quantity?) => void
+     - `updateItemQuantity`: (productId, quantity) => void
+     - `removeItem`: (productId) => void
+     - `clear`: () => void
+
+5. **구현 요구사항**
+
+   - persist 미들웨어 사용하여 localStorage에 저장
+   - storage key: "commerce_cart_v1"
+   - addItem: 이미 같은 id가 있으면 quantity만 증가, 없으면 새 항목 추가
+   - updateItemQuantity: quantity가 0 이하로 내려가면 해당 아이템 제거
+   - totalQuantity, totalAmount는 items를 기반으로 자동 계산
+   - salePrice가 있으면 salePrice를 사용, 없으면 price 사용
+
+6. **출력 형식**
+   - TypeScript 타입 안전성 유지
+   - 에러 처리 포함
+   - 주석으로 각 함수의 역할 설명
+   - persist 미들웨어 설정 포함
