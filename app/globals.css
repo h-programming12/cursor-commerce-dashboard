@@ -1,26 +1,614 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* ============================================
+     Commerce Color Tokens
+     ============================================ */
+
+  /* Commerce Primary Colors */
+  --commerce-primary-main: #000000;
+  --commerce-primary-dark: #23262f;
+  --commerce-primary-light: #23262f;
+
+  /* Commerce Background Colors */
+  --commerce-background-default: #ffffff;
+  --commerce-background-paper: #fefefe;
+  --commerce-background-light: #f3f5f7;
+  --commerce-background-neutral-01-100: #fefefe;
+  --commerce-background-neutral-01-95: #fefefef2;
+  --commerce-background-neutral-02-100: #f4f5f7;
+  --commerce-background-neutral-03-100: #e8edef;
+
+  /* Commerce Text Colors */
+  --commerce-text-primary: #000000;
+  --commerce-text-secondary: #23262f;
+  --commerce-text-tertiary: #6c7275;
+  --commerce-text-disabled: #6c727580;
+  --commerce-text-inverse: #ffffff;
+
+  /* Commerce Neutral Colors */
+  --commerce-neutral-01-100: #fefefe;
+  --commerce-neutral-01-95: #fefefef2;
+  --commerce-neutral-01-20: #fefefe33;
+  --commerce-neutral-01-10: #fefefe1a;
+  --commerce-neutral-02-100: #f4f5f7;
+  --commerce-neutral-02-50: #f4f5f780;
+  --commerce-neutral-03-100: #e8edef;
+  --commerce-neutral-03-75: #e8ecefbf;
+  --commerce-neutral-03-50: #e8edef80;
+  --commerce-neutral-04-100: #6c7275;
+  --commerce-neutral-04-75: #6c7275bf;
+  --commerce-neutral-04-50: #6c727580;
+  --commerce-neutral-04-25: #6c727540;
+  --commerce-neutral-04-15: #6c727526;
+  --commerce-neutral-05-100: #23262f;
+  --commerce-neutral-05-50: #23262f80;
+  --commerce-neutral-06-100: #23262f;
+  --commerce-neutral-06-95: #23262ff2;
+  --commerce-neutral-06-90: #23262fe6;
+  --commerce-neutral-06-50: #23262f80;
+  --commerce-neutral-07-100: #141718;
+  --commerce-neutral-07-95: #141718f2;
+  --commerce-neutral-07-50: #14171880;
+
+  /* Commerce Semantic Colors */
+  --commerce-semantic-success: #38cb89;
+  --commerce-semantic-warning: #ffab00;
+  --commerce-semantic-error: #ff5630;
+  --commerce-semantic-info: #3772ff;
+
+  /* Commerce Grey Colors */
+  --commerce-grey-50: #e8e8e8;
+  --commerce-grey-100: #b6b7b7;
+  --commerce-grey-200: #939496;
+  --commerce-grey-300: #626464;
+  --commerce-grey-400: #43444a;
+  --commerce-grey-500: #141718;
+  --commerce-grey-600: #12151a;
+  --commerce-grey-700: #0e1011;
+  --commerce-grey-800: #0b0d0d;
+  --commerce-grey-900: #080a0a;
+
+  /* ============================================
+     Admin Color Tokens
+     ============================================ */
+
+  /* Admin Primary Colors */
+  --admin-primary-main: #000000;
+  --admin-primary-dark: #141718;
+  --admin-primary-light: #23262f;
+
+  /* Admin Background Colors */
+  --admin-background-default: #ffffff;
+  --admin-background-paper: #fefefe;
+  --admin-background-light: #f3f5f7;
+  --admin-background-gray: #99a1af;
+  --admin-background-neutral-01-100: #fefefe;
+  --admin-background-neutral-01-95: #fefefef2;
+  --admin-background-neutral-02-100: #f4f5f7;
+  --admin-background-neutral-03-100: #e8edef;
+  --admin-background-athens-gray: #f9fafb;
+  --admin-background-athens-gray-alt: #f3f5f7;
+
+  /* Admin Text Colors */
+  --admin-text-primary: #000000;
+  --admin-text-secondary: #141718;
+  --admin-text-tertiary: #6c7275;
+  --admin-text-disabled: #6c727580;
+  --admin-text-inverse: #ffffff;
+  --admin-text-storm-gray: #717182;
+  --admin-text-pale-sky: #6a7282;
+
+  /* Admin Neutral Colors */
+  --admin-neutral-01-100: #fefefe;
+  --admin-neutral-01-95: #fefefef2;
+  --admin-neutral-01-20: #fefefe33;
+  --admin-neutral-01-10: #fefefe1a;
+  --admin-neutral-02-100: #f4f5f7;
+  --admin-neutral-02-50: #f4f5f780;
+  --admin-neutral-03-100: #e8edef;
+  --admin-neutral-03-75: #e8ecefbf;
+  --admin-neutral-03-50: #e8edef80;
+  --admin-neutral-04-100: #6c7275;
+  --admin-neutral-04-75: #6c7275bf;
+  --admin-neutral-04-50: #6c727580;
+  --admin-neutral-04-25: #6c727540;
+  --admin-neutral-04-15: #6c727526;
+  --admin-neutral-05-100: #23262f;
+  --admin-neutral-05-50: #23262f80;
+  --admin-neutral-06-100: #23262f;
+  --admin-neutral-06-95: #23262ff2;
+  --admin-neutral-06-90: #23262fe6;
+  --admin-neutral-06-50: #23262f80;
+  --admin-neutral-07-100: #141718;
+  --admin-neutral-07-95: #141718f2;
+  --admin-neutral-07-50: #14171880;
+
+  /* Admin Semantic Colors */
+  --admin-semantic-success: #38cb89;
+  --admin-semantic-warning: #ffab00;
+  --admin-semantic-error: #ff5630;
+  --admin-semantic-info: #3772ff;
+  --admin-semantic-selective-yellow: #f0b100;
+  --admin-semantic-dodger-blue: #4d49fc;
+  --admin-semantic-blue-ribbon: #155dfb;
+
+  /* Admin Grey Colors */
+  --admin-grey-50: #e8e8e8;
+  --admin-grey-100: #b6b7b7;
+  --admin-grey-200: #939496;
+  --admin-grey-300: #626464;
+  --admin-grey-400: #43444a;
+  --admin-grey-500: #141718;
+  --admin-grey-600: #12151a;
+  --admin-grey-700: #0e1011;
+  --admin-grey-800: #0b0d0d;
+  --admin-grey-900: #080a0a;
+  --admin-grey-g50: #e8e8e8;
+  --admin-grey-g75: #9fa0a0;
+  --admin-grey-g100: #77787a;
+  --admin-grey-g200: #3c3e3f;
+  --admin-grey-g300: #141718;
+  --admin-grey-g400: #0e1011;
+  --admin-grey-g500: #0c0e0f;
+
+  /* Admin Additional Colors */
+  --admin-cod-gray: #0a0a0a;
+  --admin-mine-shaft: #2c2c2c;
+  --admin-mercury: #e6e6e6;
+  --admin-wild-sand: #f5f5f5;
+
+  /* ============================================
+     Commerce Typography Tokens
+     ============================================ */
+
+  /* Commerce Font Families */
+  --commerce-font-poppins: "Poppins", sans-serif;
+  --commerce-font-inter: "Inter", sans-serif;
+
+  /* Commerce Hero Typography */
+  --commerce-hero-font-size: 96px;
+  --commerce-hero-font-family: var(--commerce-font-poppins);
+  --commerce-hero-font-weight: 500;
+  --commerce-hero-line-height: 1.2;
+  --commerce-hero-letter-spacing: -0.02em;
+
+  /* Commerce Headline Typography */
+  --commerce-headline-h1-font-size: 80px;
+  --commerce-headline-h1-font-family: var(--commerce-font-poppins);
+  --commerce-headline-h1-font-weight: 500;
+  --commerce-headline-h1-line-height: 1.2;
+  --commerce-headline-h1-letter-spacing: -0.02em;
+
+  --commerce-headline-h2-font-size: 72px;
+  --commerce-headline-h2-font-family: var(--commerce-font-poppins);
+  --commerce-headline-h2-font-weight: 500;
+  --commerce-headline-h2-line-height: 1.2;
+  --commerce-headline-h2-letter-spacing: -0.02em;
+
+  --commerce-headline-h3-font-size: 54px;
+  --commerce-headline-h3-font-family: var(--commerce-font-poppins);
+  --commerce-headline-h3-font-weight: 500;
+  --commerce-headline-h3-line-height: 1.2;
+  --commerce-headline-h3-letter-spacing: -0.02em;
+
+  --commerce-headline-h4-font-size: 40px;
+  --commerce-headline-h4-font-family: var(--commerce-font-poppins);
+  --commerce-headline-h4-font-weight: 500;
+  --commerce-headline-h4-line-height: 1.2;
+  --commerce-headline-h4-letter-spacing: -0.02em;
+
+  --commerce-headline-h5-font-size: 34px;
+  --commerce-headline-h5-font-family: var(--commerce-font-poppins);
+  --commerce-headline-h5-font-weight: 500;
+  --commerce-headline-h5-line-height: 1.2;
+  --commerce-headline-h5-letter-spacing: -0.02em;
+
+  --commerce-headline-h6-font-size: 28px;
+  --commerce-headline-h6-font-family: var(--commerce-font-poppins);
+  --commerce-headline-h6-font-weight: 500;
+  --commerce-headline-h6-line-height: 1.2;
+  --commerce-headline-h6-letter-spacing: -0.02em;
+
+  --commerce-headline-h7-font-size: 20px;
+  --commerce-headline-h7-font-family: var(--commerce-font-poppins);
+  --commerce-headline-h7-font-weight: 500;
+  --commerce-headline-h7-line-height: 1.2;
+  --commerce-headline-h7-letter-spacing: -0.02em;
+
+  /* Commerce Body Typography */
+  --commerce-body-1-font-size: 20px;
+  --commerce-body-1-font-family: var(--commerce-font-inter);
+  --commerce-body-1-font-weight: 400;
+  --commerce-body-1-line-height: 1.5;
+  --commerce-body-1-letter-spacing: 0;
+
+  --commerce-body-1-semi-font-size: 20px;
+  --commerce-body-1-semi-font-family: var(--commerce-font-inter);
+  --commerce-body-1-semi-font-weight: 600;
+  --commerce-body-1-semi-line-height: 1.5;
+  --commerce-body-1-semi-letter-spacing: 0;
+
+  --commerce-body-1-bold-font-size: 20px;
+  --commerce-body-1-bold-font-family: var(--commerce-font-inter);
+  --commerce-body-1-bold-font-weight: 700;
+  --commerce-body-1-bold-line-height: 1.5;
+  --commerce-body-1-bold-letter-spacing: 0;
+
+  --commerce-body-2-font-size: 16px;
+  --commerce-body-2-font-family: var(--commerce-font-inter);
+  --commerce-body-2-font-weight: 400;
+  --commerce-body-2-line-height: 1.5;
+  --commerce-body-2-letter-spacing: 0;
+
+  --commerce-body-2-semi-font-size: 16px;
+  --commerce-body-2-semi-font-family: var(--commerce-font-inter);
+  --commerce-body-2-semi-font-weight: 600;
+  --commerce-body-2-semi-line-height: 1.5;
+  --commerce-body-2-semi-letter-spacing: 0;
+
+  --commerce-body-2-bold-font-size: 16px;
+  --commerce-body-2-bold-font-family: var(--commerce-font-inter);
+  --commerce-body-2-bold-font-weight: 700;
+  --commerce-body-2-bold-line-height: 1.5;
+  --commerce-body-2-bold-letter-spacing: 0;
+
+  /* Commerce Caption Typography */
+  --commerce-caption-1-font-size: 14px;
+  --commerce-caption-1-font-family: var(--commerce-font-inter);
+  --commerce-caption-1-font-weight: 400;
+  --commerce-caption-1-line-height: 1.4;
+  --commerce-caption-1-letter-spacing: 0;
+
+  --commerce-caption-1-semi-font-size: 14px;
+  --commerce-caption-1-semi-font-family: var(--commerce-font-inter);
+  --commerce-caption-1-semi-font-weight: 600;
+  --commerce-caption-1-semi-line-height: 1.4;
+  --commerce-caption-1-semi-letter-spacing: 0;
+
+  --commerce-caption-1-bold-font-size: 14px;
+  --commerce-caption-1-bold-font-family: var(--commerce-font-inter);
+  --commerce-caption-1-bold-font-weight: 700;
+  --commerce-caption-1-bold-line-height: 1.4;
+  --commerce-caption-1-bold-letter-spacing: 0;
+
+  --commerce-caption-2-font-size: 12px;
+  --commerce-caption-2-font-family: var(--commerce-font-inter);
+  --commerce-caption-2-font-weight: 400;
+  --commerce-caption-2-line-height: 1.4;
+  --commerce-caption-2-letter-spacing: 0;
+
+  --commerce-caption-2-semi-font-size: 12px;
+  --commerce-caption-2-semi-font-family: var(--commerce-font-inter);
+  --commerce-caption-2-semi-font-weight: 600;
+  --commerce-caption-2-semi-line-height: 1.4;
+  --commerce-caption-2-semi-letter-spacing: 0;
+
+  --commerce-caption-2-bold-font-size: 12px;
+  --commerce-caption-2-bold-font-family: var(--commerce-font-inter);
+  --commerce-caption-2-bold-font-weight: 700;
+  --commerce-caption-2-bold-line-height: 1.4;
+  --commerce-caption-2-bold-letter-spacing: 0;
+
+  /* Commerce Hairline Typography */
+  --commerce-hairline-1-font-size: 16px;
+  --commerce-hairline-1-font-family: var(--commerce-font-inter);
+  --commerce-hairline-1-font-weight: 700;
+  --commerce-hairline-1-line-height: 1.2;
+  --commerce-hairline-1-letter-spacing: 0.1em;
+  --commerce-hairline-1-text-transform: uppercase;
+
+  --commerce-hairline-2-font-size: 12px;
+  --commerce-hairline-2-font-family: var(--commerce-font-inter);
+  --commerce-hairline-2-font-weight: 700;
+  --commerce-hairline-2-line-height: 1.2;
+  --commerce-hairline-2-letter-spacing: 0.1em;
+  --commerce-hairline-2-text-transform: uppercase;
+
+  /* Commerce Button Typography */
+  --commerce-button-xl-font-size: 26px;
+  --commerce-button-xl-font-family: var(--commerce-font-inter);
+  --commerce-button-xl-font-weight: 500;
+  --commerce-button-xl-line-height: 1.2;
+  --commerce-button-xl-letter-spacing: 0;
+
+  --commerce-button-l-font-size: 22px;
+  --commerce-button-l-font-family: var(--commerce-font-inter);
+  --commerce-button-l-font-weight: 500;
+  --commerce-button-l-line-height: 1.2;
+  --commerce-button-l-letter-spacing: 0;
+
+  --commerce-button-m-font-size: 18px;
+  --commerce-button-m-font-family: var(--commerce-font-inter);
+  --commerce-button-m-font-weight: 500;
+  --commerce-button-m-line-height: 1.2;
+  --commerce-button-m-letter-spacing: 0;
+
+  --commerce-button-s-font-size: 16px;
+  --commerce-button-s-font-family: var(--commerce-font-inter);
+  --commerce-button-s-font-weight: 500;
+  --commerce-button-s-line-height: 1.2;
+  --commerce-button-s-letter-spacing: 0;
+
+  --commerce-button-xs-font-size: 14px;
+  --commerce-button-xs-font-family: var(--commerce-font-inter);
+  --commerce-button-xs-font-weight: 500;
+  --commerce-button-xs-line-height: 1.2;
+  --commerce-button-xs-letter-spacing: 0;
+
+  /* ============================================
+     Admin Typography Tokens
+     ============================================ */
+
+  /* Admin Font Families */
+  --admin-font-poppins: "Poppins", sans-serif;
+  --admin-font-inter: "Inter", sans-serif;
+
+  /* Admin Hero Typography */
+  --admin-hero-font-size: 96px;
+  --admin-hero-font-family: var(--admin-font-poppins);
+  --admin-hero-font-weight: 500;
+  --admin-hero-line-height: 1.2;
+  --admin-hero-letter-spacing: -0.02em;
+
+  /* Admin Headline Typography */
+  --admin-headline-h1-font-size: 80px;
+  --admin-headline-h1-font-family: var(--admin-font-poppins);
+  --admin-headline-h1-font-weight: 500;
+  --admin-headline-h1-line-height: 1.2;
+  --admin-headline-h1-letter-spacing: -0.02em;
+
+  --admin-headline-h2-font-size: 72px;
+  --admin-headline-h2-font-family: var(--admin-font-poppins);
+  --admin-headline-h2-font-weight: 500;
+  --admin-headline-h2-line-height: 1.2;
+  --admin-headline-h2-letter-spacing: -0.02em;
+
+  --admin-headline-h3-font-size: 54px;
+  --admin-headline-h3-font-family: var(--admin-font-poppins);
+  --admin-headline-h3-font-weight: 500;
+  --admin-headline-h3-line-height: 1.2;
+  --admin-headline-h3-letter-spacing: -0.02em;
+
+  --admin-headline-h4-font-size: 40px;
+  --admin-headline-h4-font-family: var(--admin-font-poppins);
+  --admin-headline-h4-font-weight: 500;
+  --admin-headline-h4-line-height: 1.2;
+  --admin-headline-h4-letter-spacing: -0.02em;
+
+  --admin-headline-h5-font-size: 34px;
+  --admin-headline-h5-font-family: var(--admin-font-poppins);
+  --admin-headline-h5-font-weight: 500;
+  --admin-headline-h5-line-height: 1.2;
+  --admin-headline-h5-letter-spacing: -0.02em;
+
+  --admin-headline-h6-font-size: 28px;
+  --admin-headline-h6-font-family: var(--admin-font-poppins);
+  --admin-headline-h6-font-weight: 500;
+  --admin-headline-h6-line-height: 1.2;
+  --admin-headline-h6-letter-spacing: -0.02em;
+
+  --admin-headline-h7-font-size: 20px;
+  --admin-headline-h7-font-family: var(--admin-font-poppins);
+  --admin-headline-h7-font-weight: 500;
+  --admin-headline-h7-line-height: 1.2;
+  --admin-headline-h7-letter-spacing: -0.02em;
+
+  /* Admin Body Typography */
+  --admin-body-1-font-size: 20px;
+  --admin-body-1-font-family: var(--admin-font-inter);
+  --admin-body-1-font-weight: 400;
+  --admin-body-1-line-height: 1.5;
+  --admin-body-1-letter-spacing: 0;
+
+  --admin-body-1-semi-font-size: 20px;
+  --admin-body-1-semi-font-family: var(--admin-font-inter);
+  --admin-body-1-semi-font-weight: 600;
+  --admin-body-1-semi-line-height: 1.5;
+  --admin-body-1-semi-letter-spacing: 0;
+
+  --admin-body-1-bold-font-size: 20px;
+  --admin-body-1-bold-font-family: var(--admin-font-inter);
+  --admin-body-1-bold-font-weight: 700;
+  --admin-body-1-bold-line-height: 1.5;
+  --admin-body-1-bold-letter-spacing: 0;
+
+  --admin-body-2-font-size: 16px;
+  --admin-body-2-font-family: var(--admin-font-inter);
+  --admin-body-2-font-weight: 400;
+  --admin-body-2-line-height: 1.5;
+  --admin-body-2-letter-spacing: 0;
+
+  --admin-body-2-semi-font-size: 16px;
+  --admin-body-2-semi-font-family: var(--admin-font-inter);
+  --admin-body-2-semi-font-weight: 600;
+  --admin-body-2-semi-line-height: 1.5;
+  --admin-body-2-semi-letter-spacing: 0;
+
+  --admin-body-2-bold-font-size: 16px;
+  --admin-body-2-bold-font-family: var(--admin-font-inter);
+  --admin-body-2-bold-font-weight: 700;
+  --admin-body-2-bold-line-height: 1.5;
+  --admin-body-2-bold-letter-spacing: 0;
+
+  /* Admin Caption Typography */
+  --admin-caption-1-font-size: 14px;
+  --admin-caption-1-font-family: var(--admin-font-inter);
+  --admin-caption-1-font-weight: 400;
+  --admin-caption-1-line-height: 1.4;
+  --admin-caption-1-letter-spacing: 0;
+
+  --admin-caption-1-semi-font-size: 14px;
+  --admin-caption-1-semi-font-family: var(--admin-font-inter);
+  --admin-caption-1-semi-font-weight: 600;
+  --admin-caption-1-semi-line-height: 1.4;
+  --admin-caption-1-semi-letter-spacing: 0;
+
+  --admin-caption-1-bold-font-size: 14px;
+  --admin-caption-1-bold-font-family: var(--admin-font-inter);
+  --admin-caption-1-bold-font-weight: 700;
+  --admin-caption-1-bold-line-height: 1.4;
+  --admin-caption-1-bold-letter-spacing: 0;
+
+  --admin-caption-2-font-size: 12px;
+  --admin-caption-2-font-family: var(--admin-font-inter);
+  --admin-caption-2-font-weight: 400;
+  --admin-caption-2-line-height: 1.4;
+  --admin-caption-2-letter-spacing: 0;
+
+  --admin-caption-2-semi-font-size: 12px;
+  --admin-caption-2-semi-font-family: var(--admin-font-inter);
+  --admin-caption-2-semi-font-weight: 600;
+  --admin-caption-2-semi-line-height: 1.4;
+  --admin-caption-2-semi-letter-spacing: 0;
+
+  --admin-caption-2-bold-font-size: 12px;
+  --admin-caption-2-bold-font-family: var(--admin-font-inter);
+  --admin-caption-2-bold-font-weight: 700;
+  --admin-caption-2-bold-line-height: 1.4;
+  --admin-caption-2-bold-letter-spacing: 0;
+
+  /* Admin Hairline Typography */
+  --admin-hairline-1-font-size: 16px;
+  --admin-hairline-1-font-family: var(--admin-font-inter);
+  --admin-hairline-1-font-weight: 700;
+  --admin-hairline-1-line-height: 1.2;
+  --admin-hairline-1-letter-spacing: 0.1em;
+  --admin-hairline-1-text-transform: uppercase;
+
+  --admin-hairline-2-font-size: 12px;
+  --admin-hairline-2-font-family: var(--admin-font-inter);
+  --admin-hairline-2-font-weight: 700;
+  --admin-hairline-2-line-height: 1.2;
+  --admin-hairline-2-letter-spacing: 0.1em;
+  --admin-hairline-2-text-transform: uppercase;
+
+  /* Admin Button Typography */
+  --admin-button-xl-font-size: 26px;
+  --admin-button-xl-font-family: var(--admin-font-inter);
+  --admin-button-xl-font-weight: 500;
+  --admin-button-xl-line-height: 1.2;
+  --admin-button-xl-letter-spacing: 0;
+
+  --admin-button-l-font-size: 22px;
+  --admin-button-l-font-family: var(--admin-font-inter);
+  --admin-button-l-font-weight: 500;
+  --admin-button-l-line-height: 1.2;
+  --admin-button-l-letter-spacing: 0;
+
+  --admin-button-m-font-size: 18px;
+  --admin-button-m-font-family: var(--admin-font-inter);
+  --admin-button-m-font-weight: 500;
+  --admin-button-m-line-height: 1.2;
+  --admin-button-m-letter-spacing: 0;
+
+  --admin-button-s-font-size: 16px;
+  --admin-button-s-font-family: var(--admin-font-inter);
+  --admin-button-s-font-weight: 500;
+  --admin-button-s-line-height: 1.2;
+  --admin-button-s-letter-spacing: 0;
+
+  --admin-button-xs-font-size: 14px;
+  --admin-button-xs-font-family: var(--admin-font-inter);
+  --admin-button-xs-font-weight: 500;
+  --admin-button-xs-line-height: 1.2;
+  --admin-button-xs-letter-spacing: 0;
+
+  /* Admin Semantic Typography */
+  --admin-semantic-button-small-font-size: 13.2px;
+  --admin-semantic-button-small-font-family: var(--admin-font-inter);
+  --admin-semantic-button-small-font-weight: 400;
+  --admin-semantic-button-small-line-height: 1.2;
+  --admin-semantic-button-small-letter-spacing: 0;
+
+  --admin-semantic-button-medium-font-size: 15px;
+  --admin-semantic-button-medium-font-family: var(--admin-font-inter);
+  --admin-semantic-button-medium-font-weight: 400;
+  --admin-semantic-button-medium-line-height: 1.2;
+  --admin-semantic-button-medium-letter-spacing: 0;
+
+  --admin-semantic-button-large-font-size: 18.9px;
+  --admin-semantic-button-large-font-family: var(--admin-font-inter);
+  --admin-semantic-button-large-font-weight: 400;
+  --admin-semantic-button-large-line-height: 1.2;
+  --admin-semantic-button-large-letter-spacing: 0;
+
+  --admin-semantic-heading3-small-font-size: 14.9px;
+  --admin-semantic-heading3-small-font-family: var(--admin-font-inter);
+  --admin-semantic-heading3-small-font-weight: 400;
+  --admin-semantic-heading3-small-line-height: 1.2;
+  --admin-semantic-heading3-small-letter-spacing: 0;
+
+  --admin-semantic-heading3-medium-font-size: 15px;
+  --admin-semantic-heading3-medium-font-family: var(--admin-font-inter);
+  --admin-semantic-heading3-medium-font-weight: 400;
+  --admin-semantic-heading3-medium-line-height: 1.2;
+  --admin-semantic-heading3-medium-letter-spacing: 0;
+
+  --admin-semantic-heading3-large-font-size: 15.1px;
+  --admin-semantic-heading3-large-font-family: var(--admin-font-inter);
+  --admin-semantic-heading3-large-font-weight: 400;
+  --admin-semantic-heading3-large-line-height: 1.2;
+  --admin-semantic-heading3-large-letter-spacing: 0;
+
+  --admin-semantic-heading3-xlarge-font-size: 15.5px;
+  --admin-semantic-heading3-xlarge-font-family: var(--admin-font-inter);
+  --admin-semantic-heading3-xlarge-font-weight: 400;
+  --admin-semantic-heading3-xlarge-line-height: 1.2;
+  --admin-semantic-heading3-xlarge-letter-spacing: 0;
+
+  --admin-semantic-link-font-size: 10.8px;
+  --admin-semantic-link-font-family: var(--admin-font-inter);
+  --admin-semantic-link-font-weight: 500;
+  --admin-semantic-link-line-height: 1.2;
+  --admin-semantic-link-letter-spacing: 0;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+/* ============================================
+   Mobile Typography (max-width: 768px)
+   ============================================ */
+@media (max-width: 768px) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+    /* Commerce Mobile Typography */
+    --commerce-hero-font-size: 48px;
+    --commerce-headline-h1-font-size: 40px;
+    --commerce-headline-h2-font-size: 36px;
+    --commerce-headline-h3-font-size: 32px;
+    --commerce-headline-h4-font-size: 28px;
+    --commerce-headline-h5-font-size: 24px;
+    --commerce-headline-h6-font-size: 20px;
+    --commerce-headline-h7-font-size: 18px;
+    --commerce-body-1-font-size: 18px;
+    --commerce-body-1-semi-font-size: 18px;
+    --commerce-body-1-bold-font-size: 18px;
+    --commerce-body-2-font-size: 16px;
+    --commerce-body-2-semi-font-size: 16px;
+    --commerce-body-2-bold-font-size: 16px;
+    --commerce-button-xl-font-size: 22px;
+    --commerce-button-l-font-size: 20px;
+    --commerce-button-m-font-size: 18px;
+    --commerce-button-s-font-size: 16px;
+    --commerce-button-xs-font-size: 14px;
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+    /* Admin Mobile Typography */
+    --admin-hero-font-size: 48px;
+    --admin-headline-h1-font-size: 40px;
+    --admin-headline-h2-font-size: 36px;
+    --admin-headline-h3-font-size: 32px;
+    --admin-headline-h4-font-size: 28px;
+    --admin-headline-h5-font-size: 24px;
+    --admin-headline-h6-font-size: 20px;
+    --admin-headline-h7-font-size: 18px;
+    --admin-body-1-font-size: 18px;
+    --admin-body-1-semi-font-size: 18px;
+    --admin-body-1-bold-font-size: 18px;
+    --admin-body-2-font-size: 16px;
+    --admin-body-2-semi-font-size: 16px;
+    --admin-body-2-bold-font-size: 16px;
+    --admin-button-xl-font-size: 22px;
+    --admin-button-l-font-size: 20px;
+    --admin-button-m-font-size: 18px;
+    --admin-button-s-font-size: 16px;
+    --admin-button-xs-font-size: 14px;
+  }
 }
