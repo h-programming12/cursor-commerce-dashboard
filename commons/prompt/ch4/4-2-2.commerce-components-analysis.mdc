@@ -1,0 +1,373 @@
+# 커머스 컴포넌트 분석 결과
+
+## 1. Figma 디자인에 있는 컴포넌트 목록
+
+### 주요 컴포넌트
+1. **Product Card** - 상품 카드 (이미지, 별점, 제목, 가격, 할인가, 위시리스트 버튼, Add to cart 버튼)
+2. **Cart Item Row** - 장바구니 아이템 (이미지, 제품명, 색상 옵션, Remove 버튼, 수량 선택기, 단가, 총가)
+3. **Rating Stars** - 별점 (5개 별, 읽기 전용/인터랙티브)
+4. **Review Card** - 리뷰 카드 (아바타, 이름, 별점, 리뷰 텍스트)
+5. **Quantity Selector** - 수량 선택기 (마이너스 버튼, 숫자 표시, 플러스 버튼)
+6. **Product Grid** - 상품 그리드 레이아웃 (Product Card들의 그리드)
+7. **Order Summary Panel** - 주문 요약 패널 (추정: 주문 정보, 배송 옵션, 총액 등)
+
+### 기존 컴포넌트 (확장 가능)
+- **Button** - 이미 존재, 커머스 스타일 적용됨
+- **Badge** - 이미 존재, 상품 카드에서 사용 가능
+- **Pagination** - 이미 존재, 디자인과 일치
+- **SearchInput** - 이미 존재, 커머스 variant 있음
+- **Input** - 이미 존재
+
+---
+
+## 2. 기존 컴포넌트와 비교하여 새로 필요한 컴포넌트
+
+### 신규 컴포넌트 (7개)
+1. **ProductCard** - `components/commerce/ProductCard`
+2. **ProductGrid** - `components/commerce/ProductGrid`
+3. **CartItemRow** - `components/commerce/CartItemRow`
+4. **RatingStars** - `components/commerce/RatingStars`
+5. **ReviewCard** - `components/commerce/ReviewCard`
+6. **QuantitySelector** - `components/commerce/QuantitySelector`
+7. **OrderSummaryPanel** - `components/commerce/OrderSummaryPanel`
+
+---
+
+## 3. 기존 컴포넌트를 확장해야 하는 부분
+
+### Button 컴포넌트
+- **현재 상태**: 기본 variant (primary, outline) 지원
+- **확장 필요**: 
+  - 아이콘 전용 버튼 지원 (위시리스트 하트 아이콘 등)
+  - 텍스트 없는 아이콘 버튼 variant 추가
+
+### Badge 컴포넌트
+- **현재 상태**: variant (default, success, new, discount) 지원
+- **확장 필요**:
+  - 상품 카드에서 사용할 "New", "Sale" 등의 배지 스타일 확인
+  - 위치 조정 가능한 variant (top-left, top-right 등)
+
+---
+
+## 4. 각 컴포넌트의 Props 인터페이스 설계
+
+### ProductCard
+```typescript
+interface ProductCardProps {
+  product: {
+    id: string;
+    name: string;
+    price: number;
+    salePrice?: number;
+    imageUrl: string;
+    rating?: number;
+    reviewCount?: number;
+    isLiked?: boolean;
+    badges?: Array<{ label: string; variant: 'new' | 'sale' | 'discount' }>;
+  };
+  onAddToCart?: (productId: string) => void;
+  onToggleWishlist?: (productId: string) => void;
+  onClick?: (productId: string) => void;
+  className?: string;
+}
+```
+
+### ProductGrid
+```typescript
+interface ProductGridProps {
+  products: Product[];
+  columns?: 2 | 3 | 4;
+  gap?: 'small' | 'medium' | 'large';
+  onAddToCart?: (productId: string) => void;
+  onToggleWishlist?: (productId: string) => void;
+  onProductClick?: (productId: string) => void;
+  className?: string;
+}
+```
+
+### CartItemRow
+```typescript
+interface CartItemRowProps {
+  item: {
+    id: string;
+    productId: string;
+    productName: string;
+    productImageUrl: string;
+    color?: string;
+    quantity: number;
+    unitPrice: number;
+    totalPrice: number;
+  };
+  onQuantityChange?: (itemId: string, quantity: number) => void;
+  onRemove?: (itemId: string) => void;
+  className?: string;
+}
+```
+
+### RatingStars
+```typescript
+interface RatingStarsProps {
+  rating: number; // 0-5
+  maxRating?: number; // 기본값 5
+  size?: 'small' | 'medium' | 'large';
+  showRating?: boolean; // 숫자 표시 여부
+  interactive?: boolean; // 클릭 가능 여부
+  onRatingChange?: (rating: number) => void;
+  className?: string;
+}
+```
+
+### ReviewCard
+```typescript
+interface ReviewCardProps {
+  review: {
+    id: string;
+    userName: string;
+    userAvatar?: string;
+    rating: number;
+    comment: string;
+    date?: string;
+  };
+  className?: string;
+}
+```
+
+### QuantitySelector
+```typescript
+interface QuantitySelectorProps {
+  value: number;
+  min?: number; // 기본값 1
+  max?: number;
+  size?: 'small' | 'medium' | 'large';
+  onChange: (value: number) => void;
+  disabled?: boolean;
+  className?: string;
+}
+```
+
+### OrderSummaryPanel
+```typescript
+interface OrderSummaryPanelProps {
+  items: Array<{
+    name: string;
+    quantity: number;
+    price: number;
+  }>;
+  subtotal: number;
+  shipping?: {
+    options: Array<{
+      label: string;
+      price: number;
+      selected: boolean;
+    }>;
+  };
+  discount?: number;
+  total: number;
+  onShippingChange?: (optionIndex: number) => void;
+  className?: string;
+}
+```
+
+---
+
+## 5. 사용되는 디자인 토큰
+
+### 색상 (commerceColors)
+- **Primary**: `#141718` (Neutral/07/100%)
+- **Background**: 
+  - Default: `#FFFFFF`
+  - Paper: `#FEFEFE`
+  - Light: `#F3F5F7`
+- **Text**:
+  - Primary: `#000000`
+  - Secondary: `#23262F` (Neutral/05/100%)
+  - Tertiary: `#6C7275` (Neutral/04/100%)
+- **Border**: `#E8EDEF` (Neutral/03/100%)
+- **Star Rating**: `#343839`
+- **Semantic**:
+  - Success: `#38CB89`
+  - Error: `#FF5630`
+
+### 타이포그래피 (commerceTypography)
+- **Product Title**: 
+  - Font: Inter, Semi Bold (600)
+  - Size: 16px
+  - Line Height: 26px
+- **Price**:
+  - Current: Inter, Semi Bold (600), 14px, Line Height: 22px
+  - Original: Inter, Regular (400), 14px, Line Height: 22px
+- **Rating**: 
+  - Star Size: 16px
+- **Body Text**: 
+  - Regular: Inter, Regular (400), 16px, Line Height: 26px
+  - Caption: Inter, Regular (400), 12px, Line Height: 20px
+
+### 간격 (Spacing)
+- **Product Card**:
+  - Card Padding: 16px
+  - Image Height: 349px
+  - Content Gap: 20px
+- **Cart Item**:
+  - Row Padding: 24px
+  - Image Size: 80x96px
+  - Item Gap: 16px
+- **Quantity Selector**:
+  - Small: 80x32px (border: 4px radius)
+  - Medium: 127x52px (border: 8px radius)
+  - Button Padding: 8px
+- **Grid Gap**: 24px (추정)
+
+### Border Radius
+- **Product Card**: 8px
+- **Button**: 8px (일반), 80px (pill)
+- **Quantity Selector**: 4px (small), 8px (medium)
+- **Input**: 6px
+- **Search Input**: 16px
+
+---
+
+## 6. 컴포넌트의 상태 (default, hover, focus, disabled, loading 등)
+
+### ProductCard
+- **Default**: 정적 표시
+- **Hover**: 
+  - 이미지 위에 "Add to cart" 버튼 표시
+  - 위시리스트 버튼 표시
+- **Focus**: 키보드 접근성 (outline)
+- **Loading**: 스켈레톤 UI 또는 이미지 로딩 상태
+
+### CartItemRow
+- **Default**: 정적 표시
+- **Hover**: Remove 버튼 강조
+- **Focus**: 키보드 접근성
+- **Loading**: 수량 변경 중 로딩 상태
+
+### RatingStars
+- **Default**: 읽기 전용 (회색 별)
+- **Filled**: 채워진 별 (검정색 `#343839`)
+- **Interactive**: 
+  - Hover: 별 위에 마우스 오버 시 미리보기
+  - Active: 클릭 시 선택된 별까지 채움
+- **Disabled**: 회색으로 표시, 클릭 불가
+
+### QuantitySelector
+- **Default**: 정상 상태
+- **Hover**: 버튼 배경색 변경
+- **Focus**: 키보드 접근성 (outline)
+- **Disabled**: 
+  - Min 도달 시 마이너스 버튼 비활성화
+  - Max 도달 시 플러스 버튼 비활성화
+- **Loading**: 수량 변경 중 로딩 상태
+
+### ReviewCard
+- **Default**: 정적 표시
+- **Hover**: 없음 (읽기 전용)
+- **Focus**: 키보드 접근성
+
+### OrderSummaryPanel
+- **Default**: 정적 표시
+- **Hover**: 배송 옵션 선택 시
+- **Focus**: 키보드 접근성
+- **Loading**: 주문 처리 중
+
+---
+
+## 7. 컴포넌트별 상세 분석
+
+### ProductCard: 신규 [필요한 Props]
+- **Props**: `product`, `onAddToCart`, `onToggleWishlist`, `onClick`, `className`
+- **상태**: default, hover (버튼 표시), loading
+- **디자인 토큰**: 
+  - 배경: `#FFFFFF`
+  - 텍스트: `#141718` (제목), `#6C7275` (할인가)
+  - Border: `#E8EDEF`
+  - Border Radius: `8px`
+  - 타이포그래피: Inter Semi Bold 16px (제목), Inter Semi Bold 14px (가격)
+
+### ProductGrid: 신규 [필요한 Props]
+- **Props**: `products`, `columns`, `gap`, `onAddToCart`, `onToggleWishlist`, `onProductClick`, `className`
+- **상태**: default, loading (스켈레톤)
+- **디자인 토큰**:
+  - Grid Gap: `24px` (추정)
+  - Responsive: 2/3/4 columns
+
+### CartItemRow: 신규 [필요한 Props]
+- **Props**: `item`, `onQuantityChange`, `onRemove`, `className`
+- **상태**: default, hover, loading
+- **디자인 토큰**:
+  - 배경: `#FFFFFF`
+  - Border: `#E8EDEF`
+  - 이미지: 80x96px
+  - 텍스트: Inter Semi Bold 14px (제품명), Inter Regular 12px (옵션)
+  - 가격: Inter Regular 18px (단가), Inter Semi Bold 18px (총가)
+
+### RatingStars: 신규 [필요한 Props]
+- **Props**: `rating`, `maxRating`, `size`, `showRating`, `interactive`, `onRatingChange`, `className`
+- **상태**: default (읽기 전용), interactive (hover, active), disabled
+- **디자인 토큰**:
+  - Star Size: `16px`
+  - Star Color: `#343839` (채워진 별)
+  - Star Gap: `4px` (추정)
+  - 타이포그래피: Inter Regular 14px (숫자 표시 시)
+
+### ReviewCard: 신규 [필요한 Props]
+- **Props**: `review`, `className`
+- **상태**: default (읽기 전용)
+- **디자인 토큰**:
+  - 배경: `#FFFFFF`
+  - Border: `#E8EDEF`
+  - Border Radius: `8px` (추정)
+  - 아바타: 72x72px, Border Radius: `48px`
+  - 텍스트: Inter Semi Bold 20px (이름), Inter Regular 16px (리뷰)
+  - 텍스트 색상: `#141718` (이름), `#353945` (리뷰)
+
+### QuantitySelector: 신규 [필요한 Props]
+- **Props**: `value`, `min`, `max`, `size`, `onChange`, `disabled`, `className`
+- **상태**: default, hover, focus, disabled (min/max 도달 시)
+- **디자인 토큰**:
+  - Small: 80x32px, Border: `#6C7275`, Border Radius: `4px`
+  - Medium: 127x52px, 배경: `#F5F5F5`, Border Radius: `8px`
+  - 텍스트: Inter Semi Bold 12px (small), Inter Semi Bold 16px (medium)
+  - 아이콘: 16x16px (small), 20x20px (medium)
+
+### OrderSummaryPanel: 신규 [필요한 Props]
+- **Props**: `items`, `subtotal`, `shipping`, `discount`, `total`, `onShippingChange`, `className`
+- **상태**: default, hover (배송 옵션), loading
+- **디자인 토큰**:
+  - 배경: `#F3F5F7` (옵션 배경)
+  - Border: `#141718`
+  - Border Radius: `4px`
+  - 텍스트: Inter Regular 16px
+  - Radio Button: 18x18px, Border: `#121212`
+
+---
+
+## 8. 구현 우선순위
+
+1. **RatingStars** - 다른 컴포넌트에서 재사용
+2. **QuantitySelector** - CartItemRow에서 사용
+3. **ProductCard** - 핵심 컴포넌트
+4. **ProductGrid** - ProductCard를 사용
+5. **CartItemRow** - QuantitySelector 사용
+6. **ReviewCard** - RatingStars 사용
+7. **OrderSummaryPanel** - 마지막 구현
+
+---
+
+## 9. 추가 고려사항
+
+### 아이콘
+- 위시리스트 하트 아이콘
+- 장바구니 아이콘
+- 플러스/마이너스 아이콘
+- 별 아이콘 (채워진/빈)
+- Close 아이콘 (Remove 버튼)
+
+### 반응형 디자인
+- ProductGrid: 모바일 1-2열, 태블릿 2-3열, 데스크톱 3-4열
+- CartItemRow: 모바일에서 세로 레이아웃 고려
+
+### 접근성
+- 키보드 네비게이션 지원
+- ARIA 레이블 추가
+- 스크린 리더 지원

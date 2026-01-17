@@ -4,7 +4,7 @@ import { commerceColors } from "@/commons/constants/color";
 import { commerceTypography } from "@/commons/constants/typography";
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
-  variant?: "default" | "success" | "new" | "discount";
+  variant?: "default" | "success" | "new" | "discount" | "sale";
   children: React.ReactNode;
 }
 
@@ -27,6 +27,10 @@ export const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
         color: commerceColors.neutral["07"]["100"],
       },
       discount: {
+        backgroundColor: commerceColors.semantic.success,
+        color: "#FEFEFE",
+      },
+      sale: {
         backgroundColor: commerceColors.semantic.success,
         color: "#FEFEFE",
       },
