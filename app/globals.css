@@ -158,6 +158,83 @@
   --admin-mercury: #e6e6e6;
   --admin-wild-sand: #f5f5f5;
 
+  /* Admin Component Specific Colors */
+  --admin-background-light: #f3f4f8;
+  --admin-background-gray-light: #f1f2f6;
+  --admin-background-input: #f3f4f6;
+  --admin-background-icon: #eff6ff;
+  --admin-background-toggle-on: #1f2937;
+  --admin-background-toggle-off: #e5e7eb;
+  --admin-background-page-active: #141718;
+  --admin-background-page-inactive: #f1f2f6;
+  --admin-text-placeholder: #8b909a;
+  --admin-text-label: #374151;
+  --admin-text-help: #6b7280;
+  --admin-text-heading: #111827;
+  --admin-border-table-outer: #e9e7fd;
+  --admin-border-table-cell: #dbdade;
+  --admin-border-card: #e5e7eb;
+  --admin-border-dropdown: #e9e7fd;
+  --admin-status-active: #28c76f;
+  --admin-status-badge: #7367f0;
+  --admin-status-icon: #2563eb;
+
+  /* Admin Typography */
+  --admin-font-public-sans: "Public Sans", sans-serif;
+  --admin-text-xs: 11px;
+  --admin-text-sm: 12px;
+  --admin-text-base: 13px;
+  --admin-text-md: 14px;
+  --admin-text-lg: 15px;
+  --admin-text-xl: 16px;
+  --admin-text-2xl: 20px;
+  --admin-font-regular: 400;
+  --admin-font-medium: 500;
+  --admin-font-semibold: 600;
+  --admin-font-thin: 100;
+  --admin-line-height-tight: 1.2;
+  --admin-line-height-normal: 1.4;
+  --admin-line-height-relaxed: 1.5;
+
+  /* Admin Spacing */
+  --admin-padding-xs: 4px;
+  --admin-padding-sm: 8px;
+  --admin-padding-md: 12px;
+  --admin-padding-lg: 16px;
+  --admin-padding-xl: 25px;
+  --admin-margin-xs: 4px;
+  --admin-margin-sm: 8px;
+  --admin-margin-md: 12px;
+  --admin-margin-lg: 16px;
+  --admin-margin-xl: 24px;
+  --admin-gap-xs: 4px;
+  --admin-gap-sm: 8px;
+  --admin-gap-md: 12px;
+  --admin-gap-lg: 16px;
+  --admin-gap-xl: 24px;
+
+  /* Admin Sizes */
+  --admin-icon-xs: 16px;
+  --admin-icon-sm: 18px;
+  --admin-icon-md: 22px;
+  --admin-icon-lg: 24px;
+  --admin-input-height-sm: 38px;
+  --admin-input-height-md: 40px;
+  --admin-input-height-lg: 44px;
+  --admin-table-header-height: 47px;
+  --admin-table-row-height: 50px;
+  --admin-button-pagination: 28px;
+  --admin-toggle-width: 44px;
+  --admin-toggle-height: 24px;
+  --admin-toggle-thumb: 20px;
+
+  /* Admin Border Radius */
+  --admin-radius-sm: 4px;
+  --admin-radius-md: 6px;
+  --admin-radius-lg: 8px;
+  --admin-radius-xl: 12px;
+  --admin-radius-full: 9999px;
+
   /* ============================================
      Commerce Typography Tokens
      ============================================ */
