@@ -1,4 +1,5 @@
 import { LayoutHeader, LayoutFooter } from "@/components/commerce";
+import { SearchOverlay } from "@/features/search/components/SearchOverlay";
 
 export default function CommerceLayout({
   children,
@@ -10,6 +11,7 @@ export default function CommerceLayout({
       <LayoutHeader />
       <main className="flex-1">{children}</main>
       <LayoutFooter />
+      <SearchOverlay />
     </div>
   );
 }

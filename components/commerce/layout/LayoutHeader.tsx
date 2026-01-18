@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { COMMERCE_URLS, ACCOUNT_URLS } from "@/commons/constants/url";
 import { cn } from "@/commons/utils/cn";
+import { useSearchStore } from "@/features/search/store/searchStore";
+import { commerceColors } from "@/commons/constants/color";
 
 // 아이콘 컴포넌트들
 const SearchIcon = ({ className }: { className?: string }) => (
@@ -142,6 +144,21 @@ export function LayoutHeader({
   onCartClick,
   className,
 }: LayoutHeaderProps) {
+  const {
+    isOpen: isSearchOpen,
+    open: openSearch,
+    clear: clearSearch,
+  } = useSearchStore();
+
+  const handleSearchClick = () => {
+    if (isSearchOpen) {
+      clearSearch();
+    } else {
+      openSearch();
+    }
+    onSearchClick?.();
+  };
+
   return (
     <header
       className={cn(
@@ -187,9 +204,20 @@ export function LayoutHeader({
             {/* 검색 아이콘 */}
             <button
               type="button"
-              onClick={onSearchClick}
-              className="p-2 text-(--commerce-text-primary) hover:text-(--commerce-neutral-07-100) transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--commerce-neutral-07-100) focus-visible:ring-offset-2 rounded"
-              aria-label="검색"
+              onClick={handleSearchClick}
+              className={cn(
+                "p-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 rounded",
+                isSearchOpen
+                  ? "text-(--commerce-neutral-07-100)"
+                  : "text-(--commerce-text-primary) hover:text-(--commerce-neutral-07-100)"
+              )}
+              style={
+                isSearchOpen
+                  ? { color: commerceColors.neutral["07"]["100"] }
+                  : undefined
+              }
+              aria-label={isSearchOpen ? "검색 닫기" : "검색"}
+              aria-pressed={isSearchOpen}
             >
               <SearchIcon />
             </button>
