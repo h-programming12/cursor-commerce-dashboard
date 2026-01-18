@@ -1,6 +1,10 @@
 export { ProductCard, type ProductCardProps } from "./ProductCard/ProductCard";
 export { ProductGrid, type ProductGridProps } from "./ProductGrid/ProductGrid";
 export {
+  ProductDetail,
+  type ProductDetailProps,
+} from "./ProductDetail/ProductDetail";
+export {
   LoadingSkeletonGrid,
   type LoadingSkeletonGridProps,
 } from "./ProductGrid/LoadingSkeletonGrid";
