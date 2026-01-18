@@ -1,0 +1,20 @@
+---
+alwaysApply: true
+---
+
+components/commerce/ProductGrid/LoadingSkeletonGrid.tsx 파일을 생성해줘.
+
+요구사항: 0. ProductCardSkeleton 컴포넌트를 우선 생성 (animate-pulse 애니메이션 적용) - 기존 ProductCard와 크기 및 배치 (이미지, 텍스트 등)를 유사하게 구현해서 최대한
+layout shift가 없게 한다
+
+1. ProductGrid와 동일한 레이아웃의 LoadingSkeletonGrid 스켈레톤 그리드 작업
+2. ProductCardSkeleton 컴포넌트를 재사용한 LoadingSkeletonGrid 작업
+3. 반응형 그리드 (모바일 2열, PC 4열)
+4. count prop으로 스켈레톤 개수 조절 가능 (기본값: 8)
+5. columns prop으로 반응형 컬럼 수 설정 가능
+6. 접근성: role="status", aria-label, aria-live="polite" 추가
+7. Tailwind CSS 사용 (grid, gap-6 md:gap-8)
+
+참고할 파일:
+
+- components/commerce/ProductGrid/ProductGrid.tsx (레이아웃 참고)
