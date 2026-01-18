@@ -240,8 +240,8 @@
      ============================================ */
 
   /* Commerce Font Families */
-  --commerce-font-poppins: "Poppins", sans-serif;
-  --commerce-font-inter: "Inter", sans-serif;
+  --commerce-font-poppins: var(--font-poppins), "Poppins", sans-serif;
+  --commerce-font-inter: var(--font-inter), "Inter", sans-serif;
 
   /* Commerce Hero Typography */
   --commerce-hero-font-size: 96px;

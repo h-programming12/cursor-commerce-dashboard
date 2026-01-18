@@ -64,6 +64,11 @@ export const ProductCard = React.forwardRef<HTMLDivElement, ProductCardProps>(
 
     const productUrl = COMMERCE_URLS.PRODUCT_DETAIL(product.id);
 
+    // 가격 계산: salePrice가 있으면 할인가가 현재가, price가 원가
+    const currentPrice = product.salePrice ?? product.price;
+    const originalPrice = product.salePrice ? product.price : undefined;
+    const hasDiscount = product.salePrice && product.salePrice < product.price;
+
     return (
       <div
         ref={ref}
@@ -73,25 +78,26 @@ export const ProductCard = React.forwardRef<HTMLDivElement, ProductCardProps>(
       >
         <Link href={productUrl} onClick={handleCardClick}>
           <div
-            className="relative overflow-hidden rounded-lg bg-white transition-all hover:shadow-lg"
+            className="relative overflow-hidden bg-(--commerce-background-default) transition-all"
             style={{
-              border: `1px solid ${commerceColors.neutral["03"]["100"]}`,
               borderRadius: "8px",
             }}
           >
             {/* 이미지 영역 */}
-            <div className="relative" style={{ height: "349px" }}>
+            <div
+              className="relative overflow-hidden"
+              style={{ height: "349px" }}
+            >
               <Image
                 src={product.imageUrl}
                 alt={product.name}
                 fill
                 className="object-cover"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
 
               {/* 배지 */}
               {product.badges && product.badges.length > 0 && (
-                <div className="absolute top-4 left-4 flex flex-col gap-2">
+                <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
                   {product.badges.map((badge, index) => (
                     <Badge key={index} variant={badge.variant}>
                       {badge.label}
@@ -101,10 +107,10 @@ export const ProductCard = React.forwardRef<HTMLDivElement, ProductCardProps>(
               )}
 
               {/* 위시리스트 버튼 */}
-              <button
+              {/* <button
                 type="button"
                 onClick={handleToggleWishlist}
-                className="absolute top-4 right-4 flex items-center justify-center rounded-full bg-white transition-all hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#141718]"
+                className="absolute top-4 right-4 z-10 flex items-center justify-center rounded-full bg-(--commerce-background-default) transition-all hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--commerce-neutral-07-100)"
                 style={{
                   width: "32px",
                   height: "32px",
@@ -115,32 +121,48 @@ export const ProductCard = React.forwardRef<HTMLDivElement, ProductCardProps>(
                 }
               >
                 <HeartIcon filled={isLiked} />
-              </button>
+              </button> */}
 
               {/* Hover 시 Add to cart 버튼 */}
               {isHovered && (
                 <div
-                  className="absolute bottom-4 left-4 right-4 animate-in fade-in slide-in-from-bottom-2"
+                  className="absolute bottom-4 left-4 right-4 z-10"
+                  style={{
+                    width: "80%",
+                    margin: "0 auto",
+                  }}
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <Button
-                    variant="primary"
-                    size="medium"
+                  <button
+                    type="button"
                     onClick={handleAddToCart}
-                    className="w-full"
+                    className="w-full h-[46px] rounded-lg bg-(--commerce-neutral-07-100) text-(--commerce-text-inverse) transition-colors hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--commerce-neutral-07-100)"
+                    style={{
+                      fontFamily: "var(--commerce-font-inter)",
+                      fontWeight: 500,
+                      fontSize: "16px",
+                      lineHeight: "28px",
+                      letterSpacing: "-0.4px",
+                    }}
                     aria-label={`Add ${product.name} to cart`}
                   >
                     Add to cart
-                  </Button>
+                  </button>
                 </div>
               )}
             </div>
 
             {/* 콘텐츠 영역 */}
-            <div className="p-4">
+            <div
+              className="px-0 py-0"
+              style={{
+                height: "72px",
+                paddingTop: "20px",
+              }}
+            >
               {/* 별점 */}
               {product.rating !== undefined && (
-                <div className="mb-2">
+                <div className="mb-2" style={{ height: "16px" }}>
                   <RatingStars
                     rating={product.rating}
                     size="small"
@@ -154,11 +176,11 @@ export const ProductCard = React.forwardRef<HTMLDivElement, ProductCardProps>(
               <h3
                 className="mb-2 line-clamp-2"
                 style={{
-                  fontSize: `${commerceTypography.body["2-semi"].fontSize}px`,
-                  lineHeight: `${commerceTypography.body["2-semi"].lineHeight}px`,
-                  fontFamily: commerceTypography.body["2-semi"].fontFamily,
-                  fontWeight: commerceTypography.body["2-semi"].fontWeight,
-                  color: commerceColors.text.primary,
+                  fontSize: "16px",
+                  lineHeight: "26px",
+                  fontFamily: "var(--commerce-font-inter)",
+                  fontWeight: 600,
+                  color: "var(--commerce-text-primary)",
                 }}
               >
                 {product.name}
@@ -166,29 +188,31 @@ export const ProductCard = React.forwardRef<HTMLDivElement, ProductCardProps>(
 
               {/* 가격 */}
               <div className="flex items-center gap-2">
+                {/* 현재가 (할인가 또는 정가) */}
                 <span
                   style={{
-                    fontSize: `${commerceTypography.caption["1-semi"].fontSize}px`,
-                    lineHeight: `${commerceTypography.caption["1-semi"].lineHeight}px`,
-                    fontFamily: commerceTypography.caption["1-semi"].fontFamily,
-                    fontWeight: commerceTypography.caption["1-semi"].fontWeight,
-                    color: commerceColors.text.primary,
+                    fontSize: "14px",
+                    lineHeight: "22px",
+                    fontFamily: "var(--commerce-font-inter)",
+                    fontWeight: 600,
+                    color: "var(--commerce-text-primary)",
                   }}
                 >
-                  ${product.price.toFixed(2)}
+                  ${currentPrice.toFixed(2)}
                 </span>
-                {product.salePrice && product.salePrice < product.price && (
+                {/* 원가 (할인이 있을 때만 표시) */}
+                {hasDiscount && originalPrice && (
                   <span
                     style={{
-                      fontSize: `${commerceTypography.caption["1"].fontSize}px`,
-                      lineHeight: `${commerceTypography.caption["1"].lineHeight}px`,
-                      fontFamily: commerceTypography.caption["1"].fontFamily,
-                      fontWeight: commerceTypography.caption["1"].fontWeight,
-                      color: commerceColors.text.tertiary,
+                      fontSize: "14px",
+                      lineHeight: "22px",
+                      fontFamily: "var(--commerce-font-inter)",
+                      fontWeight: 400,
+                      color: "var(--commerce-text-tertiary)",
                       textDecoration: "line-through",
                     }}
                   >
-                    ${product.salePrice.toFixed(2)}
+                    ${originalPrice.toFixed(2)}
                   </span>
                 )}
               </div>

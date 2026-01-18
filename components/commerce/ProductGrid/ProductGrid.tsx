@@ -54,7 +54,8 @@ export const ProductGrid = React.forwardRef<HTMLDivElement, ProductGridProps>(
         ref={ref}
         className={cn("grid w-full", gridColumns[columns], className)}
         style={{
-          gap: gapStyles[gap],
+          columnGap: gapStyles[gap],
+          rowGap: "48px",
         }}
         role="list"
         aria-label="Product grid"
@@ -75,4 +76,3 @@ export const ProductGrid = React.forwardRef<HTMLDivElement, ProductGridProps>(
 );
 
 ProductGrid.displayName = "ProductGrid";
-

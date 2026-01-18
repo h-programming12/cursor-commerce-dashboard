@@ -1,12 +1,15 @@
+import { LayoutHeader, LayoutFooter } from "@/components/commerce";
+
 export default function CommerceLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <div>
-      {/* 커머스 공통 레이아웃 */}
-      {children}
+    <div className="min-h-screen flex flex-col">
+      <LayoutHeader />
+      <main className="flex-1">{children}</main>
+      <LayoutFooter />
     </div>
   );
 }
