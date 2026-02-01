@@ -29,4 +29,12 @@ export {
   OrderSummaryPanel,
   type OrderSummaryPanelProps,
 } from "./OrderSummaryPanel/OrderSummaryPanel";
+export {
+  ProductInfoSection,
+  type ProductInfoSectionProps,
+} from "./product/ProductInfoSection";
+export {
+  AddToCartSection,
+  type AddToCartSectionProps,
+} from "./product/AddToCartSection";
 export * from "./types";

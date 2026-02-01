@@ -2,6 +2,7 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/commons/utils/cn";
+import { formatPrice } from "@/commons/utils/formatPrice";
 import { commerceColors } from "@/commons/constants/color";
 import { commerceTypography } from "@/commons/constants/typography";
 import { Button } from "@/components/ui/button";
@@ -198,7 +199,7 @@ export const ProductCard = React.forwardRef<HTMLDivElement, ProductCardProps>(
                     color: "var(--commerce-text-primary)",
                   }}
                 >
-                  ${currentPrice.toFixed(2)}
+                  {formatPrice(Math.round(currentPrice))}
                 </span>
                 {/* 원가 (할인이 있을 때만 표시) */}
                 {hasDiscount && originalPrice && (
@@ -212,7 +213,7 @@ export const ProductCard = React.forwardRef<HTMLDivElement, ProductCardProps>(
                       textDecoration: "line-through",
                     }}
                   >
-                    ${originalPrice.toFixed(2)}
+                    {formatPrice(Math.round(originalPrice))}
                   </span>
                 )}
               </div>

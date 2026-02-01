@@ -12,4 +12,7 @@ export const QUERY_KEYS = {
       ["orders", "list", filters] as const,
     detail: (orderId: string) => ["orders", "detail", orderId] as const,
   },
+  reviews: {
+    product: (productId: string) => ["reviews", "product", productId] as const,
+  },
 } as const;
