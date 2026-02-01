@@ -81,8 +81,12 @@ components/
    - 상태 (default, hover, disabled)
 
 3. 생성 요구사항:
+
    - TypeScript 타입 정의
    - --[도메인]-\* 토큰 사용
    - [도메인]/types.ts 타입 활용
    - [도메인]\_URLS 사용
    - 접근성 고려"
+
+4. 기타:
+   - line-height 등의 속성은 px 기준으로 작성
