@@ -10,6 +10,7 @@
     "db:run-migration": "tsx scripts/run-migration.ts",
     "db:run-rls": "tsx scripts/run-rls.ts",
     "db:seed": "tsx scripts/seed-products.ts",
+    "db:seed-reviews": "tsx scripts/seed-reviews.ts",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
@@ -21,6 +22,7 @@
     "next": "16.1.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-icons": "^5.5.0",
     "zustand": "^5.0.9"
   },
   "devDependencies": {

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getProductById } from "@/features/products/api/getProductById";
 import { ProductDetail } from "@/components/commerce/ProductDetail/ProductDetail";
+import { ProductDetailTabs } from "./_components/ProductDetailTabs";
+import { ProductReviewsSection } from "./_components/ProductReviewsSection";
 import { COMMERCE_URLS } from "@/commons/constants/url";
 
 export async function generateMetadata({
@@ -72,9 +74,45 @@ export default async function ProductDetailPage({
     notFound();
   }
 
+  const additionalInfoContent = (
+    <div
+      className="space-y-4 text-(--commerce-text-tertiary)"
+      style={{ fontSize: 16, lineHeight: 1.625 }}
+    >
+      {product.description && <p>{product.description}</p>}
+      {product.additional_info && (
+        <div>
+          <h3 className="font-medium text-(--commerce-text-primary) mb-2">
+            추가 정보
+          </h3>
+          <p>{product.additional_info}</p>
+        </div>
+      )}
+      {product.measurements && (
+        <div>
+          <h3 className="font-medium text-(--commerce-text-primary) mb-2">
+            사이즈/규격
+          </h3>
+          <p>{product.measurements}</p>
+        </div>
+      )}
+      {!product.description &&
+        !product.additional_info &&
+        !product.measurements && <p>등록된 추가 정보가 없습니다.</p>}
+    </div>
+  );
+
+  const reviewsContent = <ProductReviewsSection productId={productId} />;
+
   return (
     <div className="container mx-auto px-4 py-8">
       <ProductDetail product={product} />
+      <div className="mt-10">
+        <ProductDetailTabs
+          additionalInfoContent={additionalInfoContent}
+          reviewsContent={reviewsContent}
+        />
+      </div>
     </div>
   );
 }

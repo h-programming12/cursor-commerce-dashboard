@@ -69,22 +69,20 @@ export const ReviewCard = React.forwardRef<HTMLDivElement, ReviewCardProps>(
         </div>
 
         {/* 리뷰 내용 */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 flex flex-col gap-4">
           {/* 이름과 별점 */}
-          <div className="mb-2">
-            <div className="flex items-center gap-2 mb-1">
-              <h4
-                style={{
-                  fontSize: `${commerceTypography.body["1-semi"].fontSize}px`,
-                  lineHeight: `${commerceTypography.body["1-semi"].lineHeight}px`,
-                  fontFamily: commerceTypography.body["1-semi"].fontFamily,
-                  fontWeight: commerceTypography.body["1-semi"].fontWeight,
-                  color: commerceColors.text.primary,
-                }}
-              >
-                {review.userName}
-              </h4>
-            </div>
+          <div className="flex flex-col gap-2">
+            <h4
+              style={{
+                fontSize: `${commerceTypography.body["1-semi"].fontSize}px`,
+                lineHeight: `${commerceTypography.body["1-semi"].lineHeight}px`,
+                fontFamily: commerceTypography.body["1-semi"].fontFamily,
+                fontWeight: commerceTypography.body["1-semi"].fontWeight,
+                color: commerceColors.text.primary,
+              }}
+            >
+              {review.userName}
+            </h4>
             <RatingStars
               rating={review.rating}
               size="small"
@@ -95,13 +93,12 @@ export const ReviewCard = React.forwardRef<HTMLDivElement, ReviewCardProps>(
 
           {/* 리뷰 텍스트 */}
           <p
-            className="mb-2"
             style={{
               fontSize: `${commerceTypography.body["2"].fontSize}px`,
               lineHeight: `${commerceTypography.body["2"].lineHeight}px`,
               fontFamily: commerceTypography.body["2"].fontFamily,
               fontWeight: commerceTypography.body["2"].fontWeight,
-              color: "#353945",
+              color: commerceColors.text.primary,
             }}
           >
             {review.comment}

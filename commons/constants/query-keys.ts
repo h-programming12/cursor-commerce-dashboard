@@ -14,5 +14,7 @@ export const QUERY_KEYS = {
   },
   reviews: {
     product: (productId: string) => ["reviews", "product", productId] as const,
+    list: (productId: string, page?: number) =>
+      ["reviews", "list", productId, page] as const,
   },
 } as const;
