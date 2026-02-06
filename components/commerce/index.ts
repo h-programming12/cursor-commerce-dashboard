@@ -37,4 +37,12 @@ export {
   AddToCartSection,
   type AddToCartSectionProps,
 } from "./product/AddToCartSection";
+export {
+  AccountSidebar,
+  type AccountSidebarProps,
+} from "./AccountSidebar/AccountSidebar";
+export {
+  AccountDetailsForm,
+  type AccountDetailsFormProps,
+} from "./AccountDetailsForm/AccountDetailsForm";
 export * from "./types";
