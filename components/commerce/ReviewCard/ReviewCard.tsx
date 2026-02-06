@@ -75,7 +75,7 @@ export const ReviewCard = React.forwardRef<HTMLDivElement, ReviewCardProps>(
             <h4
               style={{
                 fontSize: `${commerceTypography.body["1-semi"].fontSize}px`,
-                lineHeight: `${commerceTypography.body["1-semi"].lineHeight}px`,
+                lineHeight: `${commerceTypography.body["1-semi"].lineHeight}`,
                 fontFamily: commerceTypography.body["1-semi"].fontFamily,
                 fontWeight: commerceTypography.body["1-semi"].fontWeight,
                 color: commerceColors.text.primary,
@@ -95,7 +95,7 @@ export const ReviewCard = React.forwardRef<HTMLDivElement, ReviewCardProps>(
           <p
             style={{
               fontSize: `${commerceTypography.body["2"].fontSize}px`,
-              lineHeight: `${commerceTypography.body["2"].lineHeight}px`,
+              lineHeight: `${commerceTypography.body["2"].lineHeight}`,
               fontFamily: commerceTypography.body["2"].fontFamily,
               fontWeight: commerceTypography.body["2"].fontWeight,
               color: commerceColors.text.primary,
@@ -109,7 +109,7 @@ export const ReviewCard = React.forwardRef<HTMLDivElement, ReviewCardProps>(
             <p
               style={{
                 fontSize: `${commerceTypography.caption["2"].fontSize}px`,
-                lineHeight: `${commerceTypography.caption["2"].lineHeight}px`,
+                lineHeight: `${commerceTypography.caption["2"].lineHeight}`,
                 fontFamily: commerceTypography.caption["2"].fontFamily,
                 fontWeight: commerceTypography.caption["2"].fontWeight,
                 color: commerceColors.text.tertiary,
@@ -125,4 +125,3 @@ export const ReviewCard = React.forwardRef<HTMLDivElement, ReviewCardProps>(
 );
 
 ReviewCard.displayName = "ReviewCard";
-
