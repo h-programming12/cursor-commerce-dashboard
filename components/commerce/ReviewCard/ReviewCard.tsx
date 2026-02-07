@@ -1,18 +1,75 @@
-import React from "react";
+"use client";
+
+import React, { useState, useTransition } from "react";
 import Image from "next/image";
+import toast from "react-hot-toast";
 import { cn } from "@/commons/utils/cn";
 import { commerceColors } from "@/commons/constants/color";
 import { commerceTypography } from "@/commons/constants/typography";
 import { RatingStars } from "../RatingStars/RatingStars";
+import { ReviewEditForm } from "../ReviewEditForm";
+import { deleteReview } from "@/app/(commerce)/products/[productId]/review-actions";
 import { Review } from "../types";
+import { FiEdit2, FiTrash2 } from "react-icons/fi";
 
 export interface ReviewCardProps {
   review: Review;
+  productId?: string;
+  currentUserId?: string | null;
+  onDeleted?: () => void;
+  onUpdated?: () => void;
   className?: string;
 }
 
 export const ReviewCard = React.forwardRef<HTMLDivElement, ReviewCardProps>(
-  ({ review, className }, ref) => {
+  (
+    { review, productId, currentUserId, onDeleted, onUpdated, className },
+    ref
+  ) => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [isPendingDelete, startDeleteTransition] = useTransition();
+
+    const isOwnReview =
+      currentUserId != null &&
+      review.userId != null &&
+      currentUserId === review.userId;
+
+    const handleDelete = () => {
+      if (!productId) return;
+      const confirmed = window.confirm("이 리뷰를 삭제하시겠습니까?");
+      if (!confirmed) return;
+
+      startDeleteTransition(async () => {
+        const result = await deleteReview(review.id, productId);
+        if (result.success) {
+          toast.success("리뷰가 삭제되었습니다.");
+          onDeleted?.();
+        } else {
+          alert(result.error ?? "리뷰 삭제에 실패했습니다.");
+        }
+      });
+    };
+
+    if (isEditing && productId) {
+      return (
+        <div ref={ref} className={cn("flex flex-col gap-2", className)}>
+          <ReviewEditForm
+            reviewId={review.id}
+            productId={productId}
+            initialRating={review.rating}
+            initialContent={review.comment}
+            userName={review.userName}
+            userAvatar={review.userAvatar}
+            onCancel={() => setIsEditing(false)}
+            onSuccess={() => {
+              setIsEditing(false);
+              onUpdated?.();
+            }}
+          />
+        </div>
+      );
+    }
+
     return (
       <div
         ref={ref}
@@ -26,7 +83,7 @@ export const ReviewCard = React.forwardRef<HTMLDivElement, ReviewCardProps>(
         aria-label={`Review by ${review.userName}`}
       >
         {/* 아바타 */}
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           {review.userAvatar ? (
             <div
               className="relative overflow-hidden"
@@ -72,17 +129,43 @@ export const ReviewCard = React.forwardRef<HTMLDivElement, ReviewCardProps>(
         <div className="flex-1 min-w-0 flex flex-col gap-4">
           {/* 이름과 별점 */}
           <div className="flex flex-col gap-2">
-            <h4
-              style={{
-                fontSize: `${commerceTypography.body["1-semi"].fontSize}px`,
-                lineHeight: `${commerceTypography.body["1-semi"].lineHeight}`,
-                fontFamily: commerceTypography.body["1-semi"].fontFamily,
-                fontWeight: commerceTypography.body["1-semi"].fontWeight,
-                color: commerceColors.text.primary,
-              }}
-            >
-              {review.userName}
-            </h4>
+            <div className="flex items-center justify-between gap-2">
+              <h4
+                style={{
+                  fontSize: `${commerceTypography.body["1-semi"].fontSize}px`,
+                  lineHeight: `${commerceTypography.body["1-semi"].lineHeight}`,
+                  fontFamily: commerceTypography.body["1-semi"].fontFamily,
+                  fontWeight: commerceTypography.body["1-semi"].fontWeight,
+                  color: commerceColors.text.primary,
+                }}
+              >
+                {review.userName}
+              </h4>
+              {isOwnReview && productId && (
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setIsEditing(true)}
+                    disabled={isPendingDelete}
+                    className="cursor-pointer p-2 rounded transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--commerce-neutral-07-100) focus-visible:ring-offset-1 disabled:opacity-50"
+                    style={{ color: commerceColors.text.secondary }}
+                    aria-label="리뷰 수정"
+                  >
+                    <FiEdit2 size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDelete}
+                    disabled={isPendingDelete}
+                    className="cursor-pointer p-2 rounded transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--commerce-neutral-07-100) focus-visible:ring-offset-1 disabled:opacity-50"
+                    style={{ color: commerceColors.semantic.error }}
+                    aria-label="리뷰 삭제"
+                  >
+                    <FiTrash2 size={16} />
+                  </button>
+                </div>
+              )}
+            </div>
             <RatingStars
               rating={review.rating}
               size="small"

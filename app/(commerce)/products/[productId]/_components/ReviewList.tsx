@@ -3,18 +3,21 @@
 import React, { useMemo } from "react";
 import { ReviewCard } from "@/components/commerce/ReviewCard/ReviewCard";
 import { useProductReviewsList } from "@/features/reviews/api/useProductReviewsList";
+import { useAuth } from "@/commons/hooks/useAuth";
 import { commerceColors } from "@/commons/constants/color";
 import { commerceTypography } from "@/commons/constants/typography";
 
 export interface ReviewListProps {
   productId: string;
   reviewCount: number;
+  onReviewsChange?: () => void;
   className?: string;
 }
 
 export const ReviewList: React.FC<ReviewListProps> = ({
   productId,
   reviewCount,
+  onReviewsChange,
   className,
 }) => {
   const {
@@ -24,7 +27,14 @@ export const ReviewList: React.FC<ReviewListProps> = ({
     fetchNextPage,
     isLoading,
     isError,
+    refetch,
   } = useProductReviewsList(productId);
+  const { currentUserId } = useAuth();
+
+  const handleReviewsChange = () => {
+    refetch();
+    onReviewsChange?.();
+  };
 
   const uniqueReviews = useMemo(() => {
     const seen = new Set<string>();
@@ -83,7 +93,13 @@ export const ReviewList: React.FC<ReviewListProps> = ({
       <ul className="flex flex-col gap-4" aria-label="리뷰 목록">
         {uniqueReviews.map((review) => (
           <li key={review.id}>
-            <ReviewCard review={review} />
+            <ReviewCard
+              review={review}
+              productId={productId}
+              currentUserId={currentUserId}
+              onDeleted={handleReviewsChange}
+              onUpdated={handleReviewsChange}
+            />
           </li>
         ))}
       </ul>

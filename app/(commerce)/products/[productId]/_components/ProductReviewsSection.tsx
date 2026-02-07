@@ -33,15 +33,19 @@ export const ProductReviewsSection: React.FC<ProductReviewsSectionProps> = ({
   const rating = ratingData?.rating ?? 0;
   const reviewCount = ratingData?.reviewCount ?? 0;
 
+  const invalidateReviewQueries = () => {
+    queryClient.invalidateQueries({
+      queryKey: QUERY_KEYS.reviews.product(productId),
+    });
+    queryClient.invalidateQueries({
+      queryKey: QUERY_KEYS.reviews.list(productId),
+    });
+  };
+
   const handleCreateReview = async (formData: FormData) => {
     const result = await createReview(productId, formData);
     if (result.success) {
-      queryClient.invalidateQueries({
-        queryKey: QUERY_KEYS.reviews.product(productId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: QUERY_KEYS.reviews.list(productId),
-      });
+      invalidateReviewQueries();
     }
     if (!result.success && result.code === "AUTH_REQUIRED") {
       router.push(AUTH_URLS.LOGIN);
@@ -105,7 +109,11 @@ export const ProductReviewsSection: React.FC<ProductReviewsSectionProps> = ({
         </div>
       )}
 
-      <ReviewList productId={productId} reviewCount={reviewCount} />
+      <ReviewList
+        productId={productId}
+        reviewCount={reviewCount}
+        onReviewsChange={invalidateReviewQueries}
+      />
     </div>
   );
 };

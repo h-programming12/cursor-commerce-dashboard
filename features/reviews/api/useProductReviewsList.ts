@@ -30,6 +30,7 @@ function mapRowToReview(row: ReviewRow): Review {
   const displayName = row.users?.display_name?.trim() || "닉네임 없음";
   return {
     id: row.id,
+    userId: row.user_id,
     userName: displayName,
     userAvatar: undefined,
     rating: row.rating,
