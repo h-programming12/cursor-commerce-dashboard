@@ -27,7 +27,7 @@ function formatReviewDate(isoString: string): string {
 }
 
 function mapRowToReview(row: ReviewRow): Review {
-  const displayName = row.users?.display_name ?? "Anonymous";
+  const displayName = row.users?.display_name?.trim() || "닉네임 없음";
   return {
     id: row.id,
     userName: displayName,

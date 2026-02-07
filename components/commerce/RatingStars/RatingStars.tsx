@@ -27,7 +27,11 @@ const StarIcon: React.FC<{ filled: boolean; size: number }> = ({
     <path
       d="M8 0L10.1631 5.52786L16 6.11146L11.8541 9.52786L13.0557 15.8885L8 12.9443L2.94427 15.8885L4.1459 9.52786L0 6.11146L5.83686 5.52786L8 0Z"
       fill={filled ? commerceColors.neutral["07"]["100"] : "none"}
-      stroke={filled ? commerceColors.neutral["07"]["100"] : "#E8EDEF"}
+      stroke={
+        filled
+          ? commerceColors.neutral["07"]["100"]
+          : commerceColors.neutral["03"]["100"]
+      }
       strokeWidth={filled ? 0 : 1}
     />
   </svg>
@@ -102,7 +106,7 @@ export const RatingStars = React.forwardRef<HTMLDivElement, RatingStarsProps>(
               onMouseEnter={() => handleStarHover(index)}
               disabled={!interactive}
               className={cn(
-                "flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#141718]",
+                "flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-(--commerce-neutral-07-100)",
                 interactive && "cursor-pointer",
                 !interactive && "cursor-default"
               )}

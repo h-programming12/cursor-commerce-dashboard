@@ -151,6 +151,32 @@ export type Database = {
           created_at?: string | null;
         };
       };
+      reviews: {
+        Row: {
+          id: string;
+          user_id: string;
+          product_id: string;
+          rating: number;
+          content: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          product_id: string;
+          rating: number;
+          content?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          product_id?: string;
+          rating?: number;
+          content?: string | null;
+          created_at?: string;
+        };
+      };
     };
     Views: {
       [_ in never]: never;

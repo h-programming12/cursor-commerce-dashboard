@@ -2,9 +2,11 @@
 
 import React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/commons/hooks/useAuth";
 import { useProductRating } from "@/features/reviews/api/useProductRating";
-import { useCreateReviewMutation } from "@/features/reviews/api/useCreateReviewMutation";
+import { createReview } from "../review-actions";
 import { ReviewSummaryDisplay } from "./ReviewSummaryDisplay";
 import { CustomerReviewsHeader } from "./CustomerReviewsHeader";
 import { ReviewForm } from "@/components/commerce/ReviewForm/ReviewForm";
@@ -12,6 +14,7 @@ import { ReviewList } from "./ReviewList";
 import { AUTH_URLS } from "@/commons/constants/url";
 import { commerceColors } from "@/commons/constants/color";
 import { commerceTypography } from "@/commons/constants/typography";
+import { QUERY_KEYS } from "@/commons/constants/query-keys";
 
 export interface ProductReviewsSectionProps {
   productId: string;
@@ -22,28 +25,31 @@ export const ProductReviewsSection: React.FC<ProductReviewsSectionProps> = ({
   productId,
   className,
 }) => {
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const { isAuthenticated, currentUserId } = useAuth();
   const { data: ratingData } = useProductRating(productId);
-  const createReview = useCreateReviewMutation();
 
   const rating = ratingData?.rating ?? 0;
   const reviewCount = ratingData?.reviewCount ?? 0;
 
-  const handleSubmitReview = (ratingValue: number, content: string) => {
-    if (!currentUserId) return;
-    createReview.mutate(
-      {
-        productId,
-        userId: currentUserId,
-        rating: ratingValue,
-        content,
-      },
-      {
-        onSuccess: () => {
-          // mutation invalidates queries; no extra action
-        },
-      }
-    );
+  const handleCreateReview = async (formData: FormData) => {
+    const result = await createReview(productId, formData);
+    if (result.success) {
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.reviews.product(productId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.reviews.list(productId),
+      });
+    }
+    if (!result.success && result.code === "AUTH_REQUIRED") {
+      router.push(AUTH_URLS.LOGIN);
+    }
+    return {
+      success: result.success,
+      error: result.success ? undefined : result.error,
+    };
   };
 
   return (
@@ -58,12 +64,7 @@ export const ProductReviewsSection: React.FC<ProductReviewsSectionProps> = ({
 
       {isAuthenticated && currentUserId ? (
         <div className="mb-8">
-          <ReviewForm
-            productId={productId}
-            userId={currentUserId}
-            onSubmit={handleSubmitReview}
-            isSubmitting={createReview.isPending}
-          />
+          <ReviewForm productId={productId} action={handleCreateReview} />
         </div>
       ) : (
         <div
