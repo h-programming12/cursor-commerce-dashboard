@@ -90,3 +90,4 @@ components/
 
 4. 기타:
    - line-height 등의 속성은 px 기준으로 작성
+   - 아이콘은 react-icons에서 import 해서 사용

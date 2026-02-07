@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getProductById } from "@/features/products/api/getProductById";
+import { isProductLiked } from "@/app/(commerce)/likes/actions";
 import { ProductDetail } from "@/components/commerce/ProductDetail/ProductDetail";
 import { ProductDetailTabs } from "./_components/ProductDetailTabs";
 import { ProductReviewsSection } from "./_components/ProductReviewsSection";
@@ -104,9 +105,11 @@ export default async function ProductDetailPage({
 
   const reviewsContent = <ProductReviewsSection productId={productId} />;
 
+  const initialIsLiked = await isProductLiked(productId);
+
   return (
     <div className="container mx-auto px-4 py-8">
-      <ProductDetail product={product} />
+      <ProductDetail product={product} initialIsLiked={initialIsLiked} />
       <div className="mt-10">
         <ProductDetailTabs
           additionalInfoContent={additionalInfoContent}

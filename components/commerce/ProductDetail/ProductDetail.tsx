@@ -11,11 +11,13 @@ import type { ProductDetail as ProductDetailType } from "@/commons/types/product
 
 export interface ProductDetailProps {
   product: ProductDetailType;
+  initialIsLiked?: boolean;
   className?: string;
 }
 
 export const ProductDetail: React.FC<ProductDetailProps> = ({
   product,
+  initialIsLiked = false,
   className,
 }) => {
   return (
@@ -67,7 +69,7 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({
         {/* 상품 정보 섹션 */}
         <ProductInfoSection product={product} />
         {/* 장바구니 추가 섹션 */}
-        <AddToCartSection product={product} />
+        <AddToCartSection product={product} initialIsLiked={initialIsLiked} />
       </div>
     </div>
   );

@@ -37,4 +37,5 @@ export {
   AddToCartSection,
   type AddToCartSectionProps,
 } from "./product/AddToCartSection";
+export { LikeButton, type LikeButtonProps } from "./LikeButton";
 export * from "./types";
