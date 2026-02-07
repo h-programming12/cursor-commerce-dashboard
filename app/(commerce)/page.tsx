@@ -8,8 +8,10 @@ import {
   LoadingSkeletonGrid,
 } from "@/components/commerce";
 import { cn } from "@/commons/utils/cn";
+import toast from "react-hot-toast";
 import { useInfiniteScroll } from "@/commons/hooks/useInfiniteScroll";
 import { LoadingDots } from "@/components/ui";
+import { useCartStore } from "@/commons/store/cart-store";
 
 export default function CommerceHomePage() {
   const {
@@ -25,11 +27,37 @@ export default function CommerceHomePage() {
   // 모든 페이지의 상품을 하나의 배열로 합치기
   const products = data?.pages.flatMap((page) => page.items) ?? [];
 
+  const addItem = useCartStore((state) => state.addItem);
+
   const handleLoadMore = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  const handleAddToCart = useCallback(
+    (productId: string) => {
+      const product = products.find((p) => p.id === productId);
+      if (!product) return;
+      addItem(
+        {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          salePrice: product.salePrice ?? null,
+          imageUrl: product.imageUrl || null,
+        },
+        1
+      )
+        .then(() => {
+          toast.success(`${product.name}이(가) 장바구니에 추가되었습니다.`);
+        })
+        .catch(() => {
+          toast.error("장바구니 추가 중 오류가 발생했습니다.");
+        });
+    },
+    [products, addItem]
+  );
 
   const loadMoreRef = useInfiniteScroll({
     onLoadMore: handleLoadMore,
@@ -81,6 +109,7 @@ export default function CommerceHomePage() {
               products={products}
               columns={4}
               gap="medium"
+              onAddToCart={handleAddToCart}
               className={cn("w-full")}
             />
 

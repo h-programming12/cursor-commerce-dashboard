@@ -7,6 +7,7 @@ import { commerceColors } from "@/commons/constants/color";
 import { commerceTypography } from "@/commons/constants/typography";
 import { QuantitySelector } from "../QuantitySelector/QuantitySelector";
 import { LikeButton } from "../LikeButton";
+import toast from "react-hot-toast";
 import { useCartStore } from "@/commons/store/cart-store";
 import { AUTH_URLS } from "@/commons/constants/url";
 import type { ProductDetail } from "@/commons/types/product";
@@ -44,22 +45,19 @@ export const AddToCartSection: React.FC<AddToCartSectionProps> = ({
         quantity
       );
 
-      alert(`${product.name}이(가) 장바구니에 추가되었습니다.`);
+      toast.success(`${product.name}이(가) 장바구니에 추가되었습니다.`);
     } catch (error: unknown) {
-      // AuthRequiredError 체크 (필요시)
       if (
         error &&
         typeof error === "object" &&
         "name" in error &&
-        error.name === "AuthRequiredError"
+        (error as { name: string }).name === "AuthRequiredError"
       ) {
         router.push(AUTH_URLS.LOGIN);
         return;
       }
-
-      // TODO: toast.error("장바구니 추가 중 오류가 발생했습니다.");
       console.error("Add to cart error:", error);
-      alert("장바구니 추가 중 오류가 발생했습니다.");
+      toast.error("장바구니 추가 중 오류가 발생했습니다.");
     }
   };
 
@@ -92,7 +90,7 @@ export const AddToCartSection: React.FC<AddToCartSectionProps> = ({
         onClick={handleAddToCart}
         disabled={isSoldOut}
         className={cn(
-          "flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#141718] disabled:opacity-50 disabled:cursor-not-allowed"
+          "cursor-pointer flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#141718] disabled:opacity-50 disabled:cursor-not-allowed"
         )}
         style={{
           width: "508px",

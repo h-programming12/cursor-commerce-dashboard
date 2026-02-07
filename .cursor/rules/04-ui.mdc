@@ -88,6 +88,11 @@ components/
    - [도메인]\_URLS 사용
    - 접근성 고려"
 
-4. 기타:
-   - line-height 등의 속성은 px 기준으로 작성
+4. line-height 작성 규칙:
+
+- 비율 표현: line-height: 1.5 (단위 없음)
+- 픽셀 표현: line-height: 24px (px 포함)
+- 절대 혼용 금지 (1.5px ❌, 24 ❌)
+
+5. 기타:
    - 아이콘은 react-icons에서 import 해서 사용

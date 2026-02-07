@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { cn } from "@/commons/utils/cn";
 import { commerceColors } from "@/commons/constants/color";
-import { commerceTypography } from "@/commons/constants/typography";
+import { formatPrice } from "@/commons/utils/formatPrice";
 import { ACCOUNT_URLS, COMMERCE_URLS } from "@/commons/constants/url";
 
 export interface CartSummaryProps {
@@ -17,76 +17,119 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
     return (
       <div
         ref={ref}
-        className={cn("space-y-4", className)}
+        className={cn("rounded-md border p-6 space-y-6", className)}
+        style={{
+          borderColor: commerceColors.neutral["04"]["100"],
+        }}
         role="complementary"
-        aria-label="Order summary"
+        aria-label="Cart summary"
       >
         <h3
           style={{
-            fontSize: `${commerceTypography.body["1-semi"].fontSize}px`,
-            lineHeight: `${commerceTypography.body["1-semi"].lineHeight}px`,
-            fontFamily: commerceTypography.body["1-semi"].fontFamily,
-            fontWeight: commerceTypography.body["1-semi"].fontWeight,
+            fontFamily: "Poppins",
+            fontWeight: 500,
+            fontSize: "20px",
+            lineHeight: "28px",
             color: commerceColors.text.primary,
           }}
         >
-          Order Summary
+          Cart summary
         </h3>
+
+        {/* Shipping: Free shipping 0원 */}
         <div
-          className="flex items-center justify-between border-t border-b py-4"
-          style={{ borderColor: commerceColors.neutral["03"]["100"] }}
+          className="flex items-center justify-between py-3 px-4 rounded"
+          style={{
+            backgroundColor: commerceColors.background.light,
+            border: `1px solid ${commerceColors.neutral["07"]["100"]}`,
+          }}
         >
           <span
             style={{
-              fontSize: `${commerceTypography.body["2"].fontSize}px`,
-              lineHeight: `${commerceTypography.body["2"].lineHeight}px`,
-              fontFamily: commerceTypography.body["2"].fontFamily,
-              fontWeight: commerceTypography.body["2"].fontWeight,
+              fontFamily: "Inter",
+              fontWeight: 400,
+              fontSize: "16px",
+              lineHeight: "26px",
               color: commerceColors.text.primary,
             }}
           >
-            Subtotal
+            Free shipping
           </span>
           <span
             style={{
-              fontSize: `${commerceTypography.body["2"].fontSize}px`,
-              lineHeight: `${commerceTypography.body["2"].lineHeight}px`,
-              fontFamily: commerceTypography.body["2"].fontFamily,
-              fontWeight: commerceTypography.body["2"].fontWeight,
+              fontFamily: "Inter",
+              fontWeight: 400,
+              fontSize: "16px",
+              lineHeight: "26px",
               color: commerceColors.text.primary,
             }}
           >
-            ${subtotal.toFixed(2)}
+            {formatPrice(0)}
           </span>
         </div>
+
+        {/* Subtotal */}
+        <div
+          className="flex items-center justify-between py-3 border-t border-b"
+          style={{
+            borderColor: commerceColors.neutral["03"]["100"],
+            fontFamily: "Inter",
+            fontWeight: 400,
+            fontSize: "16px",
+            lineHeight: "26px",
+            color: commerceColors.text.primary,
+          }}
+        >
+          <span>Subtotal</span>
+          <span className="font-semibold">
+            {formatPrice(Math.round(subtotal))}
+          </span>
+        </div>
+
+        {/* Total */}
+        <div
+          className="flex items-center justify-between pt-2"
+          style={{
+            fontFamily: "Inter",
+            fontWeight: 600,
+            fontSize: "20px",
+            lineHeight: "32px",
+            color: commerceColors.text.primary,
+          }}
+        >
+          <span>Total</span>
+          <span>{formatPrice(Math.round(subtotal))}</span>
+        </div>
+
         <Link
           href={ACCOUNT_URLS.CHECKOUT}
           className={cn(
-            "flex items-center justify-center w-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#141718]"
+            "flex items-center justify-center w-full transition-colors hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#141718]"
           )}
           style={{
             height: "52px",
             borderRadius: "8px",
             backgroundColor: commerceColors.neutral["07"]["100"],
             color: commerceColors.text.inverse,
-            fontFamily: commerceTypography.button.m.fontFamily,
-            fontSize: `${commerceTypography.button.m.fontSize}px`,
-            lineHeight: commerceTypography.button.m.lineHeight,
-            fontWeight: commerceTypography.button.m.fontWeight,
+            fontFamily: "Inter",
+            fontWeight: 500,
+            fontSize: "18px",
+            lineHeight: "32px",
             letterSpacing: "-0.4px",
           }}
-          aria-label="Proceed to checkout"
+          aria-label="Checkout"
         >
-          Proceed to Checkout
+          Checkout
         </Link>
+
         <Link
           href={COMMERCE_URLS.PRODUCTS}
           className="block text-center transition-colors hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#141718]"
           style={{
-            fontSize: `${commerceTypography.body["2"].fontSize}px`,
-            lineHeight: `${commerceTypography.body["2"].lineHeight}px`,
-            fontFamily: commerceTypography.body["2"].fontFamily,
-            fontWeight: commerceTypography.body["2"].fontWeight,
+            fontFamily: "Inter",
+            fontWeight: 400,
+            fontSize: "16px",
+            lineHeight: "26px",
             color: commerceColors.text.tertiary,
           }}
         >

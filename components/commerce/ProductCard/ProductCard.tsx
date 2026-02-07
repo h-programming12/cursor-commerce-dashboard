@@ -137,7 +137,7 @@ export const ProductCard = React.forwardRef<HTMLDivElement, ProductCardProps>(
                   <button
                     type="button"
                     onClick={handleAddToCart}
-                    className="w-full h-[46px] rounded-lg bg-(--commerce-neutral-07-100) text-(--commerce-text-inverse) transition-colors hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--commerce-neutral-07-100)"
+                    className="cursor-pointer w-full h-[46px] rounded-lg bg-(--commerce-neutral-07-100) text-(--commerce-text-inverse) transition-colors hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--commerce-neutral-07-100)"
                     style={{
                       fontFamily: "var(--commerce-font-inter)",
                       fontWeight: 500,

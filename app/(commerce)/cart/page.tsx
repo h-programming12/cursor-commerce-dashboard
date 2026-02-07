@@ -27,14 +27,15 @@ export default function CartPage() {
         <h1
           className="mb-8"
           style={{
-            fontFamily: commerceTypography.headline.h5.fontFamily,
-            fontSize: `${commerceTypography.headline.h5.fontSize}px`,
-            lineHeight: commerceTypography.headline.h5.lineHeight,
-            fontWeight: commerceTypography.headline.h5.fontWeight,
+            fontFamily: "Poppins",
+            fontWeight: 500,
+            fontSize: "54px",
+            lineHeight: "58px",
+            letterSpacing: "-1px",
             color: commerceColors.text.primary,
           }}
         >
-          Your Cart
+          Cart
         </h1>
         <div
           className="flex flex-col items-center justify-center py-16 text-center border rounded-lg"
@@ -47,7 +48,7 @@ export default function CartPage() {
             className="mb-4"
             style={{
               fontSize: `${commerceTypography.body["1"].fontSize}px`,
-              lineHeight: `${commerceTypography.body["1"].lineHeight}px`,
+              lineHeight: commerceTypography.body["1"].lineHeight,
               fontFamily: commerceTypography.body["1"].fontFamily,
               fontWeight: commerceTypography.body["1"].fontWeight,
               color: commerceColors.text.secondary,
@@ -83,18 +84,125 @@ export default function CartPage() {
       <h1
         className="mb-8"
         style={{
-          fontFamily: commerceTypography.headline.h5.fontFamily,
-          fontSize: `${commerceTypography.headline.h5.fontSize}px`,
-          lineHeight: commerceTypography.headline.h5.lineHeight,
-          fontWeight: commerceTypography.headline.h5.fontWeight,
+          fontFamily: "Poppins",
+          fontWeight: 500,
+          fontSize: "54px",
+          lineHeight: "58px",
+          letterSpacing: "-1px",
           color: commerceColors.text.primary,
         }}
       >
-        Your Cart
+        Cart
       </h1>
+
+      {/* Process stepper: 1 Shopping cart, 2 Checkout details, 3 Order complete */}
+      <nav
+        className="flex flex-wrap items-center gap-6 mb-10"
+        aria-label="Checkout process"
+      >
+        <div className="flex items-center gap-3">
+          <span
+            className="flex items-center justify-center w-10 h-10 rounded-full shrink-0"
+            style={{
+              backgroundColor: commerceColors.neutral["05"]["100"],
+              color: commerceColors.background.default,
+              fontFamily: "Inter",
+              fontWeight: 600,
+              fontSize: "16px",
+              lineHeight: "26px",
+            }}
+          >
+            1
+          </span>
+          <span
+            style={{
+              fontFamily: "Inter",
+              fontWeight: 600,
+              fontSize: "16px",
+              lineHeight: "26px",
+              color: commerceColors.text.primary,
+            }}
+          >
+            Shopping cart
+          </span>
+        </div>
+        <div className="flex items-center gap-3">
+          <span
+            className="flex items-center justify-center w-10 h-10 rounded-full shrink-0"
+            style={{
+              backgroundColor: commerceColors.neutral["04"]["100"],
+              color: commerceColors.background.default,
+              fontFamily: "Inter",
+              fontWeight: 600,
+              fontSize: "16px",
+              lineHeight: "26px",
+            }}
+          >
+            2
+          </span>
+          <span
+            style={{
+              fontFamily: "Inter",
+              fontWeight: 600,
+              fontSize: "16px",
+              lineHeight: "26px",
+              color: commerceColors.neutral["04"]["100"],
+            }}
+          >
+            Checkout details
+          </span>
+        </div>
+        <div className="flex items-center gap-3">
+          <span
+            className="flex items-center justify-center w-10 h-10 rounded-full shrink-0"
+            style={{
+              backgroundColor: commerceColors.neutral["04"]["100"],
+              color: commerceColors.background.default,
+              fontFamily: "Inter",
+              fontWeight: 600,
+              fontSize: "16px",
+              lineHeight: "26px",
+            }}
+          >
+            3
+          </span>
+          <span
+            style={{
+              fontFamily: "Inter",
+              fontWeight: 600,
+              fontSize: "16px",
+              lineHeight: "26px",
+              color: commerceColors.neutral["04"]["100"],
+            }}
+          >
+            Order complete
+          </span>
+        </div>
+      </nav>
+
       <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
         <section className="flex-1 min-w-0" aria-label="Cart items">
-          <div className="border rounded-lg overflow-hidden" style={{ borderColor: commerceColors.neutral["03"]["100"] }}>
+          <div
+            className="border rounded-lg overflow-hidden"
+            style={{ borderColor: commerceColors.neutral["04"]["100"] }}
+          >
+            {/* Table header */}
+            <div
+              className="grid grid-cols-[1fr_80px_1fr_1fr] gap-4 items-center h-[50px] px-4 border-b"
+              style={{
+                borderColor: commerceColors.neutral["04"]["100"],
+                fontFamily: "Inter",
+                fontWeight: 600,
+                fontSize: "16px",
+                lineHeight: "26px",
+                color: "#121212",
+              }}
+            >
+              <span>Product</span>
+              <span>Quantity</span>
+              <span className="text-right">Price</span>
+              <span className="text-right">Subtotal</span>
+            </div>
             {items.map((item) => {
               const unitPrice = item.salePrice ?? item.price;
               const totalPrice = unitPrice * item.quantity;
@@ -117,7 +225,7 @@ export default function CartPage() {
             })}
           </div>
         </section>
-        <aside className="lg:w-[400px] shrink-0">
+        <aside className="lg:w-[413px] shrink-0">
           <div className="sticky top-24">
             <CartSummary subtotal={totalAmount} />
           </div>

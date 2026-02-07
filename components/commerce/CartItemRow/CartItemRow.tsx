@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/commons/utils/cn";
 import { commerceColors } from "@/commons/constants/color";
-import { commerceTypography } from "@/commons/constants/typography";
+import { formatPrice } from "@/commons/utils/formatPrice";
 import { QuantitySelector } from "../QuantitySelector/QuantitySelector";
 import { COMMERCE_URLS } from "@/commons/constants/url";
 
@@ -57,7 +57,7 @@ export const CartItemRow = React.forwardRef<HTMLDivElement, CartItemRowProps>(
       <div
         ref={ref}
         className={cn(
-          "flex items-start gap-4 border-b border-t py-6",
+          "grid grid-cols-[1fr_80px_1fr_1fr] gap-4 items-center min-h-[144px] px-4 py-6 border-b",
           className
         )}
         style={{
@@ -66,125 +66,120 @@ export const CartItemRow = React.forwardRef<HTMLDivElement, CartItemRowProps>(
         role="listitem"
         aria-label={`Cart item: ${item.productName}`}
       >
-        {/* 이미지 */}
-        <Link href={productUrl} className="shrink-0">
-          <div
-            className="relative overflow-hidden bg-(--commerce-neutral-03-100)"
-            style={{
-              width: "80px",
-              height: "96px",
-              borderRadius: "4px",
-            }}
-          >
-            {item.productImageUrl ? (
-              <Image
-                src={item.productImageUrl}
-                alt={item.productName}
-                fill
-                className="object-cover"
-                sizes="80px"
-              />
-            ) : (
-              <div
-                className="absolute inset-0"
-                style={{ backgroundColor: commerceColors.neutral["03"]["100"] }}
-                aria-hidden
-              />
-            )}
-          </div>
-        </Link>
-
-        {/* 제품 정보 */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              <Link href={productUrl}>
-                <h3
-                  className="mb-1 line-clamp-2"
+        {/* Product: 이미지 + 이름/컬러/Remove */}
+        <div className="flex items-start gap-4 min-w-0">
+          <Link href={productUrl} className="shrink-0">
+            <div
+              className="relative overflow-hidden bg-(--commerce-neutral-03-100)"
+              style={{
+                width: "80px",
+                height: "96px",
+                borderRadius: "4px",
+              }}
+            >
+              {item.productImageUrl ? (
+                <Image
+                  src={item.productImageUrl}
+                  alt={item.productName}
+                  fill
+                  className="object-cover"
+                  sizes="80px"
+                />
+              ) : (
+                <div
+                  className="absolute inset-0"
                   style={{
-                    fontSize: `${commerceTypography.caption["1-semi"].fontSize}px`,
-                    lineHeight: `${commerceTypography.caption["1-semi"].lineHeight}px`,
-                    fontFamily: commerceTypography.caption["1-semi"].fontFamily,
-                    fontWeight: commerceTypography.caption["1-semi"].fontWeight,
-                    color: commerceColors.text.primary,
+                    backgroundColor: commerceColors.neutral["03"]["100"],
                   }}
-                >
-                  {item.productName}
-                </h3>
-              </Link>
-
-              {item.color && (
-                <p
-                  className="mb-3"
-                  style={{
-                    fontSize: `${commerceTypography.caption["2"].fontSize}px`,
-                    lineHeight: `${commerceTypography.caption["2"].lineHeight}px`,
-                    fontFamily: commerceTypography.caption["2"].fontFamily,
-                    fontWeight: commerceTypography.caption["2"].fontWeight,
-                    color: commerceColors.text.tertiary,
-                  }}
-                >
-                  Color: {item.color}
-                </p>
+                  aria-hidden
+                />
               )}
-
-              {/* Remove 버튼 */}
-              <button
-                type="button"
-                onClick={handleRemove}
-                className="inline-flex items-center gap-1 transition-colors hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#141718]"
+            </div>
+          </Link>
+          <div className="min-w-0 flex flex-col gap-1">
+            <Link href={productUrl}>
+              <h3
+                className="line-clamp-2"
                 style={{
-                  fontSize: `${commerceTypography.caption["1-semi"].fontSize}px`,
-                  lineHeight: `${commerceTypography.caption["1-semi"].lineHeight}px`,
-                  fontFamily: commerceTypography.caption["1-semi"].fontFamily,
-                  fontWeight: commerceTypography.caption["1-semi"].fontWeight,
+                  fontFamily: "Inter",
+                  fontWeight: 600,
+                  fontSize: "14px",
+                  lineHeight: "22px",
+                  color: commerceColors.text.primary,
+                }}
+              >
+                {item.productName}
+              </h3>
+            </Link>
+            {item.color && (
+              <p
+                style={{
+                  fontFamily: "Inter",
+                  fontWeight: 400,
+                  fontSize: "12px",
+                  lineHeight: "20px",
                   color: commerceColors.text.tertiary,
                 }}
-                aria-label={`Remove ${item.productName} from cart`}
               >
-                <CloseIcon />
-                <span>Remove</span>
-              </button>
-            </div>
-
-            {/* 수량 및 가격 */}
-            <div className="flex items-center gap-6">
-              {/* 수량 선택기 */}
-              <QuantitySelector
-                value={item.quantity}
-                min={1}
-                onChange={handleQuantityChange}
-                size="small"
-                aria-label={`Quantity for ${item.productName}`}
-              />
-
-              {/* 가격 */}
-              <div className="flex flex-col items-end gap-1 min-w-[120px]">
-                <span
-                  style={{
-                    fontSize: `${commerceTypography.body["1"].fontSize}px`,
-                    lineHeight: `${commerceTypography.body["1"].lineHeight}px`,
-                    fontFamily: commerceTypography.body["1"].fontFamily,
-                    fontWeight: commerceTypography.body["1"].fontWeight,
-                    color: commerceColors.text.primary,
-                  }}
-                >
-                  ${item.unitPrice.toFixed(2)}
-                </span>
-                <span
-                  style={{
-                    fontSize: `${commerceTypography.body["1-semi"].fontSize}px`,
-                    lineHeight: `${commerceTypography.body["1-semi"].lineHeight}px`,
-                    fontFamily: commerceTypography.body["1-semi"].fontFamily,
-                    fontWeight: commerceTypography.body["1-semi"].fontWeight,
-                    color: commerceColors.text.primary,
-                  }}
-                >
-                  ${item.totalPrice.toFixed(2)}
-                </span>
-              </div>
-            </div>
+                Color: {item.color}
+              </p>
+            )}
+            <button
+              type="button"
+              onClick={handleRemove}
+              className="inline-flex items-center gap-1 w-fit transition-colors hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#141718]"
+              style={{
+                fontFamily: "Inter",
+                fontWeight: 600,
+                fontSize: "14px",
+                lineHeight: "22px",
+                color: commerceColors.text.tertiary,
+              }}
+              aria-label={`Remove ${item.productName} from cart`}
+            >
+              <CloseIcon />
+              <span>Remove</span>
+            </button>
           </div>
+        </div>
+
+        {/* Quantity */}
+        <div className="flex justify-center">
+          <QuantitySelector
+            value={item.quantity}
+            min={1}
+            onChange={handleQuantityChange}
+            size="small"
+            aria-label={`Quantity for ${item.productName}`}
+          />
+        </div>
+
+        {/* Price */}
+        <div
+          className="text-right"
+          style={{
+            fontFamily: "Inter",
+            fontWeight: 400,
+            fontSize: "18px",
+            lineHeight: "30px",
+            color: "#121212",
+          }}
+        >
+          {formatPrice(Math.round(item.unitPrice))}
+        </div>
+
+        {/* Subtotal */}
+        <div
+          className="text-right"
+          style={{
+            fontFamily: "Inter",
+            fontWeight: 600,
+            fontSize: "18px",
+            lineHeight: "30px",
+            color: "#121212",
+          }}
+        >
+          {formatPrice(Math.round(item.totalPrice))}
         </div>
       </div>
     );
@@ -192,4 +187,3 @@ export const CartItemRow = React.forwardRef<HTMLDivElement, CartItemRowProps>(
 );
 
 CartItemRow.displayName = "CartItemRow";
-
