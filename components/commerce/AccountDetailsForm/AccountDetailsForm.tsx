@@ -143,7 +143,7 @@ export function AccountDetailsForm({
 
         {/* Display Name */}
         <div className="mb-6">
-          <div style={{ width: "707px" }}>
+          <div className="w-full">
             <Input
               variant="commerce"
               label="Display name"
@@ -161,7 +161,7 @@ export function AccountDetailsForm({
 
         {/* Email */}
         <div>
-          <div style={{ width: "707px" }}>
+          <div className="w-full">
             <Input
               variant="commerce"
               label="Email *"

@@ -75,12 +75,14 @@ export function AccountSidebar({
 
   return (
     <aside
-      className={cn("flex flex-col rounded-lg shrink-0", className)}
+      className={cn(
+        "flex flex-col rounded-lg shrink-0 md:w-[262px] w-full",
+        className
+      )}
       style={{
-        width: `${SIDEBAR_WIDTH_PX}px`,
         minWidth: `${SIDEBAR_WIDTH_PX}px`,
         backgroundColor: commerceColors.background.light,
-        padding: "40px 52px",
+        padding: "40px 16px",
       }}
     >
       {/* Avatar Section */}
@@ -150,7 +152,7 @@ export function AccountSidebar({
                 }
               }}
               className={cn(
-                "w-full text-left py-3 px-4 rounded transition-colors cursor-pointer",
+                "w-full text-left py-3 px-4 transition-colors cursor-pointer",
                 isActive && "border-l-2"
               )}
               style={{
