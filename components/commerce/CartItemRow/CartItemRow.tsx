@@ -12,7 +12,7 @@ export interface CartItemRowProps {
     id: string;
     productId: string;
     productName: string;
-    productImageUrl: string;
+    productImageUrl: string | null;
     color?: string;
     quantity: number;
     unitPrice: number;
@@ -67,22 +67,30 @@ export const CartItemRow = React.forwardRef<HTMLDivElement, CartItemRowProps>(
         aria-label={`Cart item: ${item.productName}`}
       >
         {/* 이미지 */}
-        <Link href={productUrl} className="flex-shrink-0">
+        <Link href={productUrl} className="shrink-0">
           <div
-            className="relative overflow-hidden"
+            className="relative overflow-hidden bg-(--commerce-neutral-03-100)"
             style={{
               width: "80px",
               height: "96px",
               borderRadius: "4px",
             }}
           >
-            <Image
-              src={item.productImageUrl}
-              alt={item.productName}
-              fill
-              className="object-cover"
-              sizes="80px"
-            />
+            {item.productImageUrl ? (
+              <Image
+                src={item.productImageUrl}
+                alt={item.productName}
+                fill
+                className="object-cover"
+                sizes="80px"
+              />
+            ) : (
+              <div
+                className="absolute inset-0"
+                style={{ backgroundColor: commerceColors.neutral["03"]["100"] }}
+                aria-hidden
+              />
+            )}
           </div>
         </Link>
 

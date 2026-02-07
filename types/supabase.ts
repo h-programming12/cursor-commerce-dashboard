@@ -131,6 +131,32 @@ export type Database = {
           created_at?: string | null;
         };
       };
+      cart_items: {
+        Row: {
+          id: string;
+          user_id: string;
+          product_id: string;
+          quantity: number;
+          created_at: string | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          product_id: string;
+          quantity?: number;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          product_id?: string;
+          quantity?: number;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+      };
       like_items: {
         Row: {
           id: string;

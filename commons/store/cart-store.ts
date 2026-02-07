@@ -1,32 +1,40 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-// ProductStatus 타입 정의
 export type ProductStatus = "visible" | "hidden" | "sold_out";
 
-// CartItem 타입 정의 (Supabase products 테이블과 일치)
 export interface CartItem {
-  id: string; // productId, Supabase products.id
+  id: string;
   name: string;
-  price: number; // products.price와 매핑
+  price: number;
   quantity: number;
-  imageUrl: string | null; // products.image_url와 매핑
-  salePrice: number | null; // products.sale_price와 매핑
-  status?: ProductStatus; // 선택적 필드
+  imageUrl: string | null;
+  salePrice: number | null;
+  status?: ProductStatus;
 }
 
-// CartState 인터페이스
 export interface CartState {
   items: CartItem[];
-  totalQuantity: number; // 자동 계산
-  totalAmount: number; // 자동 계산, salePrice 우선
-  addItem: (product: Omit<CartItem, "quantity">, quantity?: number) => void;
-  updateItemQuantity: (productId: string, quantity: number) => void;
-  removeItem: (productId: string) => void;
+  totalQuantity: number;
+  totalAmount: number;
+  addItem: (product: Omit<CartItem, "quantity">, quantity?: number) => Promise<void>;
+  updateItemQuantity: (productId: string, quantity: number) => Promise<void>;
+  removeItem: (productId: string) => Promise<void>;
   clear: () => void;
+  syncWithServer: () => Promise<void>;
 }
 
-// 장바구니 스토어 생성
+function computeTotals(items: CartItem[]) {
+  const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
+  const totalAmount = items.reduce((sum, item) => {
+    const itemPrice = item.salePrice ?? item.price;
+    return sum + itemPrice * item.quantity;
+  }, 0);
+  return { totalQuantity, totalAmount };
+}
+
+const CART_API = "/api/cart";
+
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
@@ -34,91 +42,116 @@ export const useCartStore = create<CartState>()(
       totalQuantity: 0,
       totalAmount: 0,
 
-      // 상품 추가: 이미 같은 id가 있으면 quantity만 증가, 없으면 새 항목 추가
-      addItem: (product, quantity = 1) => {
-        const currentItems = get().items;
-        const existingItemIndex = currentItems.findIndex(
-          (item) => item.id === product.id
-        );
-
-        let newItems: CartItem[];
-
-        if (existingItemIndex >= 0) {
-          // 기존 항목이 있으면 quantity만 증가
-          newItems = currentItems.map((item, index) =>
-            index === existingItemIndex
-              ? { ...item, quantity: item.quantity + quantity }
-              : item
-          );
-        } else {
-          // 새 항목 추가
-          newItems = [...currentItems, { ...product, quantity }];
+      syncWithServer: async () => {
+        try {
+          const res = await fetch(CART_API);
+          if (res.status === 401) return;
+          if (!res.ok) return;
+          const data = await res.json();
+          const rawItems = data.items ?? [];
+          const items: CartItem[] = rawItems.map((row: Record<string, unknown>) => {
+            const productId = row.productId as string;
+            const productName = row.productName as string;
+            const productImageUrl = (row.productImageUrl as string) ?? null;
+            const quantity = Number(row.quantity ?? 1);
+            const unitPrice = Number(row.unitPrice ?? 0);
+            const salePrice = row.salePrice != null ? Number(row.salePrice) : null;
+            return {
+              id: productId,
+              name: productName,
+              price: unitPrice,
+              quantity,
+              imageUrl: productImageUrl,
+              salePrice,
+            };
+          });
+          const { totalQuantity, totalAmount } = computeTotals(items);
+          set({ items, totalQuantity, totalAmount });
+        } catch {
+          // 네트워크 등 오류 시 무시
         }
-
-        // totalQuantity와 totalAmount 자동 계산
-        const totalQuantity = newItems.reduce(
-          (sum, item) => sum + item.quantity,
-          0
-        );
-        const totalAmount = newItems.reduce((sum, item) => {
-          const itemPrice = item.salePrice ?? item.price;
-          return sum + itemPrice * item.quantity;
-        }, 0);
-
-        set({ items: newItems, totalQuantity, totalAmount });
       },
 
-      // 상품 수량 업데이트: quantity가 0 이하로 내려가면 해당 아이템 제거
-      updateItemQuantity: (productId, quantity) => {
+      addItem: async (product, quantity = 1) => {
+        const currentItems = get().items;
+        const existingIndex = currentItems.findIndex((item) => item.id === product.id);
+        let newItems: CartItem[];
+        if (existingIndex >= 0) {
+          newItems = currentItems.map((item, i) =>
+            i === existingIndex ? { ...item, quantity: item.quantity + quantity } : item
+          );
+        } else {
+          newItems = [...currentItems, { ...product, quantity }];
+        }
+        const { totalQuantity, totalAmount } = computeTotals(newItems);
+        set({ items: newItems, totalQuantity, totalAmount });
+
+        try {
+          const res = await fetch(CART_API, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ productId: product.id, quantity }),
+          });
+          if (res.status === 401) return;
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.error ?? "Cart update failed");
+          }
+        } catch (err) {
+          set({ items: currentItems, ...computeTotals(currentItems) });
+          throw err;
+        }
+      },
+
+      updateItemQuantity: async (productId, quantity) => {
         if (quantity <= 0) {
-          // quantity가 0 이하이면 removeItem 호출
           get().removeItem(productId);
           return;
         }
-
         const currentItems = get().items;
         const newItems = currentItems.map((item) =>
           item.id === productId ? { ...item, quantity } : item
         );
-
-        // totalQuantity와 totalAmount 자동 계산
-        const totalQuantity = newItems.reduce(
-          (sum, item) => sum + item.quantity,
-          0
-        );
-        const totalAmount = newItems.reduce((sum, item) => {
-          const itemPrice = item.salePrice ?? item.price;
-          return sum + itemPrice * item.quantity;
-        }, 0);
-
+        const { totalQuantity, totalAmount } = computeTotals(newItems);
         set({ items: newItems, totalQuantity, totalAmount });
+
+        try {
+          const res = await fetch(CART_API, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ productId, quantity }),
+          });
+          if (res.status === 401) return;
+          if (!res.ok) {
+            set({ items: currentItems, ...computeTotals(currentItems) });
+            return;
+          }
+        } catch {
+          set({ items: currentItems, ...computeTotals(currentItems) });
+        }
       },
 
-      // 상품 제거
-      removeItem: (productId) => {
+      removeItem: async (productId) => {
         const currentItems = get().items;
         const newItems = currentItems.filter((item) => item.id !== productId);
-
-        // totalQuantity와 totalAmount 자동 계산
-        const totalQuantity = newItems.reduce(
-          (sum, item) => sum + item.quantity,
-          0
-        );
-        const totalAmount = newItems.reduce((sum, item) => {
-          const itemPrice = item.salePrice ?? item.price;
-          return sum + itemPrice * item.quantity;
-        }, 0);
-
+        const { totalQuantity, totalAmount } = computeTotals(newItems);
         set({ items: newItems, totalQuantity, totalAmount });
+
+        try {
+          const res = await fetch(`${CART_API}?productId=${encodeURIComponent(productId)}`, {
+            method: "DELETE",
+          });
+          if (res.status === 401) return;
+          if (!res.ok) {
+            set({ items: currentItems, ...computeTotals(currentItems) });
+          }
+        } catch {
+          set({ items: currentItems, ...computeTotals(currentItems) });
+        }
       },
 
-      // 장바구니 비우기
-      clear: () => {
-        set({ items: [], totalQuantity: 0, totalAmount: 0 });
-      },
+      clear: () => set({ items: [], totalQuantity: 0, totalAmount: 0 }),
     }),
-    {
-      name: "commerce_cart_v1", // localStorage key
-    }
+    { name: "commerce_cart_v1" }
   )
 );

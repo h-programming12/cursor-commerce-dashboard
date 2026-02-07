@@ -1,4 +1,4 @@
-import { LayoutHeader, LayoutFooter } from "@/components/commerce";
+import { LayoutHeader, LayoutFooter, CartInitializer } from "@/components/commerce";
 import { SearchOverlay } from "@/features/search/components/SearchOverlay";
 
 export default function CommerceLayout({
@@ -8,6 +8,7 @@ export default function CommerceLayout({
 }) {
   return (
     <div className="min-h-screen flex flex-col">
+      <CartInitializer />
       <LayoutHeader />
       <main className="flex-1">{children}</main>
       <LayoutFooter />

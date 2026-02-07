@@ -28,11 +28,11 @@ export const AddToCartSection: React.FC<AddToCartSectionProps> = ({
 
   const isSoldOut = product.status === "sold_out";
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (isSoldOut) return;
 
     try {
-      addItem(
+      await addItem(
         {
           id: product.id,
           name: product.name,
@@ -44,8 +44,6 @@ export const AddToCartSection: React.FC<AddToCartSectionProps> = ({
         quantity
       );
 
-      // TODO: toast.success(`${product.name}이(가) 장바구니에 추가되었습니다.`);
-      // 임시로 alert 사용 (나중에 toast로 교체)
       alert(`${product.name}이(가) 장바구니에 추가되었습니다.`);
     } catch (error: unknown) {
       // AuthRequiredError 체크 (필요시)

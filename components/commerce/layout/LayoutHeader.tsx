@@ -4,6 +4,7 @@ import Link from "next/link";
 import { COMMERCE_URLS, ACCOUNT_URLS } from "@/commons/constants/url";
 import { cn } from "@/commons/utils/cn";
 import { useSearchStore } from "@/features/search/store/searchStore";
+import { useCartStore } from "@/commons/store/cart-store";
 import { commerceColors } from "@/commons/constants/color";
 
 // 아이콘 컴포넌트들
@@ -138,12 +139,14 @@ export interface LayoutHeaderProps {
 }
 
 export function LayoutHeader({
-  cartItemCount = 0,
+  cartItemCount: cartItemCountProp,
   onSearchClick,
   onUserClick,
   onCartClick,
   className,
 }: LayoutHeaderProps) {
+  const totalQuantity = useCartStore((state) => state.totalQuantity);
+  const cartItemCount = cartItemCountProp ?? totalQuantity;
   const {
     isOpen: isSearchOpen,
     open: openSearch,

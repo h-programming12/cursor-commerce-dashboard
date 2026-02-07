@@ -18,7 +18,9 @@ export {
   HomeHeroSection,
   type HomeHeroSectionProps,
 } from "./home/HomeHeroSection";
+export { CartInitializer } from "./CartInitializer/CartInitializer";
 export { CartItemRow, type CartItemRowProps } from "./CartItemRow/CartItemRow";
+export { CartSummary, type CartSummaryProps } from "./CartSummary/CartSummary";
 export { RatingStars, type RatingStarsProps } from "./RatingStars/RatingStars";
 export { ReviewCard, type ReviewCardProps } from "./ReviewCard/ReviewCard";
 export {
