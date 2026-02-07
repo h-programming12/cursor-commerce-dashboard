@@ -1,11 +1,20 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AccountSidebar } from "@/components/commerce/AccountSidebar";
-import { AccountDetailsForm } from "@/components/commerce/AccountDetailsForm";
+import { LikeListSection } from "@/components/commerce/LikeListSection";
 import { commerceColors } from "@/commons/constants/color";
 import { commerceTypography } from "@/commons/constants/typography";
+import { getWishlistPage } from "@/app/(commerce)/likes/actions";
 
-export default async function AccountPage() {
+const DEFAULT_PAGE = 1;
+
+interface AccountWishlistPageProps {
+  searchParams: Promise<{ page?: string }>;
+}
+
+export default async function AccountWishlistPage({
+  searchParams,
+}: AccountWishlistPageProps) {
   const supabase = await createClient();
   const {
     data: { user: authUser },
@@ -15,7 +24,24 @@ export default async function AccountPage() {
     redirect("/login");
   }
 
-  // 프로필 조회
+  const params = await searchParams;
+  const pageParam = params.page;
+  const parsed = Number.parseInt(String(pageParam ?? ""), 10);
+  const currentPage = Math.max(
+    DEFAULT_PAGE,
+    Math.min(Number.isNaN(parsed) ? DEFAULT_PAGE : parsed, 1e6)
+  );
+
+  const { items, totalPages } = await getWishlistPage(currentPage);
+
+  if (totalPages > 0 && currentPage > totalPages) {
+    redirect(
+      totalPages > 1
+        ? `/account/wishlist?page=${totalPages}`
+        : "/account/wishlist"
+    );
+  }
+
   type UserProfile = {
     display_name: string | null;
     email: string;
@@ -29,13 +55,11 @@ export default async function AccountPage() {
     .single();
 
   const profile = profileResult.data as UserProfile | null;
-
-  const displayName = profile?.display_name || null;
-  const email = profile?.email || authUser.email || null;
+  const displayName = profile?.display_name ?? null;
+  const email = profile?.email ?? authUser.email ?? null;
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      {/* Content */}
       <div className="flex-1" style={{ padding: "80px 0" }}>
         <div
           className="mx-auto"
@@ -45,11 +69,10 @@ export default async function AccountPage() {
             paddingRight: "80px",
           }}
         >
-          {/* Title */}
           <h1
             className="mb-12"
             style={{
-              fontSize: "54px",
+              fontSize: commerceTypography.headline.h3.fontSize,
               lineHeight: "58px",
               fontFamily: commerceTypography.headline.h3.fontFamily,
               fontWeight: commerceTypography.headline.h3.fontWeight,
@@ -57,20 +80,20 @@ export default async function AccountPage() {
               color: commerceColors.text.primary,
             }}
           >
-            My Account
+            My Wishlist
           </h1>
 
-          {/* Account Section */}
           <div className="flex flex-col md:flex-row gap-6">
             <AccountSidebar
               displayName={displayName}
               email={email}
-              activeItem="account"
+              activeItem="wishlist"
             />
             <div className="flex-1 min-w-0">
-              <AccountDetailsForm
-                initialDisplayName={displayName}
-                email={email}
+              <LikeListSection
+                items={items}
+                totalPages={totalPages}
+                currentPage={currentPage}
               />
             </div>
           </div>

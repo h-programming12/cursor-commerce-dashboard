@@ -4,7 +4,12 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/supabase";
 import { AuthRequiredError } from "./errors";
-import { COMMERCE_URLS } from "@/commons/constants/url";
+import { ACCOUNT_URLS, COMMERCE_URLS } from "@/commons/constants/url";
+import {
+  WISHLIST_PAGE_SIZE,
+  type WishlistItem,
+  type WishlistPageResult,
+} from "./wishlist-types";
 
 type LikeItemInsert = Database["public"]["Tables"]["like_items"]["Insert"];
 
@@ -66,6 +71,7 @@ export async function addLikeItem(productId: string): Promise<void> {
       revalidatePath(COMMERCE_URLS.PRODUCT_DETAIL(productId));
       revalidatePath(COMMERCE_URLS.PRODUCTS);
       revalidatePath(COMMERCE_URLS.HOME);
+      revalidatePath(ACCOUNT_URLS.WISHLIST);
       return;
     }
     throw new Error(`찜하기 추가 실패: ${error.message}`);
@@ -74,6 +80,7 @@ export async function addLikeItem(productId: string): Promise<void> {
   revalidatePath(COMMERCE_URLS.PRODUCT_DETAIL(productId));
   revalidatePath(COMMERCE_URLS.PRODUCTS);
   revalidatePath(COMMERCE_URLS.HOME);
+  revalidatePath(ACCOUNT_URLS.WISHLIST);
 }
 
 /**
@@ -95,9 +102,71 @@ export async function removeLikeItem(productId: string): Promise<void> {
   revalidatePath(COMMERCE_URLS.PRODUCT_DETAIL(productId));
   revalidatePath(COMMERCE_URLS.PRODUCTS);
   revalidatePath(COMMERCE_URLS.HOME);
+  revalidatePath(ACCOUNT_URLS.WISHLIST);
 }
 
-export type ToggleLikeResult =
+/**
+ * 마이페이지 찜 목록 조회 (페이지네이션)
+ */
+export async function getWishlistPage(
+  page: number
+): Promise<WishlistPageResult> {
+  const userId = await getUserId();
+  const supabase = await createClient();
+  const from = (page - 1) * WISHLIST_PAGE_SIZE;
+  const to = from + WISHLIST_PAGE_SIZE - 1;
+
+  const {
+    data: rows,
+    error,
+    count,
+  } = await supabase
+    .from("like_items")
+    .select(
+      "id, product_id, created_at, products(id, name, image_url, status, price, sale_price)",
+      { count: "exact" }
+    )
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .range(from, to);
+
+  if (error) {
+    throw new Error(`찜 목록 조회 실패: ${error.message}`);
+  }
+
+  type ProductRow = Database["public"]["Tables"]["products"]["Row"];
+  type LikeItemRow = Database["public"]["Tables"]["like_items"]["Row"];
+  type JoinRow = LikeItemRow & {
+    products: Pick<
+      ProductRow,
+      "id" | "name" | "image_url" | "status" | "price" | "sale_price"
+    > | null;
+  };
+
+  const items: WishlistItem[] = ((rows ?? []) as JoinRow[])
+    .map((row): WishlistItem | null => {
+      const p = row.products;
+      if (!p) return null;
+      return {
+        likeItemId: row.id,
+        productId: row.product_id,
+        createdAt: row.created_at,
+        name: p.name,
+        imageUrl: p.image_url,
+        status: p.status,
+        price: p.price,
+        salePrice: p.sale_price,
+      };
+    })
+    .filter((x): x is WishlistItem => x !== null);
+
+  const totalCount = count ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalCount / WISHLIST_PAGE_SIZE));
+
+  return { items, totalCount, totalPages };
+}
+
+type ToggleLikeResult =
   | { success: true; isLiked: boolean }
   | { success: false; code: "AUTH_REQUIRED"; message: string }
   | { success: false; code: "ERROR"; message: string };

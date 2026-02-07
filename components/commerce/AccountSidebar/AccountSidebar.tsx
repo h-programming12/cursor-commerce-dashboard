@@ -71,11 +71,14 @@ export function AccountSidebar({
 
   const displayNameText = displayName || email?.split("@")[0] || "User";
 
+  const SIDEBAR_WIDTH_PX = 262;
+
   return (
     <aside
-      className={cn("flex flex-col rounded-lg", className)}
+      className={cn("flex flex-col rounded-lg shrink-0", className)}
       style={{
-        width: "262px",
+        width: `${SIDEBAR_WIDTH_PX}px`,
+        minWidth: `${SIDEBAR_WIDTH_PX}px`,
         backgroundColor: commerceColors.background.light,
         padding: "40px 52px",
       }}
@@ -142,11 +145,12 @@ export function AccountSidebar({
               onClick={() => {
                 if (item.id === "account") {
                   router.push("/account");
+                } else if (item.id === "wishlist") {
+                  router.push("/account/wishlist");
                 }
-                // 다른 메뉴 아이템은 나중에 구현
               }}
               className={cn(
-                "w-full text-left py-3 px-4 rounded transition-colors",
+                "w-full text-left py-3 px-4 rounded transition-colors cursor-pointer",
                 isActive && "border-l-2"
               )}
               style={{
