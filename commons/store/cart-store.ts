@@ -17,11 +17,22 @@ export interface CartState {
   items: CartItem[];
   totalQuantity: number;
   totalAmount: number;
-  addItem: (product: Omit<CartItem, "quantity">, quantity?: number) => Promise<void>;
+  getTotal: () => number;
+  addItem: (
+    product: Omit<CartItem, "quantity">,
+    quantity?: number
+  ) => Promise<void>;
   updateItemQuantity: (productId: string, quantity: number) => Promise<void>;
   removeItem: (productId: string) => Promise<void>;
   clear: () => void;
   syncWithServer: () => Promise<void>;
+}
+
+const FREE_SHIPPING_THRESHOLD = 50000;
+const SHIPPING_FEE = 2500;
+
+export function calcShippingFee(subtotal: number): number {
+  return subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE;
 }
 
 function computeTotals(items: CartItem[]) {
@@ -41,6 +52,10 @@ export const useCartStore = create<CartState>()(
       items: [],
       totalQuantity: 0,
       totalAmount: 0,
+      getTotal: () => {
+        const amount = get().totalAmount;
+        return Math.round(amount) + calcShippingFee(amount);
+      },
 
       syncWithServer: async () => {
         try {
@@ -49,22 +64,25 @@ export const useCartStore = create<CartState>()(
           if (!res.ok) return;
           const data = await res.json();
           const rawItems = data.items ?? [];
-          const items: CartItem[] = rawItems.map((row: Record<string, unknown>) => {
-            const productId = row.productId as string;
-            const productName = row.productName as string;
-            const productImageUrl = (row.productImageUrl as string) ?? null;
-            const quantity = Number(row.quantity ?? 1);
-            const unitPrice = Number(row.unitPrice ?? 0);
-            const salePrice = row.salePrice != null ? Number(row.salePrice) : null;
-            return {
-              id: productId,
-              name: productName,
-              price: unitPrice,
-              quantity,
-              imageUrl: productImageUrl,
-              salePrice,
-            };
-          });
+          const items: CartItem[] = rawItems.map(
+            (row: Record<string, unknown>) => {
+              const productId = row.productId as string;
+              const productName = row.productName as string;
+              const productImageUrl = (row.productImageUrl as string) ?? null;
+              const quantity = Number(row.quantity ?? 1);
+              const unitPrice = Number(row.unitPrice ?? 0);
+              const salePrice =
+                row.salePrice != null ? Number(row.salePrice) : null;
+              return {
+                id: productId,
+                name: productName,
+                price: unitPrice,
+                quantity,
+                imageUrl: productImageUrl,
+                salePrice,
+              };
+            }
+          );
           const { totalQuantity, totalAmount } = computeTotals(items);
           set({ items, totalQuantity, totalAmount });
         } catch {
@@ -74,11 +92,15 @@ export const useCartStore = create<CartState>()(
 
       addItem: async (product, quantity = 1) => {
         const currentItems = get().items;
-        const existingIndex = currentItems.findIndex((item) => item.id === product.id);
+        const existingIndex = currentItems.findIndex(
+          (item) => item.id === product.id
+        );
         let newItems: CartItem[];
         if (existingIndex >= 0) {
           newItems = currentItems.map((item, i) =>
-            i === existingIndex ? { ...item, quantity: item.quantity + quantity } : item
+            i === existingIndex
+              ? { ...item, quantity: item.quantity + quantity }
+              : item
           );
         } else {
           newItems = [...currentItems, { ...product, quantity }];
@@ -138,9 +160,12 @@ export const useCartStore = create<CartState>()(
         set({ items: newItems, totalQuantity, totalAmount });
 
         try {
-          const res = await fetch(`${CART_API}?productId=${encodeURIComponent(productId)}`, {
-            method: "DELETE",
-          });
+          const res = await fetch(
+            `${CART_API}?productId=${encodeURIComponent(productId)}`,
+            {
+              method: "DELETE",
+            }
+          );
           if (res.status === 401) return;
           if (!res.ok) {
             set({ items: currentItems, ...computeTotals(currentItems) });

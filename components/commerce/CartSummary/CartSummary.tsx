@@ -9,11 +9,14 @@ import { ACCOUNT_URLS, COMMERCE_URLS } from "@/commons/constants/url";
 
 export interface CartSummaryProps {
   subtotal: number;
+  total: number;
   className?: string;
 }
 
 export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
-  ({ subtotal, className }, ref) => {
+  ({ subtotal, total, className }, ref) => {
+    const shippingFee = total - Math.round(subtotal);
+
     return (
       <div
         ref={ref}
@@ -36,7 +39,7 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
           Cart summary
         </h3>
 
-        {/* Shipping: Free shipping 0원 */}
+        {/* Shipping */}
         <div
           className="flex items-center justify-between py-3 px-4 rounded"
           style={{
@@ -53,7 +56,7 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
               color: commerceColors.text.primary,
             }}
           >
-            Free shipping
+            {shippingFee === 0 ? "Free shipping" : "Shipping"}
           </span>
           <span
             style={{
@@ -64,7 +67,7 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
               color: commerceColors.text.primary,
             }}
           >
-            {formatPrice(0)}
+            {formatPrice(shippingFee)}
           </span>
         </div>
 
@@ -98,7 +101,7 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
           }}
         >
           <span>Total</span>
-          <span>{formatPrice(Math.round(subtotal))}</span>
+          <span>{formatPrice(total)}</span>
         </div>
 
         <Link

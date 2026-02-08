@@ -10,6 +10,7 @@ import { COMMERCE_URLS } from "@/commons/constants/url";
 export default function CartPage() {
   const items = useCartStore((state) => state.items);
   const totalAmount = useCartStore((state) => state.totalAmount);
+  const getTotal = useCartStore((state) => state.getTotal);
   const updateItemQuantity = useCartStore((state) => state.updateItemQuantity);
   const removeItem = useCartStore((state) => state.removeItem);
 
@@ -227,7 +228,7 @@ export default function CartPage() {
         </section>
         <aside className="lg:w-[413px] shrink-0">
           <div className="sticky top-24">
-            <CartSummary subtotal={totalAmount} />
+            <CartSummary subtotal={totalAmount} total={getTotal()} />
           </div>
         </aside>
       </div>
