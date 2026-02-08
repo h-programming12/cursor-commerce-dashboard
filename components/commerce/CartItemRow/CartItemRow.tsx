@@ -127,12 +127,12 @@ export const CartItemRow = React.forwardRef<HTMLDivElement, CartItemRowProps>(
             <button
               type="button"
               onClick={handleRemove}
-              className="inline-flex items-center gap-1 w-fit transition-colors hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#141718]"
+              className="cursor-pointer inline-flex items-center gap-1 w-fit transition-colors hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#141718]"
               style={{
                 fontFamily: "Inter",
                 fontWeight: 600,
                 fontSize: "14px",
-                lineHeight: "22px",
+                lineHeight: "24px",
                 color: commerceColors.text.tertiary,
               }}
               aria-label={`Remove ${item.productName} from cart`}
