@@ -21,6 +21,17 @@ export {
 export { CartInitializer } from "./CartInitializer/CartInitializer";
 export { CartItemRow, type CartItemRowProps } from "./CartItemRow/CartItemRow";
 export { CartSummary, type CartSummaryProps } from "./CartSummary/CartSummary";
+export {
+  CheckoutForm,
+  type CheckoutFormProps,
+  type CheckoutFormDefaultUser,
+  type CheckoutFormValues,
+} from "./CheckoutForm";
+export {
+  OrderSummary,
+  type OrderSummaryProps,
+  type OrderSummaryLineItem,
+} from "./OrderSummary";
 export { RatingStars, type RatingStarsProps } from "./RatingStars/RatingStars";
 export { ReviewCard, type ReviewCardProps } from "./ReviewCard/ReviewCard";
 export {
