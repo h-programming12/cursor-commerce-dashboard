@@ -130,31 +130,30 @@ export async function POST(request: NextRequest) {
     .filter(Boolean)
     .join(" ");
 
-  const orderInsert = {
-    user_id: userId,
-    status: "pending",
-    total_amount: serverTotal,
-    subtotal_amount: serverSubtotal,
-    shipping_fee: serverShippingFee,
-    discount_amount: serverDiscount,
-    currency: "KRW",
-    payment_status: "requested",
-    contact_name: contactName || null,
-    contact_phone: body.contactPhone?.trim() || null,
-    contact_email: body.contactEmail?.trim() || null,
-    shipping_name: contactName || null,
-    shipping_phone: body.contactPhone?.trim() || null,
-    shipping_address_line1: body.shippingAddressLine1?.trim() || null,
-    shipping_address_line2: null,
-    shipping_city: body.shippingCity?.trim() || null,
-    shipping_state: body.shippingState?.trim() || null,
-    shipping_zip: body.shippingZip?.trim() || null,
-    shipping_country: body.shippingCountry?.trim() || null,
-  };
-
   const { data: orderData, error: orderError } = await supabase
     .from("orders")
-    .insert(orderInsert as never)
+    .insert({
+      user_id: userId,
+      status: "pending",
+      total_amount: serverTotal,
+      subtotal_amount: serverSubtotal,
+      shipping_fee: serverShippingFee,
+      discount_amount: serverDiscount,
+      currency: "KRW",
+      payment_status: "requested",
+      contact_name: contactName || null,
+      contact_phone: body.contactPhone?.trim() || null,
+      contact_email: body.contactEmail?.trim() || null,
+      shipping_name: contactName || null,
+      shipping_phone: body.contactPhone?.trim() || null,
+      shipping_address_line1: body.shippingAddressLine1?.trim() || null,
+      shipping_address_line2: null,
+      shipping_city: body.shippingCity?.trim() || null,
+      shipping_state: body.shippingState?.trim() || null,
+      shipping_zip: body.shippingZip?.trim() || null,
+      shipping_country: body.shippingCountry?.trim() || null,
+      toss_order_id: null,
+    } as never)
     .select("id")
     .single();
 
@@ -166,6 +165,42 @@ export async function POST(request: NextRequest) {
   }
 
   const orderId = (orderData as { id: string }).id;
+  const tossOrderId = orderId.replace(/-/g, "").slice(0, 64) || orderId;
+
+  const { error: updateTossError } = await supabase
+    .from("orders")
+    .update({ toss_order_id: tossOrderId } as never)
+    .eq("id", orderId);
+
+  if (updateTossError) {
+    await supabase.from("orders").delete().eq("id", orderId);
+    return NextResponse.json(
+      { error: updateTossError.message ?? "주문 정보 저장 실패" },
+      { status: 500 }
+    );
+  }
+
+  const { error: paymentInsertError } = await supabase.from("payments").insert({
+    order_id: orderId,
+    user_id: userId,
+    provider: "tosspayments",
+    method: "card",
+    amount: serverTotal,
+    currency: "KRW",
+    status: "pending",
+    transaction_id: null,
+    payment_key: null,
+    raw_payload: null,
+    approved_at: null,
+  } as never);
+
+  if (paymentInsertError) {
+    await supabase.from("orders").delete().eq("id", orderId);
+    return NextResponse.json(
+      { error: paymentInsertError.message ?? "결제 정보 생성 실패" },
+      { status: 500 }
+    );
+  }
 
   const orderItemInserts = serverLineItems.map((item) => ({
     order_id: orderId,
@@ -189,5 +224,5 @@ export async function POST(request: NextRequest) {
 
   await supabase.from("cart_items").delete().eq("user_id", userId);
 
-  return NextResponse.json({ orderId });
+  return NextResponse.json({ orderId, tossOrderId });
 }

@@ -1,13 +1,11 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { CheckoutForm } from "@/components/commerce/CheckoutForm";
 import type { OrderSummaryLineItem } from "@/components/commerce/OrderSummary";
 import type {
   CheckoutFormDefaultUser,
   CheckoutFormValues,
 } from "@/components/commerce/CheckoutForm";
-import { ACCOUNT_URLS } from "@/commons/constants/url";
 
 export interface CheckoutPageClientProps {
   defaultUser: CheckoutFormDefaultUser;
@@ -34,9 +32,14 @@ export function CheckoutPageClient({
   serverDiscount,
   serverTotal,
 }: CheckoutPageClientProps) {
-  const router = useRouter();
+  const tossClientKey =
+    typeof process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY === "string"
+      ? process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY
+      : undefined;
 
-  const onSubmit = async (values: CheckoutFormValues) => {
+  const onSubmit = async (
+    values: CheckoutFormValues
+  ): Promise<{ orderId: string; tossOrderId: string } | void> => {
     const res = await fetch("/api/orders", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -62,10 +65,13 @@ export function CheckoutPageClient({
       throw new Error((data.error as string) ?? "주문 생성에 실패했습니다.");
     }
 
-    const data = (await res.json()) as { orderId?: string };
-    router.push(
-      `${ACCOUNT_URLS.ACCOUNT}?order=success&orderId=${data.orderId ?? ""}`
-    );
+    const data = (await res.json()) as {
+      orderId?: string;
+      tossOrderId?: string;
+    };
+    if (data.orderId && data.tossOrderId) {
+      return { orderId: data.orderId, tossOrderId: data.tossOrderId };
+    }
   };
 
   return (
@@ -81,6 +87,7 @@ export function CheckoutPageClient({
       serverDiscount={serverDiscount}
       serverTotal={serverTotal}
       onSubmit={onSubmit}
+      tossClientKey={tossClientKey}
     />
   );
 }

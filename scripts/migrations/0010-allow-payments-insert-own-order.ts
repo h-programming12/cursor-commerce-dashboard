@@ -1,0 +1,97 @@
+/**
+ * payments 테이블: 본인 주문에 한해 INSERT 허용 정책 추가
+ *
+ * 주문 생성 시 결제자 본인이 해당 주문에 대한 payments 행을 INSERT할 수 있도록
+ * payments_insert_own_order 정책을 생성합니다.
+ *
+ * 사용법:
+ *   yarn db:allow-payments-insert-own-order
+ */
+
+import { readFileSync } from "fs";
+import { join } from "path";
+import { getPublicEnv } from "../../commons/config/env";
+import { config } from "dotenv";
+config({ path: ".env.local" });
+
+function extractProjectRef(url: string): string {
+  const match = url.match(/https?:\/\/([^.]+)\.supabase\.co/);
+  if (!match || !match[1]) {
+    throw new Error(
+      `유효하지 않은 Supabase URL 형식입니다: ${url}\n예상 형식: https://xxxxx.supabase.co`
+    );
+  }
+  return match[1];
+}
+
+async function executeSQL(
+  projectRef: string,
+  accessToken: string,
+  sql: string
+): Promise<void> {
+  if (!accessToken) {
+    throw new Error(
+      "SUPABASE_ACCESS_TOKEN이 필요합니다. .env.local에 설정하세요."
+    );
+  }
+  const url = `https://api.supabase.com/v1/projects/${projectRef}/database/query`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({ query: sql }),
+  });
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+      `마이그레이션 실행 실패 (${response.status}): ${errorText}`
+    );
+  }
+  const result = await response.json();
+  if (result.error) {
+    throw new Error(`마이그레이션 실행 실패: ${result.error}`);
+  }
+}
+
+async function main() {
+  try {
+    console.log(
+      "🚀 payments INSERT 본인 주문 허용 정책 마이그레이션 실행...\n"
+    );
+    const env = getPublicEnv();
+    const projectRef = extractProjectRef(env.supabase.url);
+    const accessToken = process.env.SUPABASE_ACCESS_TOKEN;
+    if (!accessToken) {
+      throw new Error(
+        "SUPABASE_ACCESS_TOKEN이 필요합니다. Supabase Dashboard > Settings > Access Tokens에서 생성 후 .env.local에 추가하세요."
+      );
+    }
+    const migrationPath = join(
+      process.cwd(),
+      "supabase",
+      "migrations",
+      "0010_allow_payments_insert_own_order.sql"
+    );
+    const sql = readFileSync(migrationPath, "utf-8");
+    if (!sql.trim()) {
+      throw new Error("마이그레이션 파일이 비어있습니다.");
+    }
+    await executeSQL(projectRef, accessToken, sql);
+    console.log("✅ 0010_allow_payments_insert_own_order.sql 실행 완료\n");
+    console.log(
+      "🎉 주문 생성 시 본인 주문에 대한 payments INSERT가 허용되었습니다."
+    );
+  } catch (error) {
+    console.error("\n❌ 마이그레이션 실행 중 오류:");
+    if (error instanceof Error) console.error(error.message);
+    else console.error(error);
+    console.error(
+      "\n💡 참고: 복구 불가능한 경우에만 Supabase SQL Editor에서 수동으로 실행하세요."
+    );
+    process.exit(1);
+  }
+}
+
+main();

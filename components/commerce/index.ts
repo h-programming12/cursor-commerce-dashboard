@@ -26,7 +26,14 @@ export {
   type CheckoutFormProps,
   type CheckoutFormDefaultUser,
   type CheckoutFormValues,
+  type CheckoutOrderResult,
 } from "./CheckoutForm";
+export {
+  TossPayment,
+  type TossPaymentProps,
+  type TossPaymentHandle,
+  type TossPaymentRequestParams,
+} from "./TossPayment";
 export {
   OrderSummary,
   type OrderSummaryProps,

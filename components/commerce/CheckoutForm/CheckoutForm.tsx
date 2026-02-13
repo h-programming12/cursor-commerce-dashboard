@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Input } from "@/components/ui";
 import { commerceColors } from "@/commons/constants/color";
 import { commerceTypography } from "@/commons/constants/typography";
@@ -8,6 +8,10 @@ import {
   OrderSummary,
   type OrderSummaryLineItem,
 } from "@/components/commerce/OrderSummary";
+import {
+  TossPayment,
+  type TossPaymentHandle,
+} from "@/components/commerce/TossPayment";
 import { HiOutlineCreditCard } from "react-icons/hi2";
 
 export interface CheckoutFormDefaultUser {
@@ -24,6 +28,11 @@ export interface CheckoutFormDefaultUser {
   shippingCountry?: string | null;
 }
 
+export interface CheckoutOrderResult {
+  orderId: string;
+  tossOrderId: string;
+}
+
 export interface CheckoutFormProps {
   defaultUser: CheckoutFormDefaultUser;
   lineItems: OrderSummaryLineItem[];
@@ -35,7 +44,8 @@ export interface CheckoutFormProps {
   serverShippingFee: number;
   serverDiscount: number;
   serverTotal: number;
-  onSubmit: (values: CheckoutFormValues) => Promise<void>;
+  onSubmit: (values: CheckoutFormValues) => Promise<CheckoutOrderResult | void>;
+  tossClientKey?: string;
 }
 
 export interface CheckoutFormValues {
@@ -62,6 +72,13 @@ const splitDisplayName = (
   return [rest, firstChar];
 };
 
+function buildOrderName(lineItems: OrderSummaryLineItem[]): string {
+  if (lineItems.length === 0) return "주문 결제";
+  const first = lineItems[0];
+  if (lineItems.length === 1) return first.productName;
+  return `${first.productName} 외 ${lineItems.length - 1}건`;
+}
+
 export function CheckoutForm({
   defaultUser,
   lineItems,
@@ -74,7 +91,9 @@ export function CheckoutForm({
   serverDiscount,
   serverTotal,
   onSubmit,
+  tossClientKey,
 }: CheckoutFormProps) {
+  const tossPaymentRef = useRef<TossPaymentHandle>(null);
   const [firstName, lastName] = splitDisplayName(defaultUser.contactName);
 
   const [contactFirstName, setContactFirstName] = useState(firstName);
@@ -145,7 +164,7 @@ export function CheckoutForm({
     setErrors((prev) => ({ ...prev, form: "" }));
 
     try {
-      await onSubmit({
+      const result = await onSubmit({
         contactFirstName,
         contactLastName,
         contactPhone,
@@ -157,6 +176,32 @@ export function CheckoutForm({
         shippingZip,
         useDifferentBilling,
       });
+
+      if (result && tossClientKey && typeof window !== "undefined") {
+        if (typeof sessionStorage !== "undefined") {
+          sessionStorage.setItem("pendingOrderId", result.orderId);
+        }
+        const payment = tossPaymentRef.current;
+        if (!payment?.ready) {
+          setErrors({
+            form: "결제창을 불러오는 중입니다. 잠시 후 다시 시도해 주세요.",
+          });
+          return;
+        }
+        const origin = window.location.origin;
+        await payment.requestPayment({
+          tossOrderId: result.tossOrderId,
+          amount: total,
+          orderName: buildOrderName(lineItems),
+          customerEmail: contactEmail,
+          customerName:
+            [contactLastName, contactFirstName].filter(Boolean).join(" ") ||
+            "구매자",
+          customerMobilePhone: contactPhone || undefined,
+          successUrl: `${origin}/checkout/success`,
+          failUrl: `${origin}/checkout/fail`,
+        });
+      }
     } catch (err) {
       setErrors({
         form:
@@ -195,238 +240,245 @@ export function CheckoutForm({
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex flex-col lg:flex-row gap-8 lg:gap-12"
-    >
-      <div className="flex-1 min-w-0 space-y-6">
-        {/* Contact Information */}
-        <section style={sectionStyle} aria-labelledby="contact-heading">
-          <h2 id="contact-heading" style={sectionTitleStyle}>
-            Contact Information
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
-            <Input
-              variant="commerce"
-              label="First Name"
-              placeholder="First name"
-              value={contactFirstName}
-              onChange={(e) => setContactFirstName(e.target.value)}
-              error={!!errors.contactFirstName}
-              helperText={errors.contactFirstName}
-              aria-required
-            />
-            <Input
-              variant="commerce"
-              label="Last Name"
-              placeholder="Last name"
-              value={contactLastName}
-              onChange={(e) => setContactLastName(e.target.value)}
-              error={!!errors.contactLastName}
-              helperText={errors.contactLastName}
-              aria-required
-            />
-          </div>
-          <div className="mb-6">
-            <Input
-              variant="commerce"
-              label="Phone Number"
-              placeholder="Phone number"
-              type="tel"
-              value={contactPhone}
-              onChange={(e) => setContactPhone(e.target.value)}
-              error={!!errors.contactPhone}
-              helperText={errors.contactPhone}
-              aria-required
-            />
-          </div>
-          <Input
-            variant="commerce"
-            label="Email address"
-            placeholder="Your Email"
-            type="email"
-            value={contactEmail}
-            onChange={(e) => setContactEmail(e.target.value)}
-            error={!!errors.contactEmail}
-            helperText={errors.contactEmail}
-            aria-required
-          />
-        </section>
-
-        {/* Shipping Address */}
-        <section style={sectionStyle} aria-labelledby="shipping-heading">
-          <h2 id="shipping-heading" style={sectionTitleStyle}>
-            Shipping Address
-          </h2>
-          <div className="mb-6">
-            <Input
-              variant="commerce"
-              label="Street Address *"
-              placeholder="Street Address"
-              value={shippingAddressLine1}
-              onChange={(e) => setShippingAddressLine1(e.target.value)}
-              error={!!errors.shippingAddressLine1}
-              helperText={errors.shippingAddressLine1}
-              aria-required
-            />
-          </div>
-          <div className="mb-6">
-            <Input
-              variant="commerce"
-              label="Country *"
-              placeholder="Country"
-              value={shippingCountry}
-              onChange={(e) => setShippingCountry(e.target.value)}
-              error={!!errors.shippingCountry}
-              helperText={errors.shippingCountry}
-              aria-required
-            />
-          </div>
-          <div className="mb-6">
-            <Input
-              variant="commerce"
-              label="Town / City *"
-              placeholder="Town / City"
-              value={shippingCity}
-              onChange={(e) => setShippingCity(e.target.value)}
-              error={!!errors.shippingCity}
-              helperText={errors.shippingCity}
-              aria-required
-            />
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
-            <Input
-              variant="commerce"
-              label="State"
-              placeholder="State"
-              value={shippingState}
-              onChange={(e) => setShippingState(e.target.value)}
-            />
-            <Input
-              variant="commerce"
-              label="Zip Code"
-              placeholder="Zip Code"
-              value={shippingZip}
-              onChange={(e) => setShippingZip(e.target.value)}
-            />
-          </div>
-          <label
-            className="flex items-center gap-3 cursor-pointer"
-            style={{
-              fontFamily: commerceTypography.body["2"].fontFamily,
-              fontWeight: commerceTypography.body["2"].fontWeight,
-              fontSize: "16px",
-              lineHeight: "26px",
-              color: commerceColors.text.tertiary,
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={useDifferentBilling}
-              onChange={(e) => setUseDifferentBilling(e.target.checked)}
-              className="w-6 h-6 rounded border shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-              style={{
-                borderColor: commerceColors.neutral["04"]["100"],
-                accentColor: commerceColors.neutral["07"]["100"],
-              }}
-              aria-label="Use a different billing address"
-            />
-            Use a different billing address (optional)
-          </label>
-        </section>
-
-        {/* Payment method */}
-        <section style={sectionStyle} aria-labelledby="payment-heading">
-          <h2 id="payment-heading" style={sectionTitleStyle}>
-            Payment method
-          </h2>
-          <div
-            className="flex items-center justify-between w-full p-4 rounded"
-            style={{
-              backgroundColor: commerceColors.background.light,
-              border: `1px solid ${commerceColors.neutral["07"]["100"]}`,
-              borderRadius: "4px",
-            }}
-          >
-            <div className="flex items-center gap-3">
-              <div
-                className="shrink-0 w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center"
-                style={{
-                  borderColor: commerceColors.neutral["07"]["100"],
-                  backgroundColor: commerceColors.neutral["07"]["100"],
-                }}
-              >
-                <div
-                  className="w-2 h-2 rounded-full"
-                  style={{ backgroundColor: commerceColors.background.default }}
-                />
-              </div>
-              <span
-                style={{
-                  fontFamily: commerceTypography.body["2"].fontFamily,
-                  fontWeight: commerceTypography.body["2"].fontWeight,
-                  fontSize: "16px",
-                  lineHeight: "26px",
-                  color: commerceColors.text.primary,
-                }}
-              >
-                Pay by Toss Payments
-              </span>
+    <>
+      {tossClientKey && (
+        <TossPayment ref={tossPaymentRef} clientKey={tossClientKey} />
+      )}
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col lg:flex-row gap-8 lg:gap-12"
+      >
+        <div className="flex-1 min-w-0 space-y-6">
+          {/* Contact Information */}
+          <section style={sectionStyle} aria-labelledby="contact-heading">
+            <h2 id="contact-heading" style={sectionTitleStyle}>
+              Contact Information
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+              <Input
+                variant="commerce"
+                label="First Name"
+                placeholder="First name"
+                value={contactFirstName}
+                onChange={(e) => setContactFirstName(e.target.value)}
+                error={!!errors.contactFirstName}
+                helperText={errors.contactFirstName}
+                aria-required
+              />
+              <Input
+                variant="commerce"
+                label="Last Name"
+                placeholder="Last name"
+                value={contactLastName}
+                onChange={(e) => setContactLastName(e.target.value)}
+                error={!!errors.contactLastName}
+                helperText={errors.contactLastName}
+                aria-required
+              />
             </div>
-            <HiOutlineCreditCard
-              size={24}
-              style={{ color: commerceColors.text.primary }}
-              aria-hidden
+            <div className="mb-6">
+              <Input
+                variant="commerce"
+                label="Phone Number"
+                placeholder="Phone number"
+                type="tel"
+                value={contactPhone}
+                onChange={(e) => setContactPhone(e.target.value)}
+                error={!!errors.contactPhone}
+                helperText={errors.contactPhone}
+                aria-required
+              />
+            </div>
+            <Input
+              variant="commerce"
+              label="Email address"
+              placeholder="Your Email"
+              type="email"
+              value={contactEmail}
+              onChange={(e) => setContactEmail(e.target.value)}
+              error={!!errors.contactEmail}
+              helperText={errors.contactEmail}
+              aria-required
             />
-          </div>
-        </section>
+          </section>
 
-        {errors.form && (
-          <p
-            role="alert"
-            className="py-2"
+          {/* Shipping Address */}
+          <section style={sectionStyle} aria-labelledby="shipping-heading">
+            <h2 id="shipping-heading" style={sectionTitleStyle}>
+              Shipping Address
+            </h2>
+            <div className="mb-6">
+              <Input
+                variant="commerce"
+                label="Street Address *"
+                placeholder="Street Address"
+                value={shippingAddressLine1}
+                onChange={(e) => setShippingAddressLine1(e.target.value)}
+                error={!!errors.shippingAddressLine1}
+                helperText={errors.shippingAddressLine1}
+                aria-required
+              />
+            </div>
+            <div className="mb-6">
+              <Input
+                variant="commerce"
+                label="Country *"
+                placeholder="Country"
+                value={shippingCountry}
+                onChange={(e) => setShippingCountry(e.target.value)}
+                error={!!errors.shippingCountry}
+                helperText={errors.shippingCountry}
+                aria-required
+              />
+            </div>
+            <div className="mb-6">
+              <Input
+                variant="commerce"
+                label="Town / City *"
+                placeholder="Town / City"
+                value={shippingCity}
+                onChange={(e) => setShippingCity(e.target.value)}
+                error={!!errors.shippingCity}
+                helperText={errors.shippingCity}
+                aria-required
+              />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+              <Input
+                variant="commerce"
+                label="State"
+                placeholder="State"
+                value={shippingState}
+                onChange={(e) => setShippingState(e.target.value)}
+              />
+              <Input
+                variant="commerce"
+                label="Zip Code"
+                placeholder="Zip Code"
+                value={shippingZip}
+                onChange={(e) => setShippingZip(e.target.value)}
+              />
+            </div>
+            <label
+              className="flex items-center gap-3 cursor-pointer"
+              style={{
+                fontFamily: commerceTypography.body["2"].fontFamily,
+                fontWeight: commerceTypography.body["2"].fontWeight,
+                fontSize: "16px",
+                lineHeight: "26px",
+                color: commerceColors.text.tertiary,
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={useDifferentBilling}
+                onChange={(e) => setUseDifferentBilling(e.target.checked)}
+                className="w-6 h-6 rounded border shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+                style={{
+                  borderColor: commerceColors.neutral["04"]["100"],
+                  accentColor: commerceColors.neutral["07"]["100"],
+                }}
+                aria-label="Use a different billing address"
+              />
+              Use a different billing address (optional)
+            </label>
+          </section>
+
+          {/* Payment method */}
+          <section style={sectionStyle} aria-labelledby="payment-heading">
+            <h2 id="payment-heading" style={sectionTitleStyle}>
+              Payment method
+            </h2>
+            <div
+              className="flex items-center justify-between w-full p-4 rounded"
+              style={{
+                backgroundColor: commerceColors.background.light,
+                border: `1px solid ${commerceColors.neutral["07"]["100"]}`,
+                borderRadius: "4px",
+              }}
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className="shrink-0 w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center"
+                  style={{
+                    borderColor: commerceColors.neutral["07"]["100"],
+                    backgroundColor: commerceColors.neutral["07"]["100"],
+                  }}
+                >
+                  <div
+                    className="w-2 h-2 rounded-full"
+                    style={{
+                      backgroundColor: commerceColors.background.default,
+                    }}
+                  />
+                </div>
+                <span
+                  style={{
+                    fontFamily: commerceTypography.body["2"].fontFamily,
+                    fontWeight: commerceTypography.body["2"].fontWeight,
+                    fontSize: "16px",
+                    lineHeight: "26px",
+                    color: commerceColors.text.primary,
+                  }}
+                >
+                  Pay by Toss Payments
+                </span>
+              </div>
+              <HiOutlineCreditCard
+                size={24}
+                style={{ color: commerceColors.text.primary }}
+                aria-hidden
+              />
+            </div>
+          </section>
+
+          {errors.form && (
+            <p
+              role="alert"
+              className="py-2"
+              style={{
+                fontFamily: commerceTypography.body["2"].fontFamily,
+                fontSize: "16px",
+                lineHeight: "26px",
+                color: commerceColors.semantic.error,
+              }}
+            >
+              {errors.form}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full transition-colors hover:opacity-90 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#141718]"
             style={{
-              fontFamily: commerceTypography.body["2"].fontFamily,
+              height: "52px",
+              borderRadius: "8px",
+              backgroundColor: commerceColors.neutral["07"]["100"],
+              color: commerceColors.text.inverse,
+              fontFamily: commerceTypography.button.s.fontFamily,
+              fontWeight: commerceTypography.button.s.fontWeight,
               fontSize: "16px",
-              lineHeight: "26px",
-              color: commerceColors.semantic.error,
+              lineHeight: "28px",
+              letterSpacing: "-0.4px",
             }}
           >
-            {errors.form}
-          </p>
-        )}
-
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full transition-colors hover:opacity-90 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#141718]"
-          style={{
-            height: "52px",
-            borderRadius: "8px",
-            backgroundColor: commerceColors.neutral["07"]["100"],
-            color: commerceColors.text.inverse,
-            fontFamily: commerceTypography.button.s.fontFamily,
-            fontWeight: commerceTypography.button.s.fontWeight,
-            fontSize: "16px",
-            lineHeight: "28px",
-            letterSpacing: "-0.4px",
-          }}
-        >
-          {isSubmitting ? "처리 중..." : "Place Order"}
-        </button>
-      </div>
-
-      <aside className="lg:w-[413px] shrink-0">
-        <div className="sticky top-24">
-          <OrderSummary
-            lineItems={lineItems}
-            subtotal={subtotal}
-            shippingFee={shippingFee}
-            discount={discount}
-            total={total}
-          />
+            {isSubmitting ? "처리 중..." : "Place Order"}
+          </button>
         </div>
-      </aside>
-    </form>
+
+        <aside className="lg:w-[413px] shrink-0">
+          <div className="sticky top-24">
+            <OrderSummary
+              lineItems={lineItems}
+              subtotal={subtotal}
+              shippingFee={shippingFee}
+              discount={discount}
+              total={total}
+            />
+          </div>
+        </aside>
+      </form>
+    </>
   );
 }
