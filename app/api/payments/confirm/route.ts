@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const secretKey = process.env.TOSS_SECRET_KEY;
+  const secretKey = process.env.TOSS_SECRET_KEYtest;
   if (!secretKey) {
     return NextResponse.json(
       { error: "TOSS_SECRET_KEY가 설정되지 않았습니다." },
