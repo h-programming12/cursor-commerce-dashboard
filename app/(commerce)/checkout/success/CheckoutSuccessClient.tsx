@@ -15,27 +15,28 @@ export function CheckoutSuccessClient({
   paymentKey,
   amount,
 }: CheckoutSuccessClientProps) {
+  const hasParams = Boolean(orderId && paymentKey && amount);
+  const amountNum = Number(amount);
+  const isValidAmount = !Number.isNaN(amountNum);
+
+  const validationError: Record<string, unknown> | null = !hasParams
+    ? {
+        success: false,
+        error: "결제 정보가 없습니다. (orderId, paymentKey, amount 필요)",
+      }
+    : !isValidAmount
+      ? { success: false, error: "유효하지 않은 금액입니다." }
+      : null;
+
   const [status, setStatus] = useState<"loading" | "success" | "error">(
     "loading"
   );
   const [result, setResult] = useState<Record<string, unknown> | null>(null);
 
   useEffect(() => {
-    if (!orderId || !paymentKey || !amount) {
-      setResult({
-        success: false,
-        error: "결제 정보가 없습니다. (orderId, paymentKey, amount 필요)",
-      });
-      setStatus("error");
-      return;
-    }
-
-    const amountNum = Number(amount);
-    if (Number.isNaN(amountNum)) {
-      setResult({ success: false, error: "유효하지 않은 금액입니다." });
-      setStatus("error");
-      return;
-    }
+    if (!orderId || !paymentKey || !amount) return;
+    const num = Number(amount);
+    if (Number.isNaN(num)) return;
 
     fetch("/api/payments/confirm", {
       method: "POST",
@@ -43,7 +44,7 @@ export function CheckoutSuccessClient({
       body: JSON.stringify({
         orderId,
         paymentKey,
-        amount: amountNum,
+        amount: num,
       }),
     })
       .then(async (res) => {
@@ -74,15 +75,18 @@ export function CheckoutSuccessClient({
       });
   }, [orderId, paymentKey, amount]);
 
+  const displayStatus = validationError ? "error" : status;
+  const displayResult = validationError ?? result;
+
   const title =
-    status === "loading"
+    displayStatus === "loading"
       ? "결제 확인 중..."
-      : status === "success"
+      : displayStatus === "success"
       ? "결제 성공"
       : "결제 처리 실패";
 
   const titleColor =
-    status === "error"
+    displayStatus === "error"
       ? commerceColors.semantic.error
       : commerceColors.text.primary;
 
@@ -100,7 +104,7 @@ export function CheckoutSuccessClient({
       >
         {title}
       </h1>
-      {status === "loading" && (
+      {displayStatus === "loading" && (
         <p
           style={{
             fontFamily: commerceTypography.body["2"].fontFamily,
@@ -112,7 +116,7 @@ export function CheckoutSuccessClient({
           잠시만 기다려 주세요.
         </p>
       )}
-      {result && (
+      {displayResult && (
         <pre
           className="p-6 rounded overflow-auto"
           style={{
@@ -124,7 +128,7 @@ export function CheckoutSuccessClient({
             color: commerceColors.text.primary,
           }}
         >
-          {JSON.stringify(result, null, 2)}
+          {JSON.stringify(displayResult, null, 2)}
         </pre>
       )}
     </div>

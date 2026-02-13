@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
+import type { Database, Json } from "@/types/supabase";
+
+type OrderRow = Database["public"]["Tables"]["orders"]["Row"];
+type OrderUpdate = Database["public"]["Tables"]["orders"]["Update"];
+type PaymentUpdate = Database["public"]["Tables"]["payments"]["Update"];
 
 const TOSS_CONFIRM_URL = "https://api.tosspayments.com/v1/payments/confirm";
 
@@ -9,7 +15,7 @@ function getTossAuthHeader(secretKey: string): string {
 }
 
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
+  const supabase = (await createClient()) as SupabaseClient<Database>;
   const {
     data: { session },
   } = await supabase.auth.getSession();
@@ -45,28 +51,16 @@ export async function POST(request: NextRequest) {
     .trim()
     .toLowerCase();
 
-  let orderRow: {
-    id: string;
-    user_id: string;
-    total_amount: number;
-    status: string;
-    payment_status: string;
-  } | null = null;
-  let orderError: Error | null = null;
-
   const byTossOrderId = await supabase
     .from("orders")
     .select("id, user_id, total_amount, status, payment_status")
     .eq("toss_order_id", tossOrderIdNormalized)
     .maybeSingle();
 
-  if (byTossOrderId.data) {
-    orderRow = byTossOrderId.data as typeof orderRow;
-  } else if (byTossOrderId.error) {
-    orderError = byTossOrderId.error;
-  }
+  let order: OrderRow | null = byTossOrderId.data as OrderRow | null;
+  let orderError: Error | null = byTossOrderId.error ?? null;
 
-  if (!orderRow && !orderError) {
+  if (!order && !orderError) {
     const withHyphens =
       tossOrderIdNormalized.length === 32
         ? [
@@ -83,16 +77,12 @@ export async function POST(request: NextRequest) {
         .select("id, user_id, total_amount, status, payment_status")
         .eq("id", withHyphens)
         .maybeSingle();
-      if (byId.data) {
-        orderRow = byId.data as typeof orderRow;
-      }
-      if (byId.error) {
-        orderError = byId.error;
-      }
+      order = byId.data as OrderRow | null;
+      if (byId.error) orderError = byId.error;
     }
   }
 
-  if (orderError || !orderRow) {
+  if (orderError || !order) {
     return NextResponse.json(
       {
         error: "주문을 찾을 수 없습니다.",
@@ -107,8 +97,6 @@ export async function POST(request: NextRequest) {
       { status: 404 }
     );
   }
-
-  const order = orderRow;
 
   if (order.user_id !== session.user.id) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -146,23 +134,23 @@ export async function POST(request: NextRequest) {
   const tossData = await confirmRes.json().catch(() => ({}));
 
   if (!confirmRes.ok) {
+    const paymentUpdateFail: PaymentUpdate = {
+      status: "failed",
+      raw_payload: tossData as Json,
+    };
     const { error: updatePayError } = await supabase
       .from("payments")
-      .update({
-        status: "failed",
-        raw_payload: tossData as object,
-      } as never)
+      .update(paymentUpdateFail as never)
       .eq("order_id", order.id)
       .eq("user_id", session.user.id);
 
     if (updatePayError) {
       // 로깅만 하고 응답은 토스 오류 기준
     }
+    const orderUpdateFail: OrderUpdate = { payment_status: "failed" };
     const { error: updateOrderError } = await supabase
       .from("orders")
-      .update({
-        payment_status: "failed",
-      } as never)
+      .update(orderUpdateFail as never)
       .eq("id", order.id);
 
     if (updateOrderError) {
@@ -183,14 +171,15 @@ export async function POST(request: NextRequest) {
       ? tossData.approvedAt
       : new Date().toISOString();
 
+  const paymentUpdateSuccess: PaymentUpdate = {
+    status: "succeeded",
+    payment_key: paymentKey,
+    approved_at: approvedAt,
+    raw_payload: tossData as Json,
+  };
   const { error: updatePaymentError } = await supabase
     .from("payments")
-    .update({
-      status: "succeeded",
-      payment_key: paymentKey,
-      approved_at: approvedAt,
-      raw_payload: tossData as object,
-    } as never)
+    .update(paymentUpdateSuccess as never)
     .eq("order_id", order.id)
     .eq("user_id", session.user.id);
 
@@ -201,13 +190,14 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const orderUpdateSuccess: OrderUpdate = {
+    status: "paid",
+    payment_status: "success",
+    paid_at: approvedAt,
+  };
   const { error: updateOrderError } = await supabase
     .from("orders")
-    .update({
-      status: "paid",
-      payment_status: "success",
-      paid_at: approvedAt,
-    } as never)
+    .update(orderUpdateSuccess as never)
     .eq("id", order.id);
 
   if (updateOrderError) {

@@ -84,25 +84,81 @@ export type Database = {
           id: string;
           user_id: string;
           status: string;
-          total_price: number;
+          total_amount: number;
+          payment_status: string;
+          toss_order_id: string | null;
           created_at: string | null;
           updated_at: string | null;
+          paid_at: string | null;
         };
         Insert: {
           id?: string;
           user_id: string;
           status?: string;
-          total_price: number;
+          total_amount?: number;
+          payment_status?: string;
+          toss_order_id?: string | null;
           created_at?: string | null;
           updated_at?: string | null;
+          paid_at?: string | null;
         };
         Update: {
           id?: string;
           user_id?: string;
           status?: string;
-          total_price?: number;
+          total_amount?: number;
+          payment_status?: string;
+          toss_order_id?: string | null;
           created_at?: string | null;
           updated_at?: string | null;
+          paid_at?: string | null;
+        };
+      };
+      payments: {
+        Row: {
+          id: string;
+          order_id: string;
+          user_id: string;
+          provider: string;
+          method: string;
+          amount: number;
+          currency: string;
+          status: string;
+          transaction_id: string | null;
+          payment_key: string | null;
+          raw_payload: Json | null;
+          created_at: string | null;
+          approved_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          order_id: string;
+          user_id: string;
+          provider?: string;
+          method?: string;
+          amount: number;
+          currency?: string;
+          status?: string;
+          transaction_id?: string | null;
+          payment_key?: string | null;
+          raw_payload?: Json | null;
+          created_at?: string | null;
+          approved_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          order_id?: string;
+          user_id?: string;
+          provider?: string;
+          method?: string;
+          amount?: number;
+          currency?: string;
+          status?: string;
+          transaction_id?: string | null;
+          payment_key?: string | null;
+          raw_payload?: Json | null;
+          created_at?: string | null;
+          approved_at?: string | null;
         };
       };
       order_items: {

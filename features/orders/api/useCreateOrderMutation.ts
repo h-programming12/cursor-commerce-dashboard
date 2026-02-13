@@ -24,11 +24,10 @@ export function useCreateOrderMutation() {
       );
 
       // orders 테이블에 insert
-      // 실제 스키마는 total_amount이지만 타입은 total_price로 되어 있음
       const orderInsert: OrderInsert = {
         user_id: input.userId,
         status: "pending",
-        total_price: totalAmount,
+        total_amount: totalAmount,
       };
 
       const { data: orderData, error: orderError } = (await supabase
