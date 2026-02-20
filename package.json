@@ -16,6 +16,7 @@
     "db:allow-payments-insert-own-order": "tsx scripts/migrations/0010-allow-payments-insert-own-order.ts",
     "db:allow-payments-update-own-order": "tsx scripts/migrations/0011-allow-payments-update-own-order.ts",
     "db:allow-orders-update-own-for-payment": "tsx scripts/migrations/0012-allow-orders-update-own-for-payment.ts",
+    "db:add-users-image-url": "tsx scripts/migrations/0013-add-users-image-url.ts",
     "db:seed": "tsx scripts/seed-products.ts",
     "db:seed-reviews": "tsx scripts/seed-reviews.ts",
     "storybook": "storybook dev -p 6006",

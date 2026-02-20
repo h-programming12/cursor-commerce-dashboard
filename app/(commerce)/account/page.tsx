@@ -20,11 +20,12 @@ export default async function AccountPage() {
     display_name: string | null;
     email: string;
     role: "user" | "admin";
+    image_url: string | null;
   };
 
   const profileResult = await supabase
     .from("users")
-    .select("display_name, email, role")
+    .select("display_name, email, role, image_url")
     .eq("id", authUser.id)
     .single();
 
@@ -32,6 +33,7 @@ export default async function AccountPage() {
 
   const displayName = profile?.display_name || null;
   const email = profile?.email || authUser.email || null;
+  const imageUrl = profile?.image_url || null;
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
@@ -65,6 +67,7 @@ export default async function AccountPage() {
             <AccountSidebar
               displayName={displayName}
               email={email}
+              imageUrl={imageUrl}
               activeItem="account"
             />
             <div className="flex-1 min-w-0">

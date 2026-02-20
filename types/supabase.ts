@@ -15,18 +15,21 @@ export type Database = {
           email: string;
           display_name: string | null;
           role: "user" | "admin";
+          image_url: string | null;
         };
         Insert: {
           id: string;
           email: string;
           display_name?: string | null;
           role?: "user" | "admin";
+          image_url?: string | null;
         };
         Update: {
           id?: string;
           email?: string;
           display_name?: string | null;
           role?: "user" | "admin";
+          image_url?: string | null;
         };
       };
       products: {

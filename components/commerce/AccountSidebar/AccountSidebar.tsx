@@ -1,54 +1,36 @@
 "use client";
 
-import React from "react";
+import React, { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
 import { cn } from "@/commons/utils/cn";
 import { commerceColors } from "@/commons/constants/color";
 import { commerceTypography } from "@/commons/constants/typography";
 import { AUTH_URLS } from "@/commons/constants/url";
+import toast from "react-hot-toast";
+import { FiCamera } from "react-icons/fi";
+import type { Database } from "@/types/supabase";
 
 export interface AccountSidebarProps {
   displayName?: string | null;
   email?: string | null;
+  imageUrl?: string | null;
   activeItem?: "account" | "orders" | "reviews" | "wishlist" | "dashboard";
   onSignOut?: () => void;
   className?: string;
 }
 
-const CameraIcon = () => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 16 16"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M8 10.6667C9.47276 10.6667 10.6667 9.47276 10.6667 8C10.6667 6.52724 9.47276 5.33333 8 5.33333C6.52724 5.33333 5.33333 6.52724 5.33333 8C5.33333 9.47276 6.52724 10.6667 8 10.6667Z"
-      stroke="white"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M2.66667 5.33333H4L4.66667 3.33333H7.33333L8 5.33333H13.3333C13.5101 5.33333 13.6797 5.40357 13.8047 5.5286C13.9298 5.65362 14 5.82319 14 6V12.6667C14 12.8435 13.9298 13.0131 13.8047 13.1381C13.6797 13.2631 13.5101 13.3333 13.3333 13.3333H2.66667C2.48986 13.3333 2.32029 13.2631 2.19526 13.1381C2.07024 13.0131 2 12.8435 2 12.6667V6C2 5.82319 2.07024 5.65362 2.19526 5.5286C2.32029 5.40357 2.48986 5.33333 2.66667 5.33333Z"
-      stroke="white"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
 export function AccountSidebar({
   displayName,
   email,
+  imageUrl,
   activeItem = "account",
   onSignOut,
   className,
 }: AccountSidebarProps) {
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const menuItems = [
     { id: "account" as const, label: "Account" },
@@ -66,6 +48,92 @@ export function AccountSidebar({
       await supabase.auth.signOut();
       router.push(AUTH_URLS.LOGIN);
       router.refresh();
+    }
+  };
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // 이미지 파일만 허용
+    if (!file.type.startsWith("image/")) {
+      toast.error("이미지 파일만 업로드할 수 있습니다.");
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      // FileReader를 사용하여 Data URL로 변환
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const dataUrl = reader.result as string;
+
+        const supabase = createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) {
+          toast.error("로그인이 필요합니다.");
+          return;
+        }
+
+        // public.users 테이블의 image_url 업데이트
+        type UsersUpdate = Database["public"]["Tables"]["users"]["Update"];
+        const updateData: UsersUpdate = {
+          image_url: dataUrl,
+        };
+
+        const usersTable = supabase.from("users") as unknown as {
+          update: (values: UsersUpdate) => {
+            eq: (
+              column: string,
+              value: string
+            ) => Promise<{ error: { message: string } | null }>;
+          };
+        };
+
+        const { error: updateError } = await usersTable
+          .update(updateData)
+          .eq("id", user.id);
+
+        if (updateError) {
+          toast.error("프로필 이미지 업로드 중 오류가 발생했습니다.");
+          setIsUploading(false);
+          if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+          }
+          return;
+        }
+
+        toast.success("프로필 이미지가 업데이트되었습니다.");
+        setIsUploading(false);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+        router.refresh();
+      };
+
+      reader.onerror = () => {
+        toast.error("이미지 읽기 중 오류가 발생했습니다.");
+        setIsUploading(false);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+      };
+
+      reader.readAsDataURL(file);
+    } catch {
+      toast.error("프로필 이미지 업로드 중 오류가 발생했습니다.");
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
@@ -88,40 +156,63 @@ export function AccountSidebar({
       {/* Avatar Section */}
       <div className="flex flex-col items-center mb-8">
         <div className="relative mb-4">
-          <div
-            className="rounded-full overflow-hidden"
-            style={{
-              width: "80px",
-              height: "80px",
-              backgroundColor: "#121212",
-            }}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="hidden"
+            aria-label="프로필 이미지 업로드"
+          />
+          <button
+            type="button"
+            onClick={handleAvatarClick}
+            disabled={isUploading}
+            className="relative cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+            aria-label="프로필 이미지 변경"
           >
-            {/* Avatar placeholder - 실제로는 이미지나 이니셜 표시 */}
             <div
-              className="w-full h-full flex items-center justify-center"
+              className="rounded-full overflow-hidden"
               style={{
+                width: "80px",
+                height: "80px",
                 backgroundColor: "#121212",
-                color: "#ffffff",
-                fontSize: "32px",
-                fontFamily: commerceTypography.body["1"].fontFamily,
-                fontWeight: 600,
               }}
             >
-              {displayNameText.charAt(0).toUpperCase()}
+              {imageUrl ? (
+                <img
+                  src={imageUrl}
+                  alt={displayNameText}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div
+                  className="w-full h-full flex items-center justify-center"
+                  style={{
+                    backgroundColor: "#121212",
+                    color: "#ffffff",
+                    fontSize: "32px",
+                    fontFamily: commerceTypography.body["1"].fontFamily,
+                    fontWeight: 600,
+                  }}
+                >
+                  {displayNameText.charAt(0).toUpperCase()}
+                </div>
+              )}
             </div>
-          </div>
-          {/* Camera Icon */}
-          <div
-            className="absolute bottom-0 right-0 flex items-center justify-center rounded-full"
-            style={{
-              width: "30px",
-              height: "30px",
-              backgroundColor: commerceColors.neutral["07"]["100"],
-              border: "2px solid #ffffff",
-            }}
-          >
-            <CameraIcon />
-          </div>
+            {/* Camera Icon */}
+            <div
+              className="absolute bottom-0 right-0 flex items-center justify-center rounded-full"
+              style={{
+                width: "30px",
+                height: "30px",
+                backgroundColor: commerceColors.neutral["07"]["100"],
+                border: "2px solid #ffffff",
+              }}
+            >
+              <FiCamera size={16} color="white" />
+            </div>
+          </button>
         </div>
         <h3
           style={{
