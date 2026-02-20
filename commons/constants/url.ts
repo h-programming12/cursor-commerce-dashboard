@@ -167,6 +167,16 @@ export function getRouteConfig(path: string): RouteConfig | undefined {
     };
   }
 
+  // 동적 라우트 매칭 (예: /account/orders/[orderId])
+  if (path.startsWith("/account/orders/") && path !== "/account/orders") {
+    return {
+      path,
+      access: "authenticated" as const,
+      name: "주문 상세",
+      description: "마이페이지 주문 상세 페이지",
+    };
+  }
+
   // 동적 라우트 매칭 (예: /admin/orders/[orderId] - 향후 확장 가능)
   if (path.startsWith("/admin/orders/") && path !== "/admin/orders") {
     return {
