@@ -30,6 +30,8 @@ export const ACCOUNT_URLS = {
   CHECKOUT: "/checkout",
   ACCOUNT: "/account",
   WISHLIST: "/account/wishlist",
+  ORDERS: "/account/orders",
+  ORDER_DETAIL: (orderId: string) => `/account/orders/${orderId}`,
 } as const;
 
 // ============================================
@@ -112,6 +114,12 @@ export const ROUTE_CONFIG_MAP: Record<string, RouteConfig> = {
     access: "authenticated",
     name: "찜 목록",
     description: "마이페이지 찜한 상품 목록",
+  },
+  [ACCOUNT_URLS.ORDERS]: {
+    path: ACCOUNT_URLS.ORDERS,
+    access: "authenticated",
+    name: "주문 목록",
+    description: "마이페이지 주문 목록",
   },
 
   // 관리자 전용 페이지

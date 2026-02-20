@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/browser";
 import { cn } from "@/commons/utils/cn";
 import { commerceColors } from "@/commons/constants/color";
 import { commerceTypography } from "@/commons/constants/typography";
-import { AUTH_URLS } from "@/commons/constants/url";
+import { AUTH_URLS, ACCOUNT_URLS } from "@/commons/constants/url";
 import toast from "react-hot-toast";
 import { FiCamera } from "react-icons/fi";
 import type { Database } from "@/types/supabase";
@@ -237,9 +237,11 @@ export function AccountSidebar({
               type="button"
               onClick={() => {
                 if (item.id === "account") {
-                  router.push("/account");
+                  router.push(ACCOUNT_URLS.ACCOUNT);
+                } else if (item.id === "orders") {
+                  router.push(ACCOUNT_URLS.ORDERS);
                 } else if (item.id === "wishlist") {
-                  router.push("/account/wishlist");
+                  router.push(ACCOUNT_URLS.WISHLIST);
                 }
               }}
               className={cn(
