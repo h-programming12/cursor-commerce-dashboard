@@ -2,6 +2,7 @@
 
 import React, { useState, useTransition } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import toast from "react-hot-toast";
 import { cn } from "@/commons/utils/cn";
 import { commerceColors } from "@/commons/constants/color";
@@ -19,11 +20,22 @@ export interface ReviewCardProps {
   onDeleted?: () => void;
   onUpdated?: () => void;
   className?: string;
+  productLinkHref?: string;
+  productLinkLabel?: string;
 }
 
 export const ReviewCard = React.forwardRef<HTMLDivElement, ReviewCardProps>(
   (
-    { review, productId, currentUserId, onDeleted, onUpdated, className },
+    {
+      review,
+      productId,
+      currentUserId,
+      onDeleted,
+      onUpdated,
+      className,
+      productLinkHref,
+      productLinkLabel,
+    },
     ref
   ) => {
     const [isEditing, setIsEditing] = useState(false);
@@ -127,7 +139,7 @@ export const ReviewCard = React.forwardRef<HTMLDivElement, ReviewCardProps>(
 
         {/* 리뷰 내용 */}
         <div className="flex-1 min-w-0 flex flex-col gap-4">
-          {/* 이름과 별점 */}
+          {/* 이름, 상품 링크, 별점 */}
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between gap-2">
               <h4
@@ -166,6 +178,28 @@ export const ReviewCard = React.forwardRef<HTMLDivElement, ReviewCardProps>(
                 </div>
               )}
             </div>
+
+            {productLinkHref && productLinkLabel && (
+              <Link
+                href={productLinkHref}
+                className="inline-flex w-fit cursor-pointer"
+                aria-label={`${productLinkLabel} 상세 페이지로 이동`}
+              >
+                <span
+                  style={{
+                    fontSize: `${commerceTypography.caption["2"].fontSize}px`,
+                    lineHeight: `${commerceTypography.caption["2"].lineHeight}`,
+                    fontFamily: commerceTypography.caption["2"].fontFamily,
+                    fontWeight: commerceTypography.caption["2"].fontWeight,
+                    color: commerceColors.text.secondary,
+                    textDecoration: "underline",
+                  }}
+                >
+                  {productLinkLabel}
+                </span>
+              </Link>
+            )}
+
             <RatingStars
               rating={review.rating}
               size="small"

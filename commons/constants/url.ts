@@ -29,6 +29,7 @@ export const ACCOUNT_URLS = {
   CART: "/cart",
   CHECKOUT: "/checkout",
   ACCOUNT: "/account",
+  REVIEWS: "/account/reviews",
   WISHLIST: "/account/wishlist",
   ORDERS: "/account/orders",
   ORDER_DETAIL: (orderId: string) => `/account/orders/${orderId}`,
@@ -108,6 +109,12 @@ export const ROUTE_CONFIG_MAP: Record<string, RouteConfig> = {
     access: "authenticated",
     name: "계정 관리",
     description: "계정 정보 관리 페이지",
+  },
+  [ACCOUNT_URLS.REVIEWS]: {
+    path: ACCOUNT_URLS.REVIEWS,
+    access: "authenticated",
+    name: "리뷰 목록",
+    description: "마이페이지 리뷰 목록",
   },
   [ACCOUNT_URLS.WISHLIST]: {
     path: ACCOUNT_URLS.WISHLIST,

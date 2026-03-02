@@ -240,6 +240,8 @@ export function AccountSidebar({
                   router.push(ACCOUNT_URLS.ACCOUNT);
                 } else if (item.id === "orders") {
                   router.push(ACCOUNT_URLS.ORDERS);
+                } else if (item.id === "reviews") {
+                  router.push(ACCOUNT_URLS.REVIEWS);
                 } else if (item.id === "wishlist") {
                   router.push(ACCOUNT_URLS.WISHLIST);
                 }
