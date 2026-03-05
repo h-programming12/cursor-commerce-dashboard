@@ -6,6 +6,7 @@ import { ProductDetail } from "@/components/commerce/ProductDetail/ProductDetail
 import { ProductDetailTabs } from "./_components/ProductDetailTabs";
 import { ProductReviewsSection } from "./_components/ProductReviewsSection";
 import { COMMERCE_URLS } from "@/commons/constants/url";
+import { checkAdminAccess } from "@/lib/auth/admin";
 
 export async function generateMetadata({
   params,
@@ -75,6 +76,8 @@ export default async function ProductDetailPage({
     notFound();
   }
 
+  const isAdmin = await checkAdminAccess();
+
   const additionalInfoContent = (
     <div
       className="space-y-4 text-(--commerce-text-tertiary)"
@@ -103,7 +106,9 @@ export default async function ProductDetailPage({
     </div>
   );
 
-  const reviewsContent = <ProductReviewsSection productId={productId} />;
+  const reviewsContent = (
+    <ProductReviewsSection productId={productId} isAdmin={isAdmin} />
+  );
 
   const initialIsLiked = await isProductLiked(productId);
 

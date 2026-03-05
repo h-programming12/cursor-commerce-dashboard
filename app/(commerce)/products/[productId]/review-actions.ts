@@ -2,11 +2,26 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { getSupabaseServiceClient } from "@/lib/supabase/service";
 import type { Database } from "@/types/supabase";
+import {
+  generateIncrementalReviewSummary,
+  type ReviewSummaryResult,
+} from "@/lib/ai/review-summary";
 
 const MIN_CONTENT_LENGTH = 10;
 const RATING_MIN = 1;
 const RATING_MAX = 5;
+
+type ProductRow = Pick<
+  Database["public"]["Tables"]["products"]["Row"],
+  "id" | "review_summary"
+>;
+
+type ReviewRowForSummary = Pick<
+  Database["public"]["Tables"]["reviews"]["Row"],
+  "rating" | "content"
+>;
 
 /** 리뷰 생성 실패 시 클라이언트에서 분기 처리용 코드 */
 export type CreateReviewErrorCode =
@@ -101,6 +116,79 @@ export async function createReview(
       error: `리뷰 작성 실패: ${insertError.message}`,
       code: "UNKNOWN",
     };
+  }
+
+  try {
+    const serviceClient = getSupabaseServiceClient();
+
+    const [
+      { data: productData, error: productError },
+      { data: reviewsData, error: reviewsError },
+    ] = await Promise.all([
+      serviceClient
+        .from("products")
+        .select("id, review_summary")
+        .eq("id", productId)
+        .maybeSingle(),
+      serviceClient
+        .from("reviews")
+        .select("rating, content")
+        .eq("product_id", productId),
+    ]);
+
+    if (!productError && productData && !reviewsError && reviewsData) {
+      const productRow = productData as ProductRow;
+      const existingSummary =
+        (productRow.review_summary as unknown as ReviewSummaryResult | null) ??
+        null;
+
+      const reviews = (reviewsData as ReviewRowForSummary[]).filter(
+        (review) => typeof review.content === "string" && review.content.trim()
+      );
+
+      const allReviewsText = reviews
+        .map((review, index) =>
+          [
+            `리뷰 ${index + 1}:`,
+            `별점: ${review.rating}/5`,
+            `내용: ${String(review.content).trim()}`,
+          ].join("\n")
+        )
+        .join("\n\n");
+
+      const combinedContent = [
+        "새로 추가된 리뷰:",
+        `별점: ${rating}/5`,
+        `내용: ${content}`,
+        "",
+        "이 상품의 전체 리뷰:",
+        allReviewsText,
+      ]
+        .filter(Boolean)
+        .join("\n");
+
+      const updatedSummary = await generateIncrementalReviewSummary(
+        existingSummary,
+        {
+          rating,
+          content: combinedContent,
+        }
+      );
+
+      const { error: updateError } = await serviceClient
+        .from("products")
+        .update({
+          review_summary:
+            updatedSummary as unknown as ProductRow["review_summary"],
+        } as never)
+        .eq("id", productId);
+
+      if (updateError) {
+        console.error("[createReview] 리뷰 요약 업데이트 실패:", updateError);
+      }
+    }
+  } catch (error) {
+    console.error("[createReview] 리뷰 요약 생성 실패:", error);
   }
 
   revalidatePath(`/products/${productId}`);

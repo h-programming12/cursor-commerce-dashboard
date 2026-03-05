@@ -15,14 +15,17 @@ import { AUTH_URLS } from "@/commons/constants/url";
 import { commerceColors } from "@/commons/constants/color";
 import { commerceTypography } from "@/commons/constants/typography";
 import { QUERY_KEYS } from "@/commons/constants/query-keys";
+import { RegenerateSummaryButton } from "@/components/commerce/product/RegenerateSummaryButton";
 
 export interface ProductReviewsSectionProps {
   productId: string;
+  isAdmin?: boolean;
   className?: string;
 }
 
 export const ProductReviewsSection: React.FC<ProductReviewsSectionProps> = ({
   productId,
+  isAdmin,
   className,
 }) => {
   const router = useRouter();
@@ -32,6 +35,8 @@ export const ProductReviewsSection: React.FC<ProductReviewsSectionProps> = ({
 
   const rating = ratingData?.rating ?? 0;
   const reviewCount = ratingData?.reviewCount ?? 0;
+
+  const [refreshKey, setRefreshKey] = React.useState(0);
 
   const invalidateReviewQueries = () => {
     queryClient.invalidateQueries({
@@ -46,6 +51,7 @@ export const ProductReviewsSection: React.FC<ProductReviewsSectionProps> = ({
     const result = await createReview(productId, formData);
     if (result.success) {
       invalidateReviewQueries();
+      setRefreshKey((prev) => prev + 1);
     }
     if (!result.success && result.code === "AUTH_REQUIRED") {
       router.push(AUTH_URLS.LOGIN);
@@ -56,9 +62,24 @@ export const ProductReviewsSection: React.FC<ProductReviewsSectionProps> = ({
     };
   };
 
+  const handleRegeneratedSummary = () => {
+    setRefreshKey((prev) => prev + 1);
+  };
+
   return (
     <div className={className}>
-      <ReviewSummaryDisplay className="mb-6" />
+      <ReviewSummaryDisplay
+        productId={productId}
+        className="mb-6"
+        refreshKey={refreshKey}
+        action={
+          <RegenerateSummaryButton
+            productId={productId}
+            isAdmin={isAdmin}
+            onRegenerated={handleRegeneratedSummary}
+          />
+        }
+      />
 
       <CustomerReviewsHeader
         rating={rating}
