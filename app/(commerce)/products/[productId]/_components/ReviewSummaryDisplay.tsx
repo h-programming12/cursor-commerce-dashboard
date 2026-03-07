@@ -1,6 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, {
+  useEffect,
+  useState,
+  cloneElement,
+  isValidElement,
+} from "react";
 import { BsRobot } from "react-icons/bs";
 import { commerceColors } from "@/commons/constants/color";
 import { commerceTypography } from "@/commons/constants/typography";
@@ -12,6 +17,8 @@ export interface ReviewSummaryDisplayProps {
   className?: string;
   refreshKey?: number;
   action?: React.ReactNode;
+  /** 서버에서 미리 로드한 요약(있으면 클라이언트 fetch 생략) */
+  initialSummary?: ReviewSummaryResult | null;
 }
 
 export const ReviewSummaryDisplay: React.FC<ReviewSummaryDisplayProps> = ({
@@ -19,12 +26,35 @@ export const ReviewSummaryDisplay: React.FC<ReviewSummaryDisplayProps> = ({
   className,
   refreshKey,
   action,
+  initialSummary,
 }) => {
-  const [summary, setSummary] = useState<ReviewSummaryResult | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [summary, setSummary] = useState<ReviewSummaryResult | null>(
+    initialSummary ?? null
+  );
+  const [isLoading, setIsLoading] = useState<boolean>(
+    initialSummary === undefined
+  );
   const [error, setError] = useState<string | null>(null);
+  const [isRegenerating, setIsRegenerating] = useState(false);
+
+  const actionWithPending =
+    action && isValidElement(action)
+      ? cloneElement(
+          action as React.ReactElement<{
+            onPendingChange?: (pending: boolean) => void;
+          }>,
+          {
+            onPendingChange: setIsRegenerating,
+          }
+        )
+      : action;
 
   useEffect(() => {
+    if (initialSummary !== undefined) {
+      setSummary(initialSummary ?? null);
+      setIsLoading(false);
+      return;
+    }
     let isMounted = true;
 
     const fetchSummary = async () => {
@@ -51,7 +81,7 @@ export const ReviewSummaryDisplay: React.FC<ReviewSummaryDisplayProps> = ({
     return () => {
       isMounted = false;
     };
-  }, [productId, refreshKey]);
+  }, [productId, refreshKey, initialSummary]);
 
   const hasSummary = !!summary;
 
@@ -93,10 +123,27 @@ export const ReviewSummaryDisplay: React.FC<ReviewSummaryDisplayProps> = ({
             >
               AI Review
             </h4>
-            {action}
+            {actionWithPending}
           </div>
 
-          {isLoading ? (
+          {isRegenerating ? (
+            <div
+              className="space-y-3 animate-pulse"
+              role="status"
+              aria-label="요약 재생성 중"
+            >
+              <div className="space-y-2">
+                <div className="h-5 w-full rounded bg-(--commerce-neutral-03-100)" />
+                <div className="h-5 w-full rounded bg-(--commerce-neutral-03-100)" />
+                <div className="h-5 w-4/5 rounded bg-(--commerce-neutral-03-100)" />
+              </div>
+              <div className="flex flex-wrap gap-2 pt-2">
+                <div className="h-5 w-16 rounded-full bg-(--commerce-neutral-03-100)" />
+                <div className="h-5 w-20 rounded-full bg-(--commerce-neutral-03-100)" />
+                <div className="h-5 w-14 rounded-full bg-(--commerce-neutral-03-100)" />
+              </div>
+            </div>
+          ) : isLoading ? (
             <p
               style={{
                 fontFamily: commerceTypography.caption["1"].fontFamily,

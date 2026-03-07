@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { getProductById } from "@/features/products/api/getProductById";
 import { isProductLiked } from "@/app/(commerce)/likes/actions";
 import { ProductDetail } from "@/components/commerce/ProductDetail/ProductDetail";
 import { ProductDetailTabs } from "./_components/ProductDetailTabs";
 import { ProductReviewsSection } from "./_components/ProductReviewsSection";
+import { ReviewSummarySection } from "./_components/ReviewSummarySection";
+import { ReviewListSection } from "./_components/ReviewListSection";
+import { ReviewSummarySkeleton } from "@/components/ui/ReviewSummarySkeleton";
+import { ReviewListSkeleton } from "@/components/ui/ReviewListSkeleton";
 import { COMMERCE_URLS } from "@/commons/constants/url";
 import { checkAdminAccess } from "@/lib/auth/admin";
 
@@ -107,7 +112,20 @@ export default async function ProductDetailPage({
   );
 
   const reviewsContent = (
-    <ProductReviewsSection productId={productId} isAdmin={isAdmin} />
+    <ProductReviewsSection
+      productId={productId}
+      isAdmin={isAdmin}
+      summarySlot={
+        <Suspense fallback={<ReviewSummarySkeleton className="mb-6" />}>
+          <ReviewSummarySection productId={productId} isAdmin={isAdmin} />
+        </Suspense>
+      }
+      listSlot={
+        <Suspense fallback={<ReviewListSkeleton />}>
+          <ReviewListSection productId={productId} />
+        </Suspense>
+      }
+    />
   );
 
   const initialIsLiked = await isProductLiked(productId);

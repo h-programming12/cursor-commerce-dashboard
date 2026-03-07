@@ -6,3 +6,5 @@ export { LoadingDots, type LoadingDotsProps } from "./loading-dots";
 export { Badge, type BadgeProps } from "./badge";
 export { Dropdown, type DropdownProps, type DropdownOption } from "./dropdown";
 export { SearchInput, type SearchInputProps } from "./search-input";
+export { ReviewSummarySkeleton } from "./ReviewSummarySkeleton";
+export { ReviewListSkeleton } from "./ReviewListSkeleton";

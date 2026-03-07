@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useTransition } from "react";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { FiRefreshCw } from "react-icons/fi";
 import { commerceColors } from "@/commons/constants/color";
@@ -14,13 +15,16 @@ export interface RegenerateSummaryButtonProps {
   productId: string;
   isAdmin?: boolean;
   onRegenerated?: () => void;
+  /** 재생성 요청 중(pending)일 때 호출. 요약 박스에 스켈레톤 표시용 */
+  onPendingChange?: (pending: boolean) => void;
   className?: string;
 }
 
 export const RegenerateSummaryButton: React.FC<
   RegenerateSummaryButtonProps
-> = ({ productId, isAdmin, onRegenerated, className }) => {
+> = ({ productId, isAdmin, onRegenerated, onPendingChange, className }) => {
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   if (!isAdmin) {
     return null;
@@ -29,6 +33,7 @@ export const RegenerateSummaryButton: React.FC<
   const handleClick = () => {
     if (isPending) return;
 
+    onPendingChange?.(true);
     startTransition(async () => {
       try {
         const result: GenerateSummaryResult = await generateAiReviewSummary(
@@ -37,7 +42,8 @@ export const RegenerateSummaryButton: React.FC<
 
         if (result.success) {
           toast.success("AI 리뷰 요약이 생성되었습니다.");
-          onRegenerated?.();
+          if (onRegenerated) onRegenerated();
+          else router.refresh();
         } else {
           switch (result.code) {
             case "AUTH_REQUIRED":
@@ -60,6 +66,8 @@ export const RegenerateSummaryButton: React.FC<
         }
       } catch {
         toast.error("AI 리뷰 요약 생성 중 오류가 발생했습니다.");
+      } finally {
+        onPendingChange?.(false);
       }
     });
   };
@@ -92,7 +100,7 @@ export const RegenerateSummaryButton: React.FC<
       aria-label="AI 리뷰 요약 다시 생성"
     >
       <FiRefreshCw size={14} aria-hidden />
-      <span>{isPending ? "요약 생성 중..." : "요약 다시 생성"}</span>
+      <span>{isPending ? "재생성 중..." : "요약 다시 생성"}</span>
     </button>
   );
 };

@@ -50,14 +50,29 @@ export interface UseProductReviewsListResult {
   refetch: () => void;
 }
 
+export interface ProductReviewsInitialPage {
+  reviews: Review[];
+  hasNextPage: boolean;
+  totalCount: number;
+}
+
 /**
  * 상품별 리뷰 목록을 페이지네이션으로 조회하는 훅
+ * @param initialPage - 서버에서 미리 로드한 첫 페이지(있으면 초기 데이터로 사용)
  */
 export function useProductReviewsList(
-  productId: string
+  productId: string,
+  initialPage?: ProductReviewsInitialPage
 ): UseProductReviewsListResult {
   const query = useInfiniteQuery({
     queryKey: QUERY_KEYS.reviews.list(productId),
+    initialData:
+      initialPage !== undefined
+        ? {
+            pages: [{ reviews: initialPage.reviews }],
+            pageParams: [0],
+          }
+        : undefined,
     queryFn: async ({ pageParam = 0 }) => {
       const supabase = getSupabaseBrowserClient();
       const from = pageParam * REVIEWS_PAGE_SIZE;

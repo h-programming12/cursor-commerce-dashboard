@@ -1,8 +1,12 @@
 "use client";
 
 import React, { useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { ReviewCard } from "@/components/commerce/ReviewCard/ReviewCard";
-import { useProductReviewsList } from "@/features/reviews/api/useProductReviewsList";
+import {
+  useProductReviewsList,
+  type ProductReviewsInitialPage,
+} from "@/features/reviews/api/useProductReviewsList";
 import { useAuth } from "@/commons/hooks/useAuth";
 import { commerceColors } from "@/commons/constants/color";
 import { commerceTypography } from "@/commons/constants/typography";
@@ -12,6 +16,8 @@ export interface ReviewListProps {
   reviewCount: number;
   onReviewsChange?: () => void;
   className?: string;
+  /** 서버에서 미리 로드한 첫 페이지 */
+  initialPage?: ProductReviewsInitialPage;
 }
 
 export const ReviewList: React.FC<ReviewListProps> = ({
@@ -19,6 +25,7 @@ export const ReviewList: React.FC<ReviewListProps> = ({
   reviewCount,
   onReviewsChange,
   className,
+  initialPage,
 }) => {
   const {
     reviews,
@@ -28,12 +35,17 @@ export const ReviewList: React.FC<ReviewListProps> = ({
     isLoading,
     isError,
     refetch,
-  } = useProductReviewsList(productId);
+  } = useProductReviewsList(productId, initialPage);
   const { currentUserId } = useAuth();
+  const router = useRouter();
 
   const handleReviewsChange = () => {
     refetch();
-    onReviewsChange?.();
+    if (onReviewsChange) {
+      onReviewsChange();
+    } else {
+      router.refresh();
+    }
   };
 
   const uniqueReviews = useMemo(() => {

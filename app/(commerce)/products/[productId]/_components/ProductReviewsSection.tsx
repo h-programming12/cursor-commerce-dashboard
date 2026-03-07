@@ -7,26 +7,28 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/commons/hooks/useAuth";
 import { useProductRating } from "@/features/reviews/api/useProductRating";
 import { createReview } from "../review-actions";
-import { ReviewSummaryDisplay } from "./ReviewSummaryDisplay";
 import { CustomerReviewsHeader } from "./CustomerReviewsHeader";
 import { ReviewForm } from "@/components/commerce/ReviewForm/ReviewForm";
-import { ReviewList } from "./ReviewList";
 import { AUTH_URLS } from "@/commons/constants/url";
 import { commerceColors } from "@/commons/constants/color";
 import { commerceTypography } from "@/commons/constants/typography";
 import { QUERY_KEYS } from "@/commons/constants/query-keys";
-import { RegenerateSummaryButton } from "@/components/commerce/product/RegenerateSummaryButton";
 
 export interface ProductReviewsSectionProps {
   productId: string;
   isAdmin?: boolean;
   className?: string;
+  /** Suspense로 감싼 ReviewSummarySection */
+  summarySlot: React.ReactNode;
+  /** Suspense로 감싼 ReviewListSection */
+  listSlot: React.ReactNode;
 }
 
 export const ProductReviewsSection: React.FC<ProductReviewsSectionProps> = ({
   productId,
-  isAdmin,
   className,
+  summarySlot,
+  listSlot,
 }) => {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -35,8 +37,6 @@ export const ProductReviewsSection: React.FC<ProductReviewsSectionProps> = ({
 
   const rating = ratingData?.rating ?? 0;
   const reviewCount = ratingData?.reviewCount ?? 0;
-
-  const [refreshKey, setRefreshKey] = React.useState(0);
 
   const invalidateReviewQueries = () => {
     queryClient.invalidateQueries({
@@ -51,7 +51,6 @@ export const ProductReviewsSection: React.FC<ProductReviewsSectionProps> = ({
     const result = await createReview(productId, formData);
     if (result.success) {
       invalidateReviewQueries();
-      setRefreshKey((prev) => prev + 1);
     }
     if (!result.success && result.code === "AUTH_REQUIRED") {
       router.push(AUTH_URLS.LOGIN);
@@ -62,24 +61,9 @@ export const ProductReviewsSection: React.FC<ProductReviewsSectionProps> = ({
     };
   };
 
-  const handleRegeneratedSummary = () => {
-    setRefreshKey((prev) => prev + 1);
-  };
-
   return (
     <div className={className}>
-      <ReviewSummaryDisplay
-        productId={productId}
-        className="mb-6"
-        refreshKey={refreshKey}
-        action={
-          <RegenerateSummaryButton
-            productId={productId}
-            isAdmin={isAdmin}
-            onRegenerated={handleRegeneratedSummary}
-          />
-        }
-      />
+      {summarySlot}
 
       <CustomerReviewsHeader
         rating={rating}
@@ -130,11 +114,7 @@ export const ProductReviewsSection: React.FC<ProductReviewsSectionProps> = ({
         </div>
       )}
 
-      <ReviewList
-        productId={productId}
-        reviewCount={reviewCount}
-        onReviewsChange={invalidateReviewQueries}
-      />
+      {listSlot}
     </div>
   );
 };

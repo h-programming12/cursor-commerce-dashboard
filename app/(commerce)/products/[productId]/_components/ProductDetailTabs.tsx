@@ -13,12 +13,12 @@ export interface ProductDetailTabsProps {
 }
 
 const TAB_CONFIG: { id: ProductDetailTabId; label: string }[] = [
-  { id: "additional-info", label: "Additional Info" },
   { id: "reviews", label: "Reviews" },
+  { id: "additional-info", label: "Additional Info" },
 ];
 
 export const ProductDetailTabs: React.FC<ProductDetailTabsProps> = ({
-  defaultTab = "additional-info",
+  defaultTab = "reviews",
   additionalInfoContent,
   reviewsContent,
   className,

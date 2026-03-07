@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/commons/utils/cn";
 import { commerceColors } from "@/commons/constants/color";
@@ -25,40 +25,52 @@ export const AddToCartSection: React.FC<AddToCartSectionProps> = ({
 }) => {
   const router = useRouter();
   const [quantity, setQuantity] = useState(1);
+  const [isAdded, setIsAdded] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const addItem = useCartStore((state) => state.addItem);
 
   const isSoldOut = product.status === "sold_out";
 
-  const handleAddToCart = async () => {
+  const handleQuantityChange = (nextQuantity: number) => {
+    setQuantity(nextQuantity);
+    setIsAdded(false);
+  };
+
+  const handleAddToCart = () => {
     if (isSoldOut) return;
 
-    try {
-      await addItem(
-        {
-          id: product.id,
-          name: product.name,
-          price: product.price,
-          salePrice: product.salePrice ?? null,
-          imageUrl: product.image_url,
-          status: product.status === "sold_out" ? "sold_out" : "visible",
-        },
-        quantity
-      );
+    const prevAdded = isAdded;
+    setIsAdded(true);
 
-      toast.success(`${product.name}이(가) 장바구니에 추가되었습니다.`);
-    } catch (error: unknown) {
-      if (
-        error &&
-        typeof error === "object" &&
-        "name" in error &&
-        (error as { name: string }).name === "AuthRequiredError"
-      ) {
-        router.push(AUTH_URLS.LOGIN);
-        return;
+    startTransition(async () => {
+      try {
+        await addItem(
+          {
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            salePrice: product.salePrice ?? null,
+            imageUrl: product.image_url,
+            status: product.status === "sold_out" ? "sold_out" : "visible",
+          },
+          quantity
+        );
+        toast.success(`${product.name}이(가) 장바구니에 추가되었습니다.`);
+      } catch (error: unknown) {
+        setIsAdded(prevAdded);
+        if (
+          error &&
+          typeof error === "object" &&
+          "name" in error &&
+          (error as { name: string }).name === "AuthRequiredError"
+        ) {
+          router.push(AUTH_URLS.LOGIN);
+          return;
+        }
+        console.error("Add to cart error:", error);
+        toast.error("장바구니 추가 중 오류가 발생했습니다.");
       }
-      console.error("Add to cart error:", error);
-      toast.error("장바구니 추가 중 오류가 발생했습니다.");
-    }
+    });
   };
 
   return (
@@ -69,7 +81,7 @@ export const AddToCartSection: React.FC<AddToCartSectionProps> = ({
         <QuantitySelector
           value={quantity}
           min={1}
-          onChange={setQuantity}
+          onChange={handleQuantityChange}
           disabled={isSoldOut}
           size="medium"
         />
@@ -88,7 +100,7 @@ export const AddToCartSection: React.FC<AddToCartSectionProps> = ({
       <button
         type="button"
         onClick={handleAddToCart}
-        disabled={isSoldOut}
+        disabled={isSoldOut || isPending}
         className={cn(
           "cursor-pointer flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#141718] disabled:opacity-50 disabled:cursor-not-allowed"
         )}
@@ -106,7 +118,13 @@ export const AddToCartSection: React.FC<AddToCartSectionProps> = ({
         }}
         aria-label={`Add ${product.name} to cart`}
       >
-        {isSoldOut ? "Sold Out" : "Add to Cart"}
+        {isSoldOut
+          ? "Sold Out"
+          : isPending
+          ? "추가 중..."
+          : isAdded
+          ? "추가됨"
+          : "Add to Cart"}
       </button>
 
       {/* 재고 상태 메시지 */}
