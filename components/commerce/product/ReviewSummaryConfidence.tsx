@@ -71,19 +71,18 @@ export const ReviewSummaryConfidence: React.FC<
       role="group"
       aria-label="리뷰 신뢰도"
     >
-      <p
-        className="mb-2"
-        style={{
-          fontSize: commerceTypography.caption["1-semi"].fontSize,
-          lineHeight: commerceTypography.caption["1-semi"].lineHeight,
-          fontFamily: commerceTypography.caption["1-semi"].fontFamily,
-          fontWeight: commerceTypography.caption["1-semi"].fontWeight,
-          color: commerceColors.text.primary,
-        }}
-      >
-        리뷰 신뢰도
-      </p>
       <div className="flex items-center gap-3">
+        <p
+          style={{
+            fontSize: commerceTypography.caption["1-semi"].fontSize,
+            lineHeight: commerceTypography.caption["1-semi"].lineHeight,
+            fontFamily: commerceTypography.caption["1-semi"].fontFamily,
+            fontWeight: commerceTypography.caption["1-semi"].fontWeight,
+            color: commerceColors.text.primary,
+          }}
+        >
+          리뷰 신뢰도
+        </p>
         <div
           className="flex-1 h-2 rounded-full overflow-hidden"
           style={{ backgroundColor: commerceColors.neutral["02"]["100"] }}
@@ -137,7 +136,7 @@ export const ReviewSummaryConfidence: React.FC<
       </div>
       {showDetails && (
         <ul
-          className="mt-3 pt-3 space-y-1 border-t border-(--commerce-neutral-03-100)"
+          className="px-2 mt-3 pt-3 space-y-1 border-t border-(--commerce-neutral-03-100)"
           style={{
             fontSize: commerceTypography.caption["2"].fontSize,
             lineHeight: commerceTypography.caption["2"].lineHeight,

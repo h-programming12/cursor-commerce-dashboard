@@ -3,6 +3,8 @@
 import React, {
   useEffect,
   useState,
+  useRef,
+  useCallback,
   cloneElement,
   isValidElement,
 } from "react";
@@ -10,7 +12,49 @@ import { BsRobot } from "react-icons/bs";
 import { commerceColors } from "@/commons/constants/color";
 import { commerceTypography } from "@/commons/constants/typography";
 import type { ReviewSummaryResult } from "@/lib/ai/review-summary";
-import { getReviewSummary } from "../review-summary-actions";
+import {
+  getReviewSummary,
+  generateAiReviewSummary,
+} from "../review-summary-actions";
+import {
+  ReviewSummaryStepIndicator,
+  type ReviewSummaryStep,
+} from "@/components/commerce/product/ReviewSummaryStepIndicator";
+
+const INITIAL_STEPS: ReviewSummaryStep[] = [
+  {
+    id: "prepare",
+    label: "준비",
+    description: "요약 생성을 준비합니다.",
+    status: "pending",
+  },
+  {
+    id: "analyze",
+    label: "분석",
+    description: "리뷰를 분석합니다.",
+    status: "pending",
+  },
+  {
+    id: "generate",
+    label: "생성",
+    description: "AI가 요약을 생성합니다.",
+    status: "pending",
+  },
+  {
+    id: "complete",
+    label: "완료",
+    description: "저장을 완료합니다.",
+    status: "pending",
+  },
+];
+
+function withStepStatus(
+  steps: ReviewSummaryStep[],
+  id: string,
+  status: ReviewSummaryStep["status"]
+): ReviewSummaryStep[] {
+  return steps.map((s) => (s.id === id ? { ...s, status } : s));
+}
 
 export interface ReviewSummaryDisplayProps {
   productId: string;
@@ -36,6 +80,32 @@ export const ReviewSummaryDisplay: React.FC<ReviewSummaryDisplayProps> = ({
   );
   const [error, setError] = useState<string | null>(null);
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [steps, setSteps] = useState<ReviewSummaryStep[]>(() =>
+    INITIAL_STEPS.map((s) => ({ ...s }))
+  );
+  const [isFirstTimeGenerating, setIsFirstTimeGenerating] = useState(false);
+  const [showCompletionDelay, setShowCompletionDelay] = useState(false);
+  const isGenerating = isRegenerating || isFirstTimeGenerating;
+  const retryStepsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const wasRegeneratingRef = useRef(false);
+
+  // 완료 후 0.5초 동안 인디케이터 유지
+  useEffect(() => {
+    if (!showCompletionDelay) return;
+    const t = setTimeout(() => setShowCompletionDelay(false), 500);
+    return () => clearTimeout(t);
+  }, [showCompletionDelay]);
+
+  const handleGenerate = useCallback(() => {
+    setSteps(
+      withStepStatus(
+        INITIAL_STEPS.map((s) => ({ ...s })),
+        "prepare",
+        "processing"
+      )
+    );
+    setIsFirstTimeGenerating(true);
+  }, []);
 
   const actionWithPending =
     action && isValidElement(action)
@@ -83,6 +153,104 @@ export const ReviewSummaryDisplay: React.FC<ReviewSummaryDisplayProps> = ({
     };
   }, [productId, refreshKey, initialSummary]);
 
+  // 첫 생성: prepare → analyze → generate(API) → complete
+  useEffect(() => {
+    if (!isFirstTimeGenerating) return;
+    let mounted = true;
+    const t1 = setTimeout(() => {
+      if (!mounted) return;
+      setSteps((prev) =>
+        withStepStatus(
+          withStepStatus(prev, "prepare", "completed"),
+          "analyze",
+          "processing"
+        )
+      );
+    }, 500);
+    const t2 = setTimeout(() => {
+      if (!mounted) return;
+      setSteps((prev) =>
+        withStepStatus(
+          withStepStatus(prev, "analyze", "completed"),
+          "generate",
+          "processing"
+        )
+      );
+      void generateAiReviewSummary(productId).then((result) => {
+        if (!mounted) return;
+        if (result.success) {
+          setSteps((prev) =>
+            withStepStatus(
+              withStepStatus(prev, "generate", "completed"),
+              "complete",
+              "completed"
+            )
+          );
+          setSummary(result.summary);
+          setShowCompletionDelay(true);
+        } else {
+          setSteps((prev) => withStepStatus(prev, "generate", "failed"));
+        }
+        setIsFirstTimeGenerating(false);
+      });
+    }, 500 + 1000);
+    return () => {
+      mounted = false;
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [isFirstTimeGenerating, productId]);
+
+  // 재생성(Retry) 중: prepare → analyze → generate(processing) 표시
+  useEffect(() => {
+    if (!isRegenerating) return;
+    wasRegeneratingRef.current = true;
+    setSteps(
+      withStepStatus(
+        INITIAL_STEPS.map((s) => ({ ...s })),
+        "prepare",
+        "processing"
+      )
+    );
+    const t1 = setTimeout(() => {
+      setSteps((prev) =>
+        withStepStatus(
+          withStepStatus(prev, "prepare", "completed"),
+          "analyze",
+          "processing"
+        )
+      );
+    }, 500);
+    const t2 = setTimeout(() => {
+      setSteps((prev) =>
+        withStepStatus(
+          withStepStatus(prev, "analyze", "completed"),
+          "generate",
+          "processing"
+        )
+      );
+    }, 1500);
+    retryStepsRef.current = [t1, t2];
+    return () => {
+      retryStepsRef.current.forEach(clearTimeout);
+      retryStepsRef.current = [];
+    };
+  }, [isRegenerating]);
+
+  // 재생성 완료 시 generate·complete를 completed로, 0.5초 뒤 요약 표시
+  useEffect(() => {
+    if (isRegenerating || !wasRegeneratingRef.current) return;
+    wasRegeneratingRef.current = false;
+    setSteps((prev) =>
+      withStepStatus(
+        withStepStatus(prev, "generate", "completed"),
+        "complete",
+        "completed"
+      )
+    );
+    setShowCompletionDelay(true);
+  }, [isRegenerating]);
+
   const hasSummary = !!summary;
 
   return (
@@ -126,23 +294,8 @@ export const ReviewSummaryDisplay: React.FC<ReviewSummaryDisplayProps> = ({
             {actionWithPending}
           </div>
 
-          {isRegenerating ? (
-            <div
-              className="space-y-3 animate-pulse"
-              role="status"
-              aria-label="요약 재생성 중"
-            >
-              <div className="space-y-2">
-                <div className="h-5 w-full rounded bg-(--commerce-neutral-03-100)" />
-                <div className="h-5 w-full rounded bg-(--commerce-neutral-03-100)" />
-                <div className="h-5 w-4/5 rounded bg-(--commerce-neutral-03-100)" />
-              </div>
-              <div className="flex flex-wrap gap-2 pt-2">
-                <div className="h-5 w-16 rounded-full bg-(--commerce-neutral-03-100)" />
-                <div className="h-5 w-20 rounded-full bg-(--commerce-neutral-03-100)" />
-                <div className="h-5 w-14 rounded-full bg-(--commerce-neutral-03-100)" />
-              </div>
-            </div>
+          {isGenerating || showCompletionDelay ? (
+            <ReviewSummaryStepIndicator steps={steps} />
           ) : isLoading ? (
             <p
               style={{
@@ -168,18 +321,35 @@ export const ReviewSummaryDisplay: React.FC<ReviewSummaryDisplayProps> = ({
               {error}
             </p>
           ) : !hasSummary ? (
-            <p
-              style={{
-                fontFamily: commerceTypography.caption["1"].fontFamily,
-                fontWeight: commerceTypography.caption["1"].fontWeight,
-                fontSize: 14,
-                lineHeight: "24px",
-                color: commerceColors.neutral["07"]["100"],
-              }}
-            >
-              아직 AI 리뷰 요약이 생성되지 않았습니다. 리뷰가 등록되면 자동으로
-              생성됩니다.
-            </p>
+            <div className="space-y-2">
+              <p
+                style={{
+                  fontFamily: commerceTypography.caption["1"].fontFamily,
+                  fontWeight: commerceTypography.caption["1"].fontWeight,
+                  fontSize: 14,
+                  lineHeight: "24px",
+                  color: commerceColors.neutral["07"]["100"],
+                }}
+              >
+                아직 AI 리뷰 요약이 생성되지 않았습니다.
+              </p>
+              <button
+                type="button"
+                onClick={handleGenerate}
+                className="rounded-full px-4 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--commerce-primary-main) focus-visible:ring-offset-2"
+                style={{
+                  backgroundColor: "var(--commerce-primary-main)",
+                  color: "var(--commerce-text-inverse)",
+                  fontFamily: commerceTypography.caption["1-semi"].fontFamily,
+                  fontWeight: commerceTypography.caption["1-semi"].fontWeight,
+                  fontSize: 14,
+                  lineHeight: "24px",
+                }}
+                aria-label="AI 요약 생성하기"
+              >
+                AI 요약 생성하기
+              </button>
+            </div>
           ) : (
             <>
               <p
