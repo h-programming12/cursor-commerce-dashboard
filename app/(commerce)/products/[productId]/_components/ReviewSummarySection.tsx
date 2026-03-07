@@ -1,6 +1,5 @@
-import { getReviewSummary } from "../review-summary-actions";
-import { ReviewSummaryDisplay } from "./ReviewSummaryDisplay";
-import { RegenerateSummaryButton } from "@/components/commerce/product/RegenerateSummaryButton";
+import { getReviewSummary, getReviewStats } from "../review-summary-actions";
+import { EnhancedReviewSummary } from "./EnhancedReviewSummary";
 
 interface ReviewSummarySectionProps {
   productId: string;
@@ -11,16 +10,17 @@ export async function ReviewSummarySection({
   productId,
   isAdmin,
 }: ReviewSummarySectionProps) {
-  const summary = await getReviewSummary(productId);
+  const [summary, reviewStats] = await Promise.all([
+    getReviewSummary(productId),
+    getReviewStats(productId),
+  ]);
 
   return (
-    <ReviewSummaryDisplay
+    <EnhancedReviewSummary
       productId={productId}
+      isAdmin={isAdmin}
       initialSummary={summary}
-      action={
-        <RegenerateSummaryButton productId={productId} isAdmin={isAdmin} />
-      }
-      className="mb-6"
+      reviewStats={reviewStats}
     />
   );
 }

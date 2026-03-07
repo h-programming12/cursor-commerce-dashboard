@@ -161,3 +161,83 @@ export async function generateAiReviewSummary(
     summary,
   };
 }
+
+export type ReviewStats = {
+  reviewCount: number;
+  ratingVariance: number;
+  averageReviewLength: number;
+  summaryStability: number;
+};
+
+/**
+ * 신뢰도 계산용 리뷰 통계 (0~1 정규화)
+ */
+export async function getReviewStats(productId: string): Promise<ReviewStats> {
+  const supabase = await createClient();
+  const { data: reviewRows, error } = await supabase
+    .from("reviews")
+    .select("rating, content")
+    .eq("product_id", productId);
+
+  if (error || !reviewRows?.length) {
+    return {
+      reviewCount: 0,
+      ratingVariance: 0,
+      averageReviewLength: 0,
+      summaryStability: 0.5,
+    };
+  }
+
+  const reviews = (reviewRows as ReviewRow[]).filter((r) => {
+    if (r.content == null) return false;
+    return String(r.content).trim().length > 0;
+  });
+  const count = reviews.length;
+  const reviewCount = count >= 5 ? 1 : count / 5;
+
+  const ratings = reviews.map((r) => r.rating);
+  const mean = ratings.reduce((a, b) => a + b, 0) / ratings.length;
+  const variance =
+    ratings.reduce((acc, r) => acc + (r - mean) ** 2, 0) / ratings.length;
+  const maxVariance = 4;
+  const ratingVariance = Math.max(0, 1 - variance / maxVariance);
+
+  const totalLen = reviews.reduce(
+    (acc, r) => acc + String(r.content ?? "").length,
+    0
+  );
+  const avgLen = count > 0 ? totalLen / count : 0;
+  const averageReviewLength = Math.min(avgLen / 500, 1);
+
+  return {
+    reviewCount,
+    ratingVariance,
+    averageReviewLength,
+    summaryStability: 0.5,
+  };
+}
+
+/**
+ * 기존 요약으로 되돌리기 (거부 시 호출)
+ */
+export async function updateReviewSummary(
+  productId: string,
+  summary: ReviewSummaryResult
+): Promise<{ success: boolean; error?: string }> {
+  const isAdmin = await checkAdminAccess();
+  if (!isAdmin) {
+    return { success: false, error: "권한이 없습니다." };
+  }
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("products")
+    .update({
+      review_summary: summary as unknown as ProductRow["review_summary"],
+    } as never)
+    .eq("id", productId);
+  if (error) {
+    return { success: false, error: error.message };
+  }
+  revalidatePath(`/products/${productId}`);
+  return { success: true };
+}
