@@ -92,7 +92,7 @@ export const ReviewCard = React.forwardRef<HTMLDivElement, ReviewCardProps>(
           backgroundColor: commerceColors.background.default,
         }}
         role="article"
-        aria-label={`Review by ${review.userName}`}
+        aria-label={`Review by ${review?.userName ?? "Unknown User"}`}
       >
         {/* 아바타 */}
         <div className="shrink-0">
