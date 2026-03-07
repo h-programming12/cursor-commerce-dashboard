@@ -1,4 +1,7 @@
-export default function AdminProductsPage() {
+import { requireAdminAccess } from "@/lib/auth/admin";
+
+export default async function AdminProductsPage() {
+  await requireAdminAccess();
   return (
     <div>
       <h1>관리자 상품 관리 페이지</h1>

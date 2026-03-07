@@ -1,4 +1,7 @@
-export default function AdminDashboardPage() {
+import { requireAdminAccess } from "@/lib/auth/admin";
+
+export default async function AdminDashboardPage() {
+  await requireAdminAccess();
   return (
     <div>
       <h1>관리자 대시보드</h1>

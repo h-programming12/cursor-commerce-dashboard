@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { checkAdminAccess } from "@/lib/auth/admin";
 import { AccountSidebar } from "@/components/commerce/AccountSidebar";
 import { AccountDetailsForm } from "@/components/commerce/AccountDetailsForm";
 import { commerceColors } from "@/commons/constants/color";
@@ -34,6 +35,7 @@ export default async function AccountPage() {
   const displayName = profile?.display_name || null;
   const email = profile?.email || authUser.email || null;
   const imageUrl = profile?.image_url || null;
+  const isAdmin = await checkAdminAccess();
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
@@ -69,6 +71,7 @@ export default async function AccountPage() {
               email={email}
               imageUrl={imageUrl}
               activeItem="account"
+              isAdmin={isAdmin}
             />
             <div className="flex-1 min-w-0">
               <AccountDetailsForm

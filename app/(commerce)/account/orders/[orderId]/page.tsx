@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { checkAdminAccess } from "@/lib/auth/admin";
 import { AccountSidebar } from "@/components/commerce/AccountSidebar";
 import { OrderDetailSection } from "@/components/commerce/OrderDetailSection";
 import { commerceTypography } from "@/commons/constants/typography";
@@ -23,6 +24,7 @@ export default async function OrderDetailPage({
     redirect("/login");
   }
 
+  const isAdmin = await checkAdminAccess();
   const { orderId } = await params;
   const order = await getOrderDetail(orderId, authUser.id);
 
@@ -79,6 +81,7 @@ export default async function OrderDetailPage({
               email={email}
               imageUrl={imageUrl}
               activeItem="orders"
+              isAdmin={isAdmin}
             />
             <div className="flex-1 min-w-0">
               <OrderDetailSection order={order} />

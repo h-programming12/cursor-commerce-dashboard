@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { checkAdminAccess } from "@/lib/auth/admin";
 import { AccountSidebar } from "@/components/commerce/AccountSidebar";
 import { MyReviewsSection } from "@/components/commerce/MyReviewsSection/MyReviewsSection";
 import { commerceColors } from "@/commons/constants/color";
@@ -55,6 +56,7 @@ export default async function AccountReviewsPage({
     redirect("/login");
   }
 
+  const isAdmin = await checkAdminAccess();
   const params = await searchParams;
   const pageParam = params.page;
   const parsed = Number.parseInt(String(pageParam ?? ""), 10);
@@ -164,6 +166,7 @@ export default async function AccountReviewsPage({
               email={email}
               imageUrl={imageUrl}
               activeItem="reviews"
+              isAdmin={isAdmin}
             />
             <div className="flex-1 min-w-0">
               <MyReviewsSection

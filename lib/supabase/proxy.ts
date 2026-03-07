@@ -70,7 +70,7 @@ export async function updateSession(
 
     if (access === "admin") {
       if (!user) {
-        return NextResponse.redirect(new URL(COMMERCE_URLS.HOME, request.url));
+        return NextResponse.redirect(new URL(AUTH_URLS.LOGIN, request.url));
       }
       const { data: userRow } = await supabaseClient
         .from("users")
