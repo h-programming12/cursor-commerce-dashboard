@@ -112,7 +112,7 @@ export const AdminMenuItem: React.FC<AdminMenuItemComponentProps> = ({
   );
 
   const baseStyles = cn(
-    "flex items-center gap-3 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+    "mt-1 flex items-center gap-3 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
     active && "bg-[var(--admin-background-light)]",
     !active && "hover:bg-[var(--admin-background-light)]",
     className
