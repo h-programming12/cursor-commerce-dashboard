@@ -158,3 +158,330 @@ export async function getRecentOrders(limit: number): Promise<RecentOrder[]> {
     created_at: o.created_at,
   }));
 }
+
+// --- 유저/관리자/결제 리스트·상세 ---
+
+export type UserListRoleFilter = "all" | "user" | "admin";
+
+export interface UserListItem {
+  id: string;
+  email: string;
+  display_name: string | null;
+  role: string;
+  created_at: string | null;
+  order_count: number;
+  total_order_amount: number;
+}
+
+export async function getUsersList(
+  page: number,
+  pageSize: number,
+  role: UserListRoleFilter
+): Promise<{ data: UserListItem[]; total: number }> {
+  const supabase = await createClient();
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  let q = supabase
+    .from("users")
+    .select("id, email, display_name, role, created_at", { count: "exact" })
+    .order("created_at", { ascending: false });
+
+  if (role !== "all") {
+    q = q.eq("role", role);
+  }
+  const { data: rows, count, error } = await q.range(from, to);
+
+  if (error) return { data: [], total: 0 };
+  const users = (rows ?? []) as {
+    id: string;
+    email: string;
+    display_name: string | null;
+    role: string;
+    created_at: string | null;
+  }[];
+  const total = count ?? 0;
+  if (!users.length) return { data: [], total };
+
+  const userIds = users.map((u) => u.id);
+  const { data: orderRows } = await supabase
+    .from("orders")
+    .select("user_id, total_amount")
+    .in("user_id", userIds);
+
+  type OrderAgg = { user_id: string; total_amount: number };
+  const orderList = (orderRows ?? []) as OrderAgg[];
+  const orderCountMap = new Map<string, number>();
+  const totalAmountMap = new Map<string, number>();
+  for (const o of orderList) {
+    orderCountMap.set(o.user_id, (orderCountMap.get(o.user_id) ?? 0) + 1);
+    totalAmountMap.set(
+      o.user_id,
+      (totalAmountMap.get(o.user_id) ?? 0) + Number(o.total_amount)
+    );
+  }
+
+  const data: UserListItem[] = users.map((u) => ({
+    id: u.id,
+    email: u.email,
+    display_name: u.display_name,
+    role: u.role,
+    created_at: u.created_at,
+    order_count: orderCountMap.get(u.id) ?? 0,
+    total_order_amount: totalAmountMap.get(u.id) ?? 0,
+  }));
+  return { data, total };
+}
+
+export interface AdminListItem {
+  id: string;
+  email: string;
+  display_name: string | null;
+  role: string;
+  created_at: string | null;
+}
+
+export async function getAdminsList(
+  page: number,
+  pageSize: number
+): Promise<{ data: AdminListItem[]; total: number }> {
+  const supabase = await createClient();
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  const {
+    data: rows,
+    count,
+    error,
+  } = await supabase
+    .from("users")
+    .select("id, email, display_name, role, created_at", { count: "exact" })
+    .in("role", ["admin", "super_admin"])
+    .order("created_at", { ascending: false })
+    .range(from, to);
+
+  if (error) return { data: [], total: 0 };
+  const data = (rows ?? []) as AdminListItem[];
+  return { data, total: count ?? 0 };
+}
+
+export interface PaymentListFilters {
+  status?: string;
+}
+
+export interface PaymentListItem {
+  id: string;
+  order_id: string;
+  user_id: string;
+  user_email: string | null;
+  provider: string;
+  method: string;
+  amount: number;
+  currency: string;
+  status: string;
+  transaction_id: string | null;
+  payment_key: string | null;
+  approved_at: string | null;
+  created_at: string | null;
+}
+
+export async function getPaymentsList(
+  page: number,
+  pageSize: number,
+  filters?: PaymentListFilters
+): Promise<{ data: PaymentListItem[]; total: number }> {
+  const supabase = await createClient();
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  let q = supabase
+    .from("payments")
+    .select(
+      "id, order_id, user_id, provider, method, amount, currency, status, transaction_id, payment_key, approved_at, created_at",
+      { count: "exact" }
+    )
+    .order("created_at", { ascending: false });
+
+  if (filters?.status) {
+    q = q.eq("status", filters.status);
+  }
+  const { data: rows, count, error } = await q.range(from, to);
+
+  if (error) return { data: [], total: 0 };
+  const payments = (rows ?? []) as (PaymentListItem & {
+    user_email?: string | null;
+  })[];
+  const total = count ?? 0;
+  if (!payments.length) return { data: [], total };
+
+  const userIds = [...new Set(payments.map((p) => p.user_id))];
+  const { data: userRows } = await supabase
+    .from("users")
+    .select("id, email")
+    .in("id", userIds);
+  type U = { id: string; email: string };
+  const userMap = new Map<string, string>();
+  for (const u of (userRows ?? []) as U[]) {
+    userMap.set(u.id, u.email);
+  }
+
+  const data: PaymentListItem[] = payments.map((p) => ({
+    ...p,
+    user_email: userMap.get(p.user_id) ?? null,
+  }));
+  return { data, total };
+}
+
+export interface UserDetail {
+  id: string;
+  email: string;
+  display_name: string | null;
+  role: string;
+  image_url: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  order_count: number;
+  total_order_amount: number;
+}
+
+export async function getUserDetail(
+  userId: string
+): Promise<UserDetail | null> {
+  const supabase = await createClient();
+  const { data: user, error } = await supabase
+    .from("users")
+    .select("id, email, display_name, role, image_url, created_at, updated_at")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (error || !user) return null;
+  type Row = {
+    id: string;
+    email: string;
+    display_name: string | null;
+    role: string;
+    image_url: string | null;
+    created_at: string | null;
+    updated_at: string | null;
+  };
+  const u = user as Row;
+
+  const { data: orderRows } = await supabase
+    .from("orders")
+    .select("id, total_amount")
+    .eq("user_id", userId);
+  type O = { id: string; total_amount: number };
+  const orders = (orderRows ?? []) as O[];
+  const order_count = orders.length;
+  const total_order_amount = orders.reduce(
+    (s, o) => s + Number(o.total_amount),
+    0
+  );
+
+  return {
+    id: u.id,
+    email: u.email,
+    display_name: u.display_name,
+    role: u.role,
+    image_url: u.image_url,
+    created_at: u.created_at,
+    updated_at: u.updated_at,
+    order_count,
+    total_order_amount,
+  };
+}
+
+export interface AdminDetail {
+  id: string;
+  email: string;
+  display_name: string | null;
+  role: string;
+  image_url: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export async function getAdminDetail(
+  adminId: string
+): Promise<AdminDetail | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("users")
+    .select("id, email, display_name, role, image_url, created_at, updated_at")
+    .eq("id", adminId)
+    .in("role", ["admin", "super_admin"])
+    .maybeSingle();
+
+  if (error || !data) return null;
+  return data as AdminDetail;
+}
+
+export interface PaymentDetail {
+  id: string;
+  order_id: string;
+  user_id: string;
+  user_email: string | null;
+  provider: string;
+  method: string;
+  amount: number;
+  currency: string;
+  status: string;
+  transaction_id: string | null;
+  payment_key: string | null;
+  approved_at: string | null;
+  created_at: string | null;
+  order_status?: string;
+  order_total_amount?: number;
+}
+
+export async function getPaymentDetail(
+  paymentId: string
+): Promise<PaymentDetail | null> {
+  const supabase = await createClient();
+  const { data: payment, error } = await supabase
+    .from("payments")
+    .select(
+      "id, order_id, user_id, provider, method, amount, currency, status, transaction_id, payment_key, approved_at, created_at"
+    )
+    .eq("id", paymentId)
+    .maybeSingle();
+
+  if (error || !payment) return null;
+  type P = PaymentDetail & {
+    order_status?: string;
+    order_total_amount?: number;
+  };
+  const p = payment as P;
+
+  const { data: orderRow } = await supabase
+    .from("orders")
+    .select("status, total_amount")
+    .eq("id", p.order_id)
+    .maybeSingle();
+  const order = orderRow as { status: string; total_amount: number } | null;
+
+  const { data: userRow } = await supabase
+    .from("users")
+    .select("email")
+    .eq("id", p.user_id)
+    .maybeSingle();
+  const userEmail = (userRow as { email: string } | null)?.email ?? null;
+
+  return {
+    id: p.id,
+    order_id: p.order_id,
+    user_id: p.user_id,
+    user_email: userEmail,
+    provider: p.provider,
+    method: p.method,
+    amount: p.amount,
+    currency: p.currency,
+    status: p.status,
+    transaction_id: p.transaction_id,
+    payment_key: p.payment_key,
+    approved_at: p.approved_at,
+    created_at: p.created_at,
+    order_status: order?.status,
+    order_total_amount: order != null ? Number(order.total_amount) : undefined,
+  };
+}

@@ -37,10 +37,7 @@ export default async function AdminDashboardPage() {
   }));
 
   return (
-    <div
-      className="p-6"
-      style={{ backgroundColor: "var(--admin-background-light)" }}
-    >
+    <div>
       <h1
         className="mb-6"
         style={{

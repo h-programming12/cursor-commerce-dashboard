@@ -48,7 +48,7 @@ export function AdminHeader({ email }: AdminHeaderProps) {
             color: "var(--admin-text-tertiary)",
           }}
         >
-          쇼핑몰 이동
+          Go to Commerce
         </Link>
       </div>
       <div className="flex items-center gap-4">

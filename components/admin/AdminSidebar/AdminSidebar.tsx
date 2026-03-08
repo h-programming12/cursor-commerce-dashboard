@@ -1,21 +1,22 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
+import {
+  FiHome,
+  FiShoppingCart,
+  FiUsers,
+  FiFileText,
+  FiPlusCircle,
+  FiPackage,
+  FiUser,
+  FiSettings,
+  FiChevronRight,
+  FiChevronDown,
+} from "react-icons/fi";
 import { cn } from "@/commons/utils/cn";
-import { AdminMenuItem } from "../AdminMenuItem/AdminMenuItem";
 import { ADMIN_URLS } from "@/commons/constants/url";
-import type { AdminMenuSection } from "../types";
-
-const MENU_ITEMS: AdminMenuSection[] = [
-  {
-    items: [
-      { label: "대시보드", href: ADMIN_URLS.DASHBOARD },
-      { label: "주문관리", href: ADMIN_URLS.ORDERS },
-      { label: "상품관리", href: ADMIN_URLS.PRODUCTS },
-    ],
-  },
-];
 
 const IndentDecreaseIcon = () => (
   <svg
@@ -42,75 +43,141 @@ const IndentDecreaseIcon = () => (
   </svg>
 );
 
-const defaultLogo = (
-  <div className="flex items-center gap-2">
-    <span
+const SECTION_STYLE = {
+  fontSize: "11px",
+  lineHeight: "14px",
+  fontFamily: "var(--admin-font-public-sans)",
+  fontWeight: "var(--admin-font-regular)" as const,
+  color: "#8b909a",
+  textTransform: "uppercase" as const,
+};
+
+const ITEM_BASE =
+  "flex items-center gap-3 rounded-md h-[40px] pl-[14px] pr-[14px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2";
+
+interface SidebarLinkProps {
+  href: string;
+  label: string;
+  icon: React.ReactNode;
+  active: boolean;
+}
+
+function SidebarLink({ href, label, icon, active }: SidebarLinkProps) {
+  return (
+    <Link
+      href={href}
+      className={cn(
+        ITEM_BASE,
+        active && "bg-[var(--admin-background-light)]",
+        !active && "hover:bg-[var(--admin-background-light)]"
+      )}
       style={{
-        fontSize: "var(--admin-text-2xl)",
-        lineHeight: "24px",
-        fontFamily: "var(--admin-font-poppins)",
-        fontWeight: "var(--admin-font-medium)",
-        color: "var(--admin-text-primary)",
+        color: active ? "#23272e" : "#8b909a",
+        fontFamily: "var(--admin-font-public-sans)",
+        fontSize: "15px",
+        lineHeight: "22px",
+        fontWeight: active
+          ? "var(--admin-font-semibold)"
+          : "var(--admin-font-regular)",
       }}
+      aria-current={active ? "page" : undefined}
     >
-      Cursor Admin
-    </span>
-    <IndentDecreaseIcon />
-  </div>
-);
+      <span className="flex shrink-0" style={{ width: 22, height: 22 }}>
+        {icon}
+      </span>
+      <span className="flex-1 truncate">{label}</span>
+    </Link>
+  );
+}
 
 export function AdminSidebar({ className }: { className?: string }) {
   const pathname = usePathname();
 
-  const menuItemsWithActive = MENU_ITEMS.map((section) => ({
-    ...section,
-    items: section.items.map((item) => ({
-      ...item,
-      active: item.href ? pathname === item.href : false,
-    })),
-  }));
+  const isActive = (href: string) =>
+    pathname === href ||
+    (href !== ADMIN_URLS.DASHBOARD && pathname.startsWith(href + "/"));
 
   return (
     <aside
       className={cn("flex shrink-0 flex-col", className)}
       style={{
         width: "260px",
-        backgroundColor: "var(--admin-background-default)",
+        backgroundColor: "#ffffff",
         borderRight: "1px solid var(--admin-neutral-03-100)",
       }}
     >
-      {/* <div className="flex items-center px-5" style={{ height: "64px" }}>
-        {defaultLogo}
-      </div> */}
-      <nav className="flex-1 overflow-y-auto mt-8">
-        {menuItemsWithActive.map((section, sectionIndex) => (
-          <div key={sectionIndex} className="mb-6">
-            {section.section && (
-              <div
-                className="mb-2 px-5"
-                style={{ paddingTop: "var(--admin-padding-md)" }}
-              >
-                <span
-                  style={{
-                    fontSize: "var(--admin-text-xs)",
-                    lineHeight: "14px",
-                    fontFamily: "var(--admin-font-public-sans)",
-                    fontWeight: "var(--admin-font-regular)",
-                    color: "var(--admin-text-secondary)",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  {section.section}
-                </span>
-              </div>
-            )}
-            <div className="px-3">
-              {section.items.map((item, itemIndex) => (
-                <AdminMenuItem key={itemIndex} {...item} />
-              ))}
-            </div>
+      <nav className="flex-1 overflow-y-auto px-3 pt-4">
+        <div className="mb-4">
+          <div className="mb-2 pl-3" style={SECTION_STYLE}>
+            MAIN MENU
           </div>
-        ))}
+          <div className="flex flex-col gap-1">
+            <SidebarLink
+              href={ADMIN_URLS.DASHBOARD}
+              label="Dashboard"
+              icon={<FiHome size={22} style={{ color: "inherit" }} />}
+              active={isActive(ADMIN_URLS.DASHBOARD)}
+            />
+            <SidebarLink
+              href={ADMIN_URLS.ORDERS}
+              label="Order Management"
+              icon={<FiShoppingCart size={22} style={{ color: "inherit" }} />}
+              active={isActive(ADMIN_URLS.ORDERS)}
+            />
+            <SidebarLink
+              href={ADMIN_URLS.USERS}
+              label="Customers"
+              icon={<FiUsers size={22} style={{ color: "inherit" }} />}
+              active={isActive(ADMIN_URLS.USERS)}
+            />
+            <SidebarLink
+              href={ADMIN_URLS.PAYMENTS}
+              label="Transaction"
+              icon={<FiFileText size={22} style={{ color: "inherit" }} />}
+              active={isActive(ADMIN_URLS.PAYMENTS)}
+            />
+          </div>
+        </div>
+
+        <div className="mb-4">
+          <div className="mb-2 pl-3" style={SECTION_STYLE}>
+            PRODUCTS
+          </div>
+          <div className="flex flex-col gap-1">
+            <SidebarLink
+              href={ADMIN_URLS.PRODUCTS}
+              label="Add Products"
+              icon={<FiPlusCircle size={22} style={{ color: "inherit" }} />}
+              active={isActive(ADMIN_URLS.PRODUCTS)}
+            />
+            <SidebarLink
+              href={ADMIN_URLS.PRODUCTS}
+              label="Product List"
+              icon={<FiPackage size={22} style={{ color: "inherit" }} />}
+              active={isActive(ADMIN_URLS.PRODUCTS)}
+            />
+          </div>
+        </div>
+
+        <div className="mb-4">
+          <div className="mb-2 pl-3" style={SECTION_STYLE}>
+            ADMIN
+          </div>
+          <div className="flex flex-col gap-1">
+            <SidebarLink
+              href={ADMIN_URLS.ADMINS}
+              label="Manage Admins"
+              icon={<FiUser size={22} style={{ color: "inherit" }} />}
+              active={isActive(ADMIN_URLS.ADMINS)}
+            />
+            <SidebarLink
+              href={ADMIN_URLS.DASHBOARD}
+              label="Settings"
+              icon={<FiSettings size={22} style={{ color: "inherit" }} />}
+              active={false}
+            />
+          </div>
+        </div>
       </nav>
     </aside>
   );

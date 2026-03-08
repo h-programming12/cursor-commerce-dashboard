@@ -1,0 +1,89 @@
+---
+alwaysApply: true
+---
+
+현재 프로젝트에 Admin 리스트 페이지와 상세 페이지를 구현해줘.
+
+## 0. 피그마 분석 후 작업
+
+- 피그마 mcp 채널 veidhzdy 연결 후 아래 링크 (관리자 페이지 리스트) 분석후 작업
+- 유저 리스트: https://www.figma.com/design/PrPYG8hrEWB6IMFit7gol5/Commerce---Admin-%ED%85%9C%ED%94%8C%EB%A6%BF--%EB%B3%B5%EC%82%AC-?node-id=245-11474&t=HJVKqtDJmJjZ54bd-4
+- 결제 리스트: https://www.figma.com/design/PrPYG8hrEWB6IMFit7gol5/Commerce---Admin-%ED%85%9C%ED%94%8C%EB%A6%BF--%EB%B3%B5%EC%82%AC-?node-id=245-11203&t=HJVKqtDJmJjZ54bd-4
+- 어드민 리스트: https://www.figma.com/design/PrPYG8hrEWB6IMFit7gol5/Commerce---Admin-%ED%85%9C%ED%94%8C%EB%A6%BF--%EB%B3%B5%EC%82%AC-?node-id=245-11721&t=HJVKqtDJmJjZ54bd-4
+
+## 1. URL 상수 확장
+
+commons/constants/url.ts의 ADMIN_URLS에 추가:
+
+- USERS: "/admin/users"
+- ADMINS: "/admin/admins_users"
+- PAYMENTS: "/admin/payments"
+
+## 2. app/admin/queries.ts 추가 함수
+
+기존 함수(getTodayOrderCount 등) 아래에 추가:
+
+getUsersList(page, pageSize, role):
+
+- users 테이블, 역할 필터(all/user/admin/super_admin), 페이지네이션
+- 주문 통계는 별도 쿼리(.in("user_id", userIds)) 후 Map으로 집계
+  (order_count, total_order_amount)
+
+getAdminsList(page, pageSize):
+
+- users 테이블에서 .in("role", ["admin", "super_admin"])만 조회, 페이지네이션
+
+getPaymentsList(page, pageSize, filters?):
+
+- payments + orders 조인 조회, 상태 필터, 페이지네이션
+  ⚠️ payments 테이블 컬럼: id, order_id, user_id, user_email, provider,
+  method, amount, currency, status, transaction_id, payment_key,
+  approved_at, created_at
+
+getUserDetail(userId), getAdminDetail(adminId), getPaymentDetail(paymentId):
+
+- 단건 조회 + 연관 데이터 포함
+
+## 3. 리스트 페이지 — 리소스별
+
+사용자:
+
+- app/admin/users/page.tsx:
+  requireAdminAccess, searchParams await, getUsersList, UsersListClient에 initialProps 전달
+- app/admin/users/UsersListClient.tsx:
+  역할 필터 탭(all/user/admin/super_admin),
+  필터 변경 시 router.push로 URL 변경,
+  행 클릭 시 /admin/users/[id] 이동
+
+어드민:
+
+- app/admin/admin_users/page.tsx + AdminsListClient.tsx: 페이지네이션만
+
+결제:
+
+- app/admin/payments/page.tsx + PaymentsListClient.tsx: 상태 필터, 페이지네이션
+
+## 4. 상세 페이지 — 리소스별
+
+- app/admin/users/[userId]/page.tsx
+- app/admin/admin_users/[adminId]/page.tsx
+- app/admin/payments/[paymentId]/page.tsx
+  공통 조건:
+  - requireAdminAccess() 최상단 호출
+  - params는 반드시 await 후 사용
+  - 없는 ID는 notFound()
+  - 속성은 카드 단위로 그룹핑
+  - 연관 ID(order_id, user_id 등)는 Link로 해당 상세 페이지에 연결
+
+## 5. 테이블 구현 기준
+
+- components/admin/types.ts의 AdminTableColumn, AdminTableProps 타입 활용
+- components/admin/dashboard/RecentOrdersTable.tsx 스타일 참고
+- AdminListTable이 없으면 RecentOrdersTable 패턴으로 직접 구현
+
+## 공통 조건
+
+- 색상 하드코딩 금지 — --admin-\* 토큰만 사용
+- searchParams, params 모두 await 후 사용
+- requireAdminAccess()는 모든 Server Component 최상단에서 호출
+- 완성된 코드만 출력, 설명은 주석으로만 작성

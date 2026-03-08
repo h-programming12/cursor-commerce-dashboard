@@ -42,7 +42,23 @@ export const ADMIN_URLS = {
   DASHBOARD: "/admin",
   PRODUCTS: "/admin/products",
   ORDERS: "/admin/orders",
+  USERS: "/admin/users",
+  ADMINS: "/admin/admin_users",
+  PAYMENTS: "/admin/payments",
 } as const;
+
+export function getAdminUserDetailUrl(userId: string): string {
+  return `${ADMIN_URLS.USERS}/${userId}`;
+}
+export function getAdminAdminDetailUrl(adminId: string): string {
+  return `${ADMIN_URLS.ADMINS}/${adminId}`;
+}
+export function getAdminPaymentDetailUrl(paymentId: string): string {
+  return `${ADMIN_URLS.PAYMENTS}/${paymentId}`;
+}
+export function getAdminOrderDetailUrl(orderId: string): string {
+  return `${ADMIN_URLS.ORDERS}/${orderId}`;
+}
 
 // ============================================
 // 접근 권한 타입
@@ -148,6 +164,24 @@ export const ROUTE_CONFIG_MAP: Record<string, RouteConfig> = {
     name: "주문 관리",
     description: "관리자 주문 관리 페이지",
   },
+  [ADMIN_URLS.USERS]: {
+    path: ADMIN_URLS.USERS,
+    access: "admin",
+    name: "유저 관리",
+    description: "관리자 유저 목록 페이지",
+  },
+  [ADMIN_URLS.ADMINS]: {
+    path: ADMIN_URLS.ADMINS,
+    access: "admin",
+    name: "관리자 계정",
+    description: "관리자 계정 목록 페이지",
+  },
+  [ADMIN_URLS.PAYMENTS]: {
+    path: ADMIN_URLS.PAYMENTS,
+    access: "admin",
+    name: "결제 관리",
+    description: "관리자 결제 목록 페이지",
+  },
 };
 
 // ============================================
@@ -184,13 +218,37 @@ export function getRouteConfig(path: string): RouteConfig | undefined {
     };
   }
 
-  // 동적 라우트 매칭 (예: /admin/orders/[orderId] - 향후 확장 가능)
+  // 동적 라우트 매칭 (예: /admin/orders/[orderId])
   if (path.startsWith("/admin/orders/") && path !== "/admin/orders") {
     return {
       path,
       access: "admin" as const,
       name: "주문 상세",
       description: "관리자 주문 상세 페이지",
+    };
+  }
+  if (path.startsWith("/admin/users/") && path !== "/admin/users") {
+    return {
+      path,
+      access: "admin" as const,
+      name: "유저 상세",
+      description: "관리자 유저 상세 페이지",
+    };
+  }
+  if (path.startsWith("/admin/admin_users/") && path !== "/admin/admin_users") {
+    return {
+      path,
+      access: "admin" as const,
+      name: "관리자 상세",
+      description: "관리자 계정 상세 페이지",
+    };
+  }
+  if (path.startsWith("/admin/payments/") && path !== "/admin/payments") {
+    return {
+      path,
+      access: "admin" as const,
+      name: "결제 상세",
+      description: "관리자 결제 상세 페이지",
     };
   }
 
