@@ -57,7 +57,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         lineHeight: adminTypography.semantic.button.medium.lineHeight,
         borderRadius: "4px",
         backgroundColor: adminColors.background.default,
-        borderColor: error ? adminColors.semantic.error : "#E9E7FD",
+        borderColor: error
+          ? adminColors.semantic.error
+          : adminColors.neutral["03"]["100"],
         placeholderColor: adminColors.text.stormGray || "#8B909A",
         textColor: adminColors.text.primary,
         focusRingColor: adminColors.neutral["07"]["100"],
@@ -71,7 +73,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="block mb-1 text-xs font-bold"
+            className="block mb-2 text-xs font-bold"
             style={{
               color:
                 variant === "commerce"

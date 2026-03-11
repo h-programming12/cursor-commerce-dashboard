@@ -1,0 +1,49 @@
+---
+alwaysApply: true
+---
+
+상품 등록/수정/삭제 기능을 구현해줘.
+
+피그마 링크 분석:
+
+- 채널: yentmgc1
+- 링크: https://www.figma.com/design/PrPYG8hrEWB6IMFit7gol5/Commerce---Admin-%ED%85%9C%ED%94%8C%EB%A6%BF--%EB%B3%B5%EC%82%AC-?node-id=245-12804&t=HJVKqtDJmJjZ54bd-4
+
+기존 코드 참고:
+
+- components/ui/input.tsx의 Input 컴포넌트 (variant="admin") 활용
+- components/ui/dropdown.tsx의 Dropdown 컴포넌트 활용
+- types/supabase.ts의 products 테이블 Insert/Update 타입 기반
+- lib/auth/admin.ts의 인증 패턴 참고
+  (단, Server Action에서는 redirect 대신 에러 객체 반환)
+- app/admin/queries.ts의 getProductDetail 함수 활용
+- commons/constants/url.ts의 ADMIN_URLS 사용
+
+Server Actions (app/admin/products/product-actions.ts):
+
+- createProduct, updateProduct, deleteProduct 구현
+- 권한 검증 후 supabase 연동
+- revalidatePath로 캐시 무효화
+- 반환 형식: { success: boolean; error?: string; data?: Product }
+
+\*공통 폼 (app/admin/products/ProductForm.tsx):
+
+- mode: "create" | "edit" prop으로 모드 구분
+- onSubmit: 각각 생성/수정 액션 전달
+- admin 디자인 토큰 (--admin-\*) 사용
+- 이미지 URL 입력 시 실시간 미리보기
+- 클라이언트 검증: 상품명(필수), 가격(필수, 0 이상), 할인가(정가 미만)
+
+페이지
+
+- app/admin/products/new/page.tsx (등록)
+- app/admin/products/[productId]/edit/page.tsx (수정)
+- 기존 상세 페이지에 수정/삭제 버튼 추가
+- AdminSidebar의 "Add Products" 주석 해제 및 active 로직 수정
+
+공통 조건:
+
+- 색상 하드코딩 금지 — --admin-\* 토큰만 사용
+- requireAdminAccess()는 모든 Server Component 최상단 호출
+- params, searchParams 모두 await 후 사용
+- 완성된 코드만 출력, 설명은 주석으로만 작성

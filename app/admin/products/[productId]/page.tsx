@@ -1,8 +1,9 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { requireAdminAccess } from "@/lib/auth/admin";
 import { getProductDetail } from "@/app/admin/queries";
 import { ADMIN_URLS, getAdminOrderDetailUrl } from "@/commons/constants/url";
+import { deleteProduct } from "../product-actions";
 
 function formatDate(iso: string | null): string {
   if (!iso) return "-";
@@ -34,6 +35,12 @@ const valueStyle = {
   fontFamily: "var(--admin-font-public-sans)",
   color: "var(--admin-text-primary)",
 };
+
+async function deleteAndRedirect(productId: string) {
+  "use server";
+  await deleteProduct(productId);
+  redirect(ADMIN_URLS.PRODUCTS);
+}
 
 export default async function AdminProductDetailPage({
   params,
@@ -70,6 +77,30 @@ export default async function AdminProductDetailPage({
         >
           뒤로가기
         </Link>
+        <Link
+          href={`${ADMIN_URLS.PRODUCTS}/${product.id}/edit`}
+          className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 rounded px-3 py-1.5 text-sm"
+          style={{
+            backgroundColor: "var(--admin-primary-main)",
+            color: "var(--admin-text-inverse)",
+            fontFamily: "var(--admin-font-public-sans)",
+          }}
+        >
+          수정
+        </Link>
+        <form action={deleteAndRedirect.bind(null, product.id)}>
+          <button
+            type="submit"
+            className="px-3 py-1.5 rounded text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+            style={{
+              backgroundColor: "var(--admin-semantic-error)",
+              color: "var(--admin-text-inverse)",
+              fontFamily: "var(--admin-font-public-sans)",
+            }}
+          >
+            삭제
+          </button>
+        </form>
       </div>
 
       <section style={cardStyle}>
@@ -84,36 +115,70 @@ export default async function AdminProductDetailPage({
         >
           기본 정보
         </h2>
-        <dl className="grid gap-3" style={{ gridTemplateColumns: "auto 1fr" }}>
-          <dt style={labelStyle}>ID</dt>
-          <dd style={valueStyle}>{product.id}</dd>
-          <dt style={labelStyle}>상품명</dt>
-          <dd style={valueStyle}>{product.name}</dd>
-          <dt style={labelStyle}>설명</dt>
-          <dd style={valueStyle}>{product.description ?? "-"}</dd>
-          <dt style={labelStyle}>정가</dt>
-          <dd style={valueStyle}>
-            {new Intl.NumberFormat("ko-KR").format(Number(product.price))}원
-          </dd>
-          <dt style={labelStyle}>할인가</dt>
-          <dd style={valueStyle}>
-            {product.sale_price != null
-              ? `${new Intl.NumberFormat("ko-KR").format(
-                  Number(product.sale_price)
-                )}원`
-              : "-"}
-          </dd>
-          <dt style={labelStyle}>상태</dt>
-          <dd style={valueStyle}>{product.status}</dd>
-          <dt style={labelStyle}>카테고리</dt>
-          <dd style={valueStyle}>
-            {product.categories?.length ? product.categories.join(", ") : "-"}
-          </dd>
-          <dt style={labelStyle}>등록일</dt>
-          <dd style={valueStyle}>{formatDate(product.created_at)}</dd>
-          <dt style={labelStyle}>수정일</dt>
-          <dd style={valueStyle}>{formatDate(product.updated_at)}</dd>
-        </dl>
+        <div className="grid gap-6 md:grid-cols-[minmax(0,2fr)_minmax(0,1.5fr)]">
+          <dl
+            className="grid gap-3"
+            style={{ gridTemplateColumns: "auto 1fr" }}
+          >
+            <dt style={labelStyle}>ID</dt>
+            <dd style={valueStyle}>{product.id}</dd>
+            <dt style={labelStyle}>상품명</dt>
+            <dd style={valueStyle}>{product.name}</dd>
+            <dt style={labelStyle}>설명</dt>
+            <dd style={valueStyle}>{product.description ?? "-"}</dd>
+            <dt style={labelStyle}>정가</dt>
+            <dd style={valueStyle}>
+              {new Intl.NumberFormat("ko-KR").format(Number(product.price))}원
+            </dd>
+            <dt style={labelStyle}>할인가</dt>
+            <dd style={valueStyle}>
+              {product.sale_price != null
+                ? `${new Intl.NumberFormat("ko-KR").format(
+                    Number(product.sale_price)
+                  )}원`
+                : "-"}
+            </dd>
+            <dt style={labelStyle}>상태</dt>
+            <dd style={valueStyle}>{product.status}</dd>
+            <dt style={labelStyle}>카테고리</dt>
+            <dd style={valueStyle}>
+              {product.categories?.length ? product.categories.join(", ") : "-"}
+            </dd>
+            <dt style={labelStyle}>등록일</dt>
+            <dd style={valueStyle}>{formatDate(product.created_at)}</dd>
+            <dt style={labelStyle}>수정일</dt>
+            <dd style={valueStyle}>{formatDate(product.updated_at)}</dd>
+          </dl>
+          <div className="flex items-center justify-center">
+            <div
+              className="flex items-center justify-center overflow-hidden rounded border w-full max-w-sm"
+              style={{
+                borderColor: "var(--admin-border-default)",
+                backgroundColor: "var(--admin-background-light)",
+                minHeight: "220px",
+              }}
+            >
+              {product.image_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={product.image_url}
+                  alt={product.name}
+                  className="max-h-72 w-full object-contain"
+                />
+              ) : (
+                <span
+                  style={{
+                    ...valueStyle,
+                    color: "var(--admin-text-tertiary)",
+                    fontSize: "var(--admin-text-sm)",
+                  }}
+                >
+                  등록된 상품 이미지가 없습니다.
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
       </section>
 
       <section style={cardStyle}>

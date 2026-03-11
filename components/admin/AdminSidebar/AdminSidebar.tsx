@@ -93,9 +93,27 @@ function SidebarLink({ href, label, icon, active }: SidebarLinkProps) {
 export function AdminSidebar({ className }: { className?: string }) {
   const pathname = usePathname();
 
-  const isActive = (href: string) =>
-    pathname === href ||
-    (href !== ADMIN_URLS.DASHBOARD && pathname.startsWith(href + "/"));
+  const isActive = (href: string) => {
+    if (href === ADMIN_URLS.PRODUCTS) {
+      return (
+        pathname === ADMIN_URLS.PRODUCTS ||
+        (pathname.startsWith(ADMIN_URLS.PRODUCTS + "/") &&
+          !pathname.startsWith(ADMIN_URLS.NEW_PRODUCT))
+      );
+    }
+
+    if (href === ADMIN_URLS.NEW_PRODUCT) {
+      return (
+        pathname === ADMIN_URLS.NEW_PRODUCT ||
+        pathname.startsWith(ADMIN_URLS.NEW_PRODUCT + "/")
+      );
+    }
+
+    return (
+      pathname === href ||
+      (href !== ADMIN_URLS.DASHBOARD && pathname.startsWith(href + "/"))
+    );
+  };
 
   return (
     <aside
@@ -144,12 +162,12 @@ export function AdminSidebar({ className }: { className?: string }) {
             PRODUCTS
           </div>
           <div className="flex flex-col gap-1">
-            {/* <SidebarLink
+            <SidebarLink
               href={ADMIN_URLS.NEW_PRODUCT}
               label="Add Products"
               icon={<FiPlusCircle size={22} style={{ color: "inherit" }} />}
-              active={isActive(ADMIN_URLS.PRODUCTS)}
-            /> */}
+              active={isActive(ADMIN_URLS.NEW_PRODUCT)}
+            />
             <SidebarLink
               href={ADMIN_URLS.PRODUCTS}
               label="Product List"
