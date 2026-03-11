@@ -41,6 +41,7 @@ export const ACCOUNT_URLS = {
 export const ADMIN_URLS = {
   DASHBOARD: "/admin",
   PRODUCTS: "/admin/products",
+  NEW_PRODUCT: "/admin/products/new",
   ORDERS: "/admin/orders",
   USERS: "/admin/users",
   ADMINS: "/admin/admin_users",
@@ -58,6 +59,9 @@ export function getAdminPaymentDetailUrl(paymentId: string): string {
 }
 export function getAdminOrderDetailUrl(orderId: string): string {
   return `${ADMIN_URLS.ORDERS}/${orderId}`;
+}
+export function getAdminProductDetailUrl(productId: string): string {
+  return `${ADMIN_URLS.PRODUCTS}/${productId}`;
 }
 
 // ============================================
@@ -249,6 +253,14 @@ export function getRouteConfig(path: string): RouteConfig | undefined {
       access: "admin" as const,
       name: "결제 상세",
       description: "관리자 결제 상세 페이지",
+    };
+  }
+  if (path.startsWith("/admin/products/") && path !== "/admin/products") {
+    return {
+      path,
+      access: "admin" as const,
+      name: "상품 상세",
+      description: "관리자 상품 상세 페이지",
     };
   }
 

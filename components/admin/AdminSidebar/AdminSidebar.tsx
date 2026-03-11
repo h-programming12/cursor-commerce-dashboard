@@ -144,12 +144,12 @@ export function AdminSidebar({ className }: { className?: string }) {
             PRODUCTS
           </div>
           <div className="flex flex-col gap-1">
-            <SidebarLink
-              href={ADMIN_URLS.PRODUCTS}
+            {/* <SidebarLink
+              href={ADMIN_URLS.NEW_PRODUCT}
               label="Add Products"
               icon={<FiPlusCircle size={22} style={{ color: "inherit" }} />}
               active={isActive(ADMIN_URLS.PRODUCTS)}
-            />
+            /> */}
             <SidebarLink
               href={ADMIN_URLS.PRODUCTS}
               label="Product List"

@@ -6,6 +6,7 @@ import Link from "next/link";
 import type { UserListItem } from "@/app/admin/queries";
 import type { UserListRoleFilter } from "@/app/admin/queries";
 import { getAdminUserDetailUrl } from "@/commons/constants/url";
+import { StatusFilter } from "@/components/admin/filter/StatusFilter";
 
 const thStyle = {
   fontSize: "var(--admin-caption-2-semi-font-size)",
@@ -36,7 +37,7 @@ function formatAmount(amount: number): string {
   return new Intl.NumberFormat("ko-KR").format(amount) + "원";
 }
 
-const ROLES: { value: UserListRoleFilter; label: string }[] = [
+const ROLE_OPTIONS: { value: UserListRoleFilter; label: string }[] = [
   { value: "all", label: "전체" },
   { value: "user", label: "유저" },
   { value: "admin", label: "관리자" },
@@ -60,13 +61,6 @@ export function UsersListClient({
   const router = useRouter();
   const pathname = usePathname();
   const totalPages = Math.max(1, Math.ceil(initialTotal / initialPageSize));
-
-  function setRole(role: UserListRoleFilter) {
-    const u = new URLSearchParams();
-    u.set("role", role);
-    u.set("page", "1");
-    router.push(`${pathname}?${u.toString()}`);
-  }
 
   function setPage(page: number) {
     const u = new URLSearchParams();
@@ -98,30 +92,11 @@ export function UsersListClient({
         >
           유저 리스트
         </h1>
-        <div className="flex gap-2">
-          {ROLES.map((r) => (
-            <button
-              key={r.value}
-              type="button"
-              onClick={() => setRole(r.value)}
-              className="px-3 py-1.5 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-              style={{
-                backgroundColor:
-                  initialRole === r.value
-                    ? "var(--admin-primary-main)"
-                    : "var(--admin-background-light)",
-                color:
-                  initialRole === r.value
-                    ? "var(--admin-text-inverse)"
-                    : "var(--admin-text-primary)",
-                fontFamily: "var(--admin-font-public-sans)",
-                fontSize: "var(--admin-text-sm)",
-              }}
-            >
-              {r.label}
-            </button>
-          ))}
-        </div>
+        <StatusFilter
+          options={ROLE_OPTIONS}
+          value={initialRole}
+          paramName="role"
+        />
       </div>
       {initialData.length === 0 ? (
         <div className="p-5">

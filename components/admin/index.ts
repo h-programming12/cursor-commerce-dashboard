@@ -6,6 +6,7 @@ export { AdminSidebar } from "./AdminSidebar/AdminSidebar";
 export { AdminToggle } from "./AdminToggle/AdminToggle";
 export { AdminSettingsCard } from "./AdminSettingsCard/AdminSettingsCard";
 export { AdminPageSizeSelector } from "./AdminPageSizeSelector/AdminPageSizeSelector";
+export { StatusFilter } from "./filter/StatusFilter";
 
 // Types
 export type * from "./types";

@@ -485,3 +485,215 @@ export async function getPaymentDetail(
     order_total_amount: order != null ? Number(order.total_amount) : undefined,
   };
 }
+
+// --- 상품 리스트·상세 ---
+
+export type ProductListStatusFilter =
+  | "all"
+  | "registered"
+  | "hidden"
+  | "sold_out";
+
+export interface ProductsListParams {
+  page: number;
+  pageSize: number;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  status?: ProductListStatusFilter;
+  category?: string;
+}
+
+export interface ProductListItem {
+  id: string;
+  name: string;
+  price: number;
+  sale_price: number | null;
+  image_url: string | null;
+  status: string;
+  categories: string[] | null;
+  created_at: string | null;
+}
+
+export async function getProductsList(
+  params: ProductsListParams
+): Promise<{ data: ProductListItem[]; total: number }> {
+  const {
+    page,
+    pageSize,
+    search,
+    sortBy = "created_at",
+    sortOrder = "desc",
+    status,
+    category,
+  } = params;
+  const supabase = await createClient();
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  let q = supabase
+    .from("products")
+    .select(
+      "id, name, price, sale_price, image_url, status, categories, created_at",
+      {
+        count: "exact",
+      }
+    );
+
+  if (search?.trim()) {
+    q = q.ilike("name", `%${search.trim()}%`);
+  }
+  if (status && status !== "all") {
+    q = q.eq("status", status);
+  }
+  if (category?.trim()) {
+    q = q.contains("categories", [category.trim()]);
+  }
+
+  const orderCol =
+    sortBy === "name" ? "name" : sortBy === "price" ? "price" : "created_at";
+  q = q.order(orderCol, { ascending: sortOrder === "asc" });
+  const { data: rows, count, error } = await q.range(from, to);
+
+  if (error) return { data: [], total: 0 };
+  const data = (rows ?? []) as ProductListItem[];
+  return { data, total: count ?? 0 };
+}
+
+export interface ProductDetailReviewSummary {
+  review_count: number;
+  rating_average: number | null;
+}
+
+export interface ProductDetailReviewItem {
+  id: string;
+  user_id: string;
+  rating: number;
+  content: string | null;
+  created_at: string | null;
+}
+
+export interface ProductDetailOrderItem {
+  order_id: string;
+  order_item_id: string;
+  quantity: number;
+  created_at: string | null;
+}
+
+export interface ProductDetail {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  sale_price: number | null;
+  image_url: string | null;
+  status: string;
+  categories: string[] | null;
+  rating_average: number | null;
+  created_at: string | null;
+  updated_at: string | null;
+  review_count: number;
+  rating_avg: number | null;
+  sold_quantity: number;
+  reviews: ProductDetailReviewItem[];
+  order_items: ProductDetailOrderItem[];
+}
+
+export async function getProductDetail(
+  productId: string
+): Promise<ProductDetail | null> {
+  const supabase = await createClient();
+  const { data: product, error } = await supabase
+    .from("products")
+    .select(
+      "id, name, description, price, sale_price, image_url, status, categories, rating_average, created_at, updated_at"
+    )
+    .eq("id", productId)
+    .maybeSingle();
+
+  if (error || !product) return null;
+  type ProductRow = {
+    id: string;
+    name: string;
+    description: string | null;
+    price: number;
+    sale_price: number | null;
+    image_url: string | null;
+    status: string;
+    categories: string[] | null;
+    rating_average: number | null;
+    created_at: string | null;
+    updated_at: string | null;
+  };
+  const p = product as ProductRow;
+
+  const [{ data: reviewRows }, { count: reviewCount }] = await Promise.all([
+    supabase
+      .from("reviews")
+      .select("id, user_id, rating, content, created_at")
+      .eq("product_id", productId)
+      .order("created_at", { ascending: false })
+      .limit(20),
+    supabase
+      .from("reviews")
+      .select("id", { count: "exact", head: true })
+      .eq("product_id", productId),
+  ]);
+  type ReviewRow = {
+    id: string;
+    user_id: string;
+    rating: number;
+    content: string | null;
+    created_at: string | null;
+  };
+  const reviews = (reviewRows ?? []) as ReviewRow[];
+  const totalReviewCount = reviewCount ?? 0;
+
+  const { data: orderItemRows } = await supabase
+    .from("order_items")
+    .select("id, order_id, quantity, created_at")
+    .eq("product_id", productId)
+    .order("created_at", { ascending: false })
+    .limit(50);
+  type OiRow = {
+    id: string;
+    order_id: string;
+    quantity: number;
+    created_at: string | null;
+  };
+  const orderItems = (orderItemRows ?? []) as OiRow[];
+
+  const review_count = totalReviewCount;
+  const rating_avg = p.rating_average ?? null;
+  const sold_quantity = orderItems.reduce((s, o) => s + o.quantity, 0);
+
+  return {
+    id: p.id,
+    name: p.name,
+    description: p.description,
+    price: p.price,
+    sale_price: p.sale_price,
+    image_url: p.image_url,
+    status: p.status,
+    categories: p.categories,
+    rating_average: p.rating_average,
+    created_at: p.created_at,
+    updated_at: p.updated_at,
+    review_count,
+    rating_avg,
+    sold_quantity,
+    reviews: reviews.map((r) => ({
+      id: r.id,
+      user_id: r.user_id,
+      rating: r.rating,
+      content: r.content,
+      created_at: r.created_at,
+    })),
+    order_items: orderItems.map((oi) => ({
+      order_id: oi.order_id,
+      order_item_id: oi.id,
+      quantity: oi.quantity,
+      created_at: oi.created_at,
+    })),
+  };
+}

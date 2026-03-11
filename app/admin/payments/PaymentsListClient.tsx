@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import type { PaymentListItem } from "@/app/admin/queries";
 import { getAdminPaymentDetailUrl } from "@/commons/constants/url";
+import { StatusFilter } from "@/components/admin/filter/StatusFilter";
 
 const thStyle = {
   fontSize: "var(--admin-caption-2-semi-font-size)",
@@ -35,8 +36,15 @@ function formatAmount(amount: number): string {
   return new Intl.NumberFormat("ko-KR").format(amount) + "원";
 }
 
-const STATUS_OPTIONS = [
-  { value: "", label: "전체" },
+type PaymentStatusFilter =
+  | "all"
+  | "pending"
+  | "succeeded"
+  | "failed"
+  | "cancelled";
+
+const STATUS_OPTIONS: { value: PaymentStatusFilter; label: string }[] = [
+  { value: "all", label: "전체" },
   { value: "pending", label: "대기" },
   { value: "succeeded", label: "성공" },
   { value: "failed", label: "실패" },
@@ -51,6 +59,17 @@ interface PaymentsListClientProps {
   initialStatus: string;
 }
 
+function toStatusFilter(s: string): PaymentStatusFilter {
+  if (
+    s === "pending" ||
+    s === "succeeded" ||
+    s === "failed" ||
+    s === "cancelled"
+  )
+    return s;
+  return "all";
+}
+
 export function PaymentsListClient({
   initialData,
   initialTotal,
@@ -62,16 +81,11 @@ export function PaymentsListClient({
   const pathname = usePathname();
   const totalPages = Math.max(1, Math.ceil(initialTotal / initialPageSize));
 
-  function setStatus(status: string) {
-    const u = new URLSearchParams();
-    if (status) u.set("status", status);
-    u.set("page", "1");
-    router.push(`${pathname}?${u.toString()}`);
-  }
+  const statusValue = toStatusFilter(initialStatus);
 
   function setPage(page: number) {
     const u = new URLSearchParams();
-    if (initialStatus) u.set("status", initialStatus);
+    if (statusValue !== "all") u.set("status", statusValue);
     u.set("page", String(page));
     router.push(`${pathname}?${u.toString()}`);
   }
@@ -99,24 +113,11 @@ export function PaymentsListClient({
         >
           결제 리스트
         </h1>
-        <select
-          value={initialStatus}
-          onChange={(e) => setStatus(e.target.value)}
-          className="rounded border px-3 py-1.5 focus-visible:outline-none focus-visible:ring-2"
-          style={{
-            borderColor: "var(--admin-border-card)",
-            backgroundColor: "var(--admin-background-default)",
-            fontFamily: "var(--admin-font-public-sans)",
-            fontSize: "var(--admin-text-sm)",
-            color: "var(--admin-text-primary)",
-          }}
-        >
-          {STATUS_OPTIONS.map((o) => (
-            <option key={o.value || "all"} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
+        <StatusFilter
+          options={STATUS_OPTIONS}
+          value={statusValue}
+          paramName="status"
+        />
       </div>
       {initialData.length === 0 ? (
         <div className="p-5">

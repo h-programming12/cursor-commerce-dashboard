@@ -1,0 +1,47 @@
+---
+alwaysApply: true
+---
+
+아래 강의안 기준으로 Admin 상품 리스트·상세·필터 공용 컴포넌트를 구현해줘.
+
+## 구현 범위
+
+0. 피그마 분석 후 진행
+
+   - 채널: px5a4so0
+   - 피그마 링크: https://www.figma.com/design/PrPYG8hrEWB6IMFit7gol5/Commerce---Admin-%ED%85%9C%ED%94%8C%EB%A6%BF--%EB%B3%B5%EC%82%AC-?node-id=245-12584&t=HJVKqtDJmJjZ54bd-4
+   - 기존에 작업한 리스트 (app/admin/users/page, app/admin/admin_users/page, app/admin/payments/page) 디자인 및 구성 참고
+
+1. **상품 리스트** (`/admin/products`)
+
+   - Server: `app/admin/products/page.tsx` — `requireAdminAccess()`, `searchParams`(page, search, sortBy, sortOrder, status, category) 파싱 후 `getProductsList()` 호출, `ProductsListClient`에 initial 값 전달.
+   - Client: `app/admin/products/ProductsListClient.tsx` — 검색·정렬·필터 상태 관리, URL은 `useRouter`+`usePathname`+`URLSearchParams`로 `router.push(\`${pathname}?${params}\`)`처리. 테이블은 유저/결제 리스트처럼`<table>`직접 구현,`thStyle`/`tdStyle` 공통 스타일 객체 사용. 행 클릭 시 상품 상세로 이동.
+   - 쿼리: `app/admin/queries.ts`에 `getProductsList({ page, pageSize, search, sortBy, sortOrder, status, category })` 추가. 검색은 `name`에 `.ilike`, 정렬은 sortBy/sortOrder에 따라 `.order()` 또는 클라이언트 정렬, status/category 필터 적용. 반환 타입(리스트 아이템)도 정의.
+
+2. **상품 상세** (`/admin/products/[productId]`)
+
+   - `app/admin/products/[productId]/page.tsx` — `getProductDetail(productId)` 호출, 없으면 `notFound()`. 4개 카드: 기본 정보, 통계 정보(리뷰 수·평균 평점·판매 수량), 리뷰 목록(클릭 시 리뷰 상세 링크), 주문 내역(클릭 시 주문 상세 링크). 카드 스타일은 기존 유저/결제 상세와 동일한 `var(--admin-background-default)`, `var(--admin-border-default)` 등 사용. 상단에 "상품 상세" 제목 + `ADMIN_URLS.PRODUCTS`로 가는 "뒤로가기" 링크.
+   - `app/admin/queries.ts`에 `getProductDetail(productId)` 추가. 상품 기본 정보 + 리뷰 집계·주문 항목(연관 데이터) 포함. 연관 데이터는 필요한 만큼만 조회.
+
+3. **URL 상수**
+
+   - `commons/constants/url.ts`: `ADMIN_URLS`에 `NEW_PRODUCT`(상품 생성 페이지 경로) 추가, `getAdminProductDetailUrl(productId)` 함수 추가.
+
+4. **필터 공용 컴포넌트**
+   - `components/admin/filter/StatusFilter.tsx` 생성.
+     - 제네릭 `StatusFilter<T>`,
+     - props: `options: { label, value: T | "all" }[]`, -`value`, `paramName?`, `baseUrl?`.
+     - 변경 시 `searchParams` 복사 후 `page=1` 설정, "all"이면 해당 param 삭제, 아니면 set 후 `router.push(pathname?params 또는 baseUrl?params)`.
+     - 버튼 스타일은 `var(--admin-primary-main)` / `var(--admin-background-light)` 등 Admin 토큰 사용. 접근성(focus-visible 등) 적용.
+   - `components/admin/index.ts`에 StatusFilter export 추가 (필요 시 filter 폴더 index 재export).
+   - 앞서서 구현한 대시보드 유저 리스트 / 관리자 리스트 / 결제 리스트에서도 해당 공통 필터 사용하도록 개선
+
+## 제약·규칙
+
+- 기존 패턴 준수: 유저/결제 리스트의 Server·Client 분리, `pathname`+`router.push`, 테이블 스타일(`thStyle`/`tdStyle`) 참고.
+- 디자인: 하드코딩 색상 금지, `var(--admin-*)` 토큰만 사용.
+- URL: `ADMIN_URLS`, `getAdminUserDetailUrl` 등 기존 상수/헬퍼 사용. 상품 상세 이동은 `getAdminProductDetailUrl(productId)` 사용.
+- 타입: `any` 사용 최소화, 쿼리 응답·리스트 아이템 타입 명시.
+- DB 스키마는 기존 `products`, `reviews`, `order_items`, `orders` 등이 있다고 가정하고, 없으면 필요한 컬럼만 가정해서 쿼리만 작성해줘.
+
+위 범위만 구현하고, 상품 생성 페이지(NEW_PRODUCT 대상)나 리뷰 상세 페이지 등 다른 라우트는 만들지 마. 강의안에 있는 코드 스니펫 구조와 표를 참고해서 그대로 구현해줘.
