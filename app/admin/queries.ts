@@ -332,6 +332,73 @@ export async function getPaymentsList(
   return { data, total };
 }
 
+export type OrderListStatusFilter =
+  | "all"
+  | "pending"
+  | "paid"
+  | "canceled"
+  | "refunded";
+
+export interface OrderListFilters {
+  status?: string;
+}
+
+export interface OrderListItem {
+  id: string;
+  user_id: string;
+  user_email: string | null;
+  status: string;
+  total_amount: number;
+  payment_status: string;
+  created_at: string | null;
+}
+
+export async function getOrdersList(
+  page: number,
+  pageSize: number,
+  filters?: OrderListFilters
+): Promise<{ data: OrderListItem[]; total: number }> {
+  const supabase = await createClient();
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  let q = supabase
+    .from("orders")
+    .select("id, user_id, status, total_amount, payment_status, created_at", {
+      count: "exact",
+    })
+    .order("created_at", { ascending: false });
+
+  if (filters?.status) {
+    q = q.eq("status", filters.status);
+  }
+  const { data: rows, count, error } = await q.range(from, to);
+
+  if (error) return { data: [], total: 0 };
+  const orders = (rows ?? []) as (OrderListItem & {
+    user_email?: string | null;
+  })[];
+  const total = count ?? 0;
+  if (!orders.length) return { data: [], total };
+
+  const userIds = [...new Set(orders.map((o) => o.user_id))];
+  const { data: userRows } = await supabase
+    .from("users")
+    .select("id, email")
+    .in("id", userIds);
+  type U = { id: string; email: string };
+  const userMap = new Map<string, string>();
+  for (const u of (userRows ?? []) as U[]) {
+    userMap.set(u.id, u.email);
+  }
+
+  const data: OrderListItem[] = orders.map((o) => ({
+    ...o,
+    user_email: userMap.get(o.user_id) ?? null,
+  }));
+  return { data, total };
+}
+
 export interface UserDetail {
   id: string;
   email: string;

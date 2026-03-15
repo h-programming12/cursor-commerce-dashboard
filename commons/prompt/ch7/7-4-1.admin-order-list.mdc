@@ -1,0 +1,66 @@
+관리자 대시보드의 주문 관리 페이지에 주문 리스트와 상태별 필터를 구현해줘.
+
+현재 상황:
+
+- app/admin/orders/page.tsx에 placeholder만 있음 ("주문 목록 및 관리 구현 예정")
+- app/admin/queries.ts에 getRecentOrders(limit) 함수가 있지만 페이지네이션/필터 미지원
+- app/admin/payments/PaymentsListClient.tsx와 app/admin/payments/page.tsx가 참고 패턴으로 존재
+- components/admin/filter/StatusFilter.tsx 범용 필터 컴포넌트가 이미 구현되어 있음
+- commons/constants/url.ts에 ADMIN_URLS.ORDERS, getAdminOrderDetailUrl() 이미 존재
+- orders 테이블 status 값: 'pending', 'paid', 'canceled', 'refunded'
+- orders 테이블 payment_status 값: 'requested', 'success', 'failed', 'refund_requested', 'refund_completed'
+
+요구사항:
+
+1. queries.ts에 추가:
+
+   - OrderListStatusFilter 타입: "all" | "pending" | "paid" | "canceled" | "refunded"
+   - OrderListFilters 인터페이스: { status?: string }
+   - OrderListItem 인터페이스: id, user_id, user_email, status, total_amount, payment_status, created_at
+   - getOrdersList(page, pageSize, filters?) 함수: getPaymentsList와 동일한 패턴
+     - Supabase에서 orders 테이블 조회
+     - count: "exact" + .range()로 서버 사이드 페이지네이션
+     - filters.status가 있으면 .eq("status", filters.status)
+     - users 테이블 조인으로 user_email 매핑
+     - created_at DESC 정렬
+
+2. page.tsx 수정 (placeholder 교체):
+
+   - searchParams에서 page, status 파싱
+   - getOrdersList 호출
+   - OrdersListClient 컴포넌트에 initialData, initialTotal, initialPage, initialPageSize, initialStatus 전달
+   - app/admin/payments/page.tsx와 동일한 구조
+
+3. OrdersListClient.tsx 신규 생성:
+   - PaymentsListClient.tsx와 동일한 구조
+   - StatusFilter 컴포넌트 재사용
+   - 상태 필터 옵션: 전체(all), 대기(pending), 결제완료(paid), 취소(canceled), 환불(refunded)
+   - 테이블 컬럼: 주문 ID, 고객 이메일, 주문 상태, 결제 상태, 주문 금액, 주문일시
+   - 주문 상태 뱃지 색상:
+     - pending → var(--admin-text-secondary) (회색)
+     - paid → var(--admin-semantic-success) (녹색)
+     - canceled → var(--admin-semantic-error) (적색)
+     - refunded → var(--admin-semantic-info) (파란색)
+   - 상태 뱃지: 인라인 span, color-mix로 12% 투명도 배경색 자동 생성
+   - 주문 ID 클릭 시 getAdminOrderDetailUrl(row.id)로 이동
+   - 행 클릭 시에도 동일하게 상세 페이지 이동
+   - 빈 상태 표시: "주문 내역이 없습니다."
+   - 페이지네이션: "이전" / "다음" 버튼, "N / M" 페이지 표시, "총 N건" 표시
+
+디자인:
+
+- Admin 디자인 토큰 사용 (--admin-\*)
+- 테이블 헤더: --admin-background-light, --admin-table-header-height, --admin-caption-2-semi-font-size, --admin-font-inter
+- 테이블 행: --admin-table-row-height, --admin-border-table-cell
+- 카드: rounded-lg border, --admin-background-default, --admin-border-card
+- 타이틀: --admin-headline-h7-font-size, --admin-font-poppins
+- 본문: --admin-text-md, --admin-font-public-sans
+- 접근성: role="button", tabIndex=0, onKeyDown Enter, focus-visible
+
+참고 파일 (반드시 읽고 패턴 일치시킬 것):
+
+- app/admin/payments/page.tsx — 서버 페이지 패턴
+- app/admin/payments/PaymentsListClient.tsx — 클라이언트 컴포넌트 패턴
+- app/admin/queries.ts — getPaymentsList 쿼리 패턴
+- components/admin/filter/StatusFilter.tsx — 필터 컴포넌트 사용법
+- commons/constants/url.ts — getAdminOrderDetailUrl 사용법
