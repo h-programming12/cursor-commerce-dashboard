@@ -45,6 +45,7 @@ export function ProductForm({ mode, product }: ProductFormProps) {
     product?.image_url ?? ""
   );
 
+  const [aiDescriptionLoading, setAiDescriptionLoading] = useState(false);
   const [form, setForm] = useState<FormState>({
     name: product?.name ?? "",
     price: product ? String(product.price) : "",
@@ -65,6 +66,48 @@ export function ProductForm({ mode, product }: ProductFormProps) {
     setForm((prev) => ({ ...prev, [key]: value }));
     if (key === "image_url") {
       setPreviewUrl(String(value));
+    }
+  }
+
+  async function handleGenerateAiDescription() {
+    const name = form.name.trim();
+    if (!name) return;
+    setAiDescriptionLoading(true);
+    try {
+      const price = form.price.trim() ? Number(form.price) : undefined;
+      const salePrice = form.sale_price.trim()
+        ? Number(form.sale_price)
+        : undefined;
+      const categories = form.categories.trim()
+        ? form.categories
+            .split(",")
+            .map((c) => c.trim())
+            .filter(Boolean)
+        : undefined;
+      const res = await fetch("/api/admin/generate-product-description", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          price,
+          sale_price: salePrice,
+          categories,
+        }),
+      });
+      const data = (await res.json()) as {
+        success: boolean;
+        description?: string;
+        error?: string;
+      };
+      if (data.success && typeof data.description === "string") {
+        handleChange("description", data.description);
+      } else {
+        alert(data.error ?? "상품 설명 생성에 실패했습니다.");
+      }
+    } catch {
+      alert("네트워크 오류가 발생했습니다.");
+    } finally {
+      setAiDescriptionLoading(false);
     }
   }
 
@@ -197,16 +240,44 @@ export function ProductForm({ mode, product }: ProductFormProps) {
       <div className="grid gap-4 md:grid-cols-[2fr_minmax(0,1fr)]">
         <div className="grid gap-4">
           <div>
-            <label
-              className="mb-2 block text-xs font-bold"
-              style={{
-                color: "var(--admin-text-tertiary)",
-                fontSize: "12px",
-                lineHeight: "12px",
-              }}
+            <div
+              className="mb-2 flex items-center gap-2 flex-wrap"
+              style={{ fontFamily: "var(--admin-font-public-sans)" }}
             >
-              설명
-            </label>
+              <label
+                className="text-xs font-bold"
+                style={{
+                  color: "var(--admin-text-tertiary)",
+                  fontSize: "12px",
+                  lineHeight: "12px",
+                }}
+              >
+                설명
+              </label>
+              <button
+                type="button"
+                onClick={handleGenerateAiDescription}
+                disabled={!form.name.trim() || aiDescriptionLoading}
+                className="rounded px-2 py-1 text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed"
+                style={{
+                  fontFamily: "var(--admin-font-public-sans)",
+                  fontSize: "12px",
+                  ...(form.name.trim() && !aiDescriptionLoading
+                    ? {
+                        backgroundColor: "var(--admin-primary-main)",
+                        color: "var(--admin-text-inverse)",
+                      }
+                    : {
+                        backgroundColor: "#9CA3AF",
+                        color: "var(--admin-text-inverse)",
+                      }),
+                }}
+              >
+                {aiDescriptionLoading
+                  ? "✨ AI 설명 생성 중..."
+                  : "✨ AI 설명 추가하기"}
+              </button>
+            </div>
             <textarea
               name="description"
               value={form.description}

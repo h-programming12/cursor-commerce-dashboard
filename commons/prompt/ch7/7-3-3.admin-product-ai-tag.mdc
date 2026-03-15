@@ -1,0 +1,56 @@
+---
+alwaysApply: true
+---
+
+상품 생성/수정 폼에 "AI 설명 자동 생성 기능"을 추가해줘.
+
+현재 상황:
+
+- ProductForm 컴포넌트가 이미 존재함 (app/admin/products/ProductForm.tsx)
+- 폼 상태를 FormState 객체로 관리 (form.name, form.description 등)
+- 상태 업데이트는 handleChange("key", value) 함수 사용
+- 상품명, 설명, 가격, 할인가, 이미지 URL, 상태, 카테고리, 추가 정보, 사이즈/치수 필드가 있음
+- lib/ai/gemini.ts에 generateGeminiText 함수가 이미 구현되어 있음 (모델: gemini-2.5-flash)
+- lib/ai/review-summary.ts에 리뷰 요약 기능이 참고 패턴으로 있음
+
+요구사항:
+
+1. 대시보드 > 상품 추가/상품 수정 폼 > 설명 필드 라벨 옆에 "✨ AI 설명 추가하기" 버튼 추가
+2. 버튼은 form.name이 입력되어 있을 때만 활성화
+3. 버튼 클릭 시:
+   - 로딩 상태 표시 ("✨ AI 설명 생성 중...")
+   - /api/admin/generate-product-description API Route로 POST 요청
+   - 요청 body: { name: string, price?: number, categories?: string[] }
+4. API 응답 성공 시:
+   - handleChange("description", data.description)으로 폼 상태 업데이트
+   - 로딩 상태 해제
+5. API 응답 실패 시:
+   - 에러 메시지 표시 (alert)
+   - 로딩 상태 해제
+
+API Route 구현:
+
+- 경로: app/api/admin/generate-product-description/route.ts
+- 권한 확인: users 테이블에서 role === "admin" 확인 (product-actions.ts의 requireAdminSession 패턴 참고)
+- 프롬프트 생성: lib/ai/prompts/product-description.ts에 generateProductDescriptionPrompt 함수 구현
+- Gemini API 호출: lib/ai/gemini.ts의 generateGeminiText 사용
+- 응답 형식: { success: boolean, description?: string, error?: string }
+
+프롬프트 생성 함수:
+
+- 경로: lib/ai/prompts/product-description.ts (새 디렉토리 및 파일 생성)
+- 함수명: generateProductDescriptionPrompt
+- 입력: { name: string, price?: number, categories?: string[] }
+- 출력: Gemini API에 전달할 프롬프트 문자열
+- 프롬프트 내용:
+  - 역할: "전자상거래 플랫폼의 상품 설명 작성 전문가"
+  - 톤: 매력적이고 정확한 설명
+  - 출력 형식: 2-3문단, 순수 텍스트 (마크다운 없음)
+
+디자인:
+
+- Admin 디자인 토큰 사용 (--admin-\*)
+- 버튼 비활성화 시: 회색 배경(#9CA3AF), cursor: not-allowed
+- 버튼 활성화 시: var(--admin-primary-main) 배경, var(--admin-text-inverse) 텍스트
+- 기존 ProductForm의 라벨 스타일(text-xs font-bold, fontSize: 12px)과 일관성 유지
+- 폰트: var(--admin-font-public-sans)
