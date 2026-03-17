@@ -553,6 +553,207 @@ export async function getPaymentDetail(
   };
 }
 
+export interface OrderDetailItem {
+  id: string;
+  product_id: string;
+  product_name: string;
+  product_image_url: string | null;
+  quantity: number;
+  unit_price: number;
+  sale_price: number | null;
+  discount_amount: number | null;
+  subtotal: number;
+  created_at: string | null;
+}
+
+export interface OrderDetailPayment {
+  id: string;
+  provider: string;
+  method: string;
+  amount: number;
+  currency: string;
+  status: string;
+  transaction_id: string | null;
+  payment_key: string | null;
+  approved_at: string | null;
+  created_at: string | null;
+}
+
+export interface OrderDetail {
+  id: string;
+  user_id: string;
+  user_email: string | null;
+  user_name: string | null;
+  user_phone: string | null;
+  status: string;
+  payment_status: string;
+  total_amount: number;
+  product_total_amount: number | null;
+  delivery_fee: number | null;
+  discount_total: number | null;
+  toss_order_id: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  receiver_name: string | null;
+  receiver_phone: string | null;
+  receiver_zipcode: string | null;
+  receiver_address1: string | null;
+  receiver_address2: string | null;
+  items: OrderDetailItem[];
+  payments: OrderDetailPayment[];
+}
+
+export async function getOrderDetail(
+  orderId: string
+): Promise<OrderDetail | null> {
+  const supabase = await createClient();
+  const { data: orderData, error: orderError } = await supabase
+    .from("orders")
+    .select("*")
+    .eq("id", orderId)
+    .maybeSingle();
+
+  if (orderError || !orderData) return null;
+
+  type OrderRow = {
+    id: string;
+    user_id: string;
+    status: string;
+    payment_status: string;
+    total_amount: number;
+    subtotal_amount?: number | null;
+    shipping_fee?: number | null;
+    discount_amount?: number | null;
+    toss_order_id: string | null;
+    contact_name: string | null;
+    contact_phone: string | null;
+    contact_email: string | null;
+    shipping_name: string | null;
+    shipping_phone: string | null;
+    shipping_address_line1: string | null;
+    shipping_address_line2: string | null;
+    shipping_city: string | null;
+    shipping_state: string | null;
+    shipping_zip: string | null;
+    shipping_country: string | null;
+    created_at: string | null;
+    updated_at: string | null;
+    paid_at: string | null;
+  };
+
+  const o = orderData as unknown as OrderRow;
+
+  const [{ data: userRow }, { data: itemsData }, { data: paymentRows }] =
+    await Promise.all([
+      supabase
+        .from("users")
+        .select("email, display_name, phone")
+        .eq("id", o.user_id)
+        .maybeSingle(),
+      supabase.from("order_items").select("*").eq("order_id", orderId),
+      supabase
+        .from("payments")
+        .select("*")
+        .eq("order_id", orderId)
+        .order("created_at", { ascending: false }),
+    ]);
+
+  type UserRow = {
+    email: string;
+    display_name: string | null;
+    phone: string | null;
+  } | null;
+
+  type ItemRow = {
+    id: string;
+    order_id: string;
+    product_id: string;
+    quantity: number;
+    unit_price: number;
+    unit_sale_price?: number | null;
+    product_name?: string | null;
+    product_image_url?: string | null;
+    line_subtotal?: number | null;
+    created_at: string | null;
+  };
+
+  type PaymentRow = {
+    id: string;
+    provider: string;
+    method: string;
+    amount: number;
+    currency: string;
+    status: string;
+    transaction_id: string | null;
+    payment_key: string | null;
+    approved_at: string | null;
+    created_at: string | null;
+  };
+
+  const u = (userRow ?? null) as UserRow;
+  const items = (itemsData ?? []) as ItemRow[];
+  const payments = (paymentRows ?? []) as PaymentRow[];
+
+  const orderItems: OrderDetailItem[] = items.map((row) => {
+    const subtotal =
+      row.line_subtotal != null
+        ? Number(row.line_subtotal)
+        : row.quantity * Number(row.unit_price);
+    return {
+      id: row.id,
+      product_id: row.product_id,
+      product_name: row.product_name ?? "",
+      product_image_url: row.product_image_url ?? null,
+      quantity: row.quantity,
+      unit_price: Number(row.unit_price),
+      sale_price:
+        row.unit_sale_price != null ? Number(row.unit_sale_price) : null,
+      discount_amount: null,
+      subtotal,
+      created_at: row.created_at,
+    };
+  });
+
+  const orderPayments: OrderDetailPayment[] = payments.map((p) => ({
+    id: p.id,
+    provider: p.provider,
+    method: p.method,
+    amount: Number(p.amount),
+    currency: p.currency,
+    status: p.status,
+    transaction_id: p.transaction_id,
+    payment_key: p.payment_key,
+    approved_at: p.approved_at,
+    created_at: p.created_at,
+  }));
+
+  return {
+    id: o.id,
+    user_id: o.user_id,
+    user_email: u?.email ?? null,
+    user_name: u?.display_name ?? null,
+    user_phone: u?.phone ?? null,
+    status: o.status,
+    payment_status: o.payment_status,
+    total_amount: Number(o.total_amount),
+    product_total_amount:
+      o.subtotal_amount != null ? Number(o.subtotal_amount) : null,
+    delivery_fee: o.shipping_fee != null ? Number(o.shipping_fee) : null,
+    discount_total:
+      o.discount_amount != null ? Number(o.discount_amount) : null,
+    toss_order_id: o.toss_order_id,
+    created_at: o.created_at,
+    updated_at: o.updated_at,
+    receiver_name: o.shipping_name,
+    receiver_phone: o.shipping_phone,
+    receiver_zipcode: o.shipping_zip,
+    receiver_address1: o.shipping_address_line1,
+    receiver_address2: o.shipping_address_line2,
+    items: orderItems,
+    payments: orderPayments,
+  };
+}
+
 // --- 상품 리스트·상세 ---
 
 export type ProductListStatusFilter =

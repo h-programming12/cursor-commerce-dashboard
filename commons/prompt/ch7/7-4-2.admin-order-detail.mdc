@@ -1,0 +1,48 @@
+---
+alwaysApply: true
+---
+
+관리자 대시보드에 주문 상세 페이지를 구현해줘.
+
+현재 상황:
+
+- app/admin/orders/[id]/ 디렉토리 없음 (주문 리스트에서 클릭 시 404)
+- app/admin/queries.ts에 getOrderDetail 함수 없음
+- 기존 상세 페이지 패턴: app/admin/payments/[paymentId]/page.tsx (서버 컴포넌트 단독, cardStyle/labelStyle/valueStyle, dl+grid)
+- commons/constants/url.ts에 getAdminOrderDetailUrl, getAdminUserDetailUrl, getAdminPaymentDetailUrl, getAdminProductDetailUrl 존재
+- orders 테이블, order_items 테이블, payments 테이블 참고
+
+요구사항:
+
+1. queries.ts에 추가:
+
+   - OrderDetail 인터페이스 (주문 기본 + 고객/배송/연락처 + items: OrderDetailItem[] + payments: OrderDetailPayment[])
+   - getOrderDetail(orderId): orders 단건 조회 → users/order_items/payments 각각 조인
+   - getPaymentDetail 함수 패턴을 따를 것
+
+2. app/admin/orders/[id]/page.tsx 신규 생성:
+   - app/admin/payments/[paymentId]/page.tsx와 동일 구조의 서버 컴포넌트
+   - requireAdminAccess() → getOrderDetail(id) → notFound()
+   - 타이틀 "주문 상세" + "뒤로가기" 링크 (상품 상세 패턴 참고)
+   - 카드 섹션 5개:
+     ① 주문 정보 — ID, 상태(뱃지), 결제 상태, 금액 내역, 토스 주문ID, 일시
+     ② 고객 정보 — 유저 ID(Link), 이메일, 이름, 연락처
+     ③ 배송 정보 — 수령인, 주소 (모든 필드 null이면 섹션 숨김)
+     ④ 주문 상품 — 테이블(상품명/수량/단가/할인가/소계), 상품명은 상품 상세 Link, 썸네일 32x32
+     ⑤ 결제 내역 — 테이블(결제ID/결제수단/금액/상태/승인일), 결제ID는 결제 상세 Link
+   - 주문 상태 뱃지: OrdersListClient.tsx의 STATUS_COLOR_MAP/STATUS_LABEL_MAP과 동일
+   - 연관 ID는 각 상세 페이지로 Link 연결
+
+디자인:
+
+- Admin 디자인 토큰 (--admin-\*) 사용, 하드코딩 금지
+- cardStyle/labelStyle/valueStyle은 기존 상세 페이지와 동일
+- 접근성: focus-visible ring
+
+참고 파일 (반드시 읽고 패턴 일치시킬 것):
+
+- app/admin/payments/[paymentId]/page.tsx — 상세 페이지 기본 패턴
+- app/admin/products/[productId]/page.tsx — 뒤로가기 링크, 테이블 표시 패턴
+- app/admin/queries.ts — getPaymentDetail, getProductDetail 쿼리 패턴
+- app/admin/orders/OrdersListClient.tsx — STATUS_COLOR_MAP, STATUS_LABEL_MAP
+- commons/constants/url.ts — URL 헬퍼 함수들
