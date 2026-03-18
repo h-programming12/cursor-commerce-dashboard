@@ -1,5 +1,17 @@
 import { createClient } from "@/lib/supabase/server";
 
+export interface McpSettings {
+  id: string;
+  slack_enabled: boolean;
+  notion_enabled: boolean;
+  notion_url: string | null;
+  notion_report_per_payment: boolean;
+  notion_report_monthly_manual: boolean;
+  notion_report_monthly_auto: boolean;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
 function getTodayRange() {
   const now = new Date();
   const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -18,6 +30,51 @@ export async function getTodayOrderCount(): Promise<number> {
 
   if (error) return 0;
   return count ?? 0;
+}
+
+export async function getMcpSettings(): Promise<McpSettings> {
+  const supabase = await createClient();
+
+  const { data: existing, error: selectError } = await supabase
+    .from("mcp_settings")
+    .select(
+      "id, slack_enabled, notion_enabled, notion_url, notion_report_per_payment, notion_report_monthly_manual, notion_report_monthly_auto, created_at, updated_at"
+    )
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (selectError && selectError.code !== "PGRST116") {
+    // PGRST116: No rows found for maybeSingle
+    throw new Error(selectError.message);
+  }
+
+  if (existing) {
+    return existing as unknown as McpSettings;
+  }
+
+  const { data: inserted, error: insertError } = await supabase
+    .from("mcp_settings")
+    .insert({
+      slack_enabled: false,
+      notion_enabled: false,
+      notion_url: null,
+      notion_report_per_payment: false,
+      notion_report_monthly_manual: false,
+      notion_report_monthly_auto: false,
+    } as never)
+    .select(
+      "id, slack_enabled, notion_enabled, notion_url, notion_report_per_payment, notion_report_monthly_manual, notion_report_monthly_auto, created_at, updated_at"
+    )
+    .maybeSingle();
+
+  if (insertError || !inserted) {
+    throw new Error(
+      insertError?.message ?? "mcp_settings 초기화에 실패했습니다."
+    );
+  }
+
+  return inserted as unknown as McpSettings;
 }
 
 type OrderItemRow = { product_id: string; quantity: number };

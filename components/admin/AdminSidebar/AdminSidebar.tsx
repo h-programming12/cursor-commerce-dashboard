@@ -196,10 +196,10 @@ export function AdminSidebar({ className }: { className?: string }) {
               active={isActive(ADMIN_URLS.ADMINS)}
             />
             <SidebarLink
-              href={ADMIN_URLS.DASHBOARD}
+              href={ADMIN_URLS.SETTINGS}
               label="Settings"
               icon={<FiSettings size={22} style={{ color: "inherit" }} />}
-              active={false}
+              active={isActive(ADMIN_URLS.SETTINGS)}
             />
           </div>
         </div>

@@ -1,0 +1,103 @@
+---
+alwaysApply: true
+---
+
+관리자 대시보드에 설정(Settings) 페이지를 구현해줘.
+
+Figma 디자인을 참고해서 구현할 것:
+
+- Figma MCP 채널 연결 후 아래 링크 분석
+- Figma mcp 연결 채널: yga77p6j
+- Slack 설정 카드: <https://www.figma.com/design/PrPYG8hrEWB6IMFit7gol5/Commerce---Admin-%ED%85%9C%ED%94%8C%EB%A6%BF--%EB%B3%B5%EC%82%AC-?node-id=245-11997&t=HJVKqtDJmJjZ54bd-4>
+- Notion 설정 카드: <https://www.figma.com/design/PrPYG8hrEWB6IMFit7gol5/Commerce---Admin-%ED%85%9C%ED%94%8C%EB%A6%BF--%EB%B3%B5%EC%82%AC-?node-id=325-2671&t=HJVKqtDJmJjZ54bd-4>
+
+현재 상황:
+
+- app/admin/settings/ 디렉토리 없음
+- mcp_settings 테이블 이미 존재 (0001_init_schema.sql): slack_enabled, notion_enabled, notion_url, notion_report_per_payment, notion_report_monthly_manual, notion_report_monthly_auto
+- RLS: admin만 CRUD 가능 (0002_enable_rls_and_policies.sql)
+- AdminSettingsCard 컴포넌트 존재 (components/admin/AdminSettingsCard/)
+- AdminToggle 컴포넌트 존재 (components/admin/AdminToggle/)
+- AdminSidebar의 Settings 메뉴가 /admin으로 링크, active={false}로 고정
+- Slack/Notion MCP는 아직 연결 안 됨 — 설정값 (notion_enabled, slack_enabled, notion_report_per_payment, notion_report_monthly_auto, notion_report_monthly_manual) DB 저장/조회만 동작하게 구현
+
+요구사항:
+
+1. commons/constants/url.ts 수정:
+
+   - ADMIN_URLS에 SETTINGS: "/admin/settings" 추가
+   - ROUTE_CONFIG_MAP에 설정 페이지 라우트 추가
+
+2. AdminSidebar.tsx 수정:
+
+   - Settings 링크를 ADMIN_URLS.SETTINGS로 변경
+   - active 상태 처리 (isActive 함수 적용)
+
+3. queries.ts에 추가:
+
+   - McpSettings 인터페이스 (mcp_settings 테이블 전 컬럼)
+   - getMcpSettings(): mcp_settings 첫 번째 row 조회. 없으면 기본값 INSERT 후 반환 (모든 관리자는 하나의 mcp_settings 필드를 공유)
+
+4. app/admin/settings/settings-actions.ts 신규:
+
+   - "use server" Server Action
+   - updateMcpSettings(updates: Partial<McpSettings>): mcp_settings UPDATE
+   - requireAdminAccess() 권한 체크 포함
+
+5. app/admin/settings/page.tsx 신규 (서버 컴포넌트):
+
+   - requireAdminAccess() → getMcpSettings() → <SettingsClient settings={data} />
+   - 타이틀 "Settings"
+
+6. app/admin/settings/SettingsClient.tsx 신규 (클라이언트 컴포넌트):
+
+   - AdminSettingsCard, AdminToggle 컴포넌트 재사용
+
+   카드1 - Slack 실시간 결제 알림:
+
+   - 아이콘: 채팅/메시지 아이콘 (react-icons)
+   - 타이틀: "Slack 실시간 결제 알림"
+   - 설명: "실시간 결제 알림을 Slack으로 받습니다"
+   - 헤더 우측에 AdminToggle (slack_enabled 연동)
+   - Channel ID 읽기 전용 입력 필드 (placeholder 값)
+   - 안내 텍스트: 'Slack 워크스페이스 "주문-공지" 채널에 테스트 메시지를 전송해보세요'
+   - "테스트 메시지 보내기" 버튼 (disabled — MCP 미연결)
+
+   카드2 - Notion 주문 관리 리포트 생성:
+
+   - 아이콘: 문서 아이콘 (react-icons)
+   - 타이틀: "Notion 주문 관리 리포트 생성"
+   - 설명: "주문 관리 리포트를 Notion으로 자동 생성합니다"
+   - 헤더 우측에 AdminToggle (notion_enabled 연동)
+   - notion_enabled가 true일 때만 하위 콘텐츠 표시:
+     - "리포트 생성 Parent URL" 라벨 + 텍스트 입력 (notion_url, onBlur 시 저장)
+     - 안내: '이 페이지 아래에 "주문 리포트" 페이지들을 생성합니다.'
+     - "테스트 리포트 생성하기" 버튼 (disabled)
+     - "주문 1건당 페이지 생성" — 설명 + AdminToggle (notion_report_per_payment)
+     - "월별 요약 페이지 수동 생성" — 설명 + "리포트 생성하기" 버튼 (disabled)
+     - "월별 요약 페이지 자동 생성" — 설명 + AdminToggle (notion_report_monthly_auto)
+
+   토글 변경 시:
+
+   - updateMcpSettings Server Action 호출
+   - router.refresh()로 서버 데이터 갱신
+   - 낙관적 업데이트: 토글 즉시 반영 후 서버 확인
+
+디자인:
+
+- Figma 디자인 기반, Admin 디자인 토큰 (--admin-\*) 사용
+- 카드: AdminSettingsCard 스타일 (background-default, border-card, radius-xl, padding-xl)
+- 토글: AdminToggle 스타일 (toggle-width/height/thumb 토큰)
+- 입력 필드: border, rounded, padding, admin-text-md, 읽기 전용은 background-light
+- 버튼: border, rounded, admin-text-sm, disabled 상태 opacity-50
+- 접근성: focus-visible ring, aria-label
+
+참고 파일 (반드시 읽고 패턴 일치시킬 것):
+
+- components/admin/AdminSettingsCard/AdminSettingsCard.tsx — 카드 컴포넌트
+- components/admin/AdminToggle/AdminToggle.tsx — 토글 컴포넌트
+- components/admin/types.ts — AdminSettingsCardProps, AdminToggleProps
+- components/admin/AdminSidebar/AdminSidebar.tsx — 사이드바 수정 대상
+- supabase/migrations/0001_init_schema.sql — mcp_settings 스키마
+- commons/constants/url.ts — URL 상수
+- app/admin/products/product-actions.ts — Server Action 패턴 참고

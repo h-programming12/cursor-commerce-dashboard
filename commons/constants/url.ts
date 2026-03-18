@@ -40,6 +40,7 @@ export const ACCOUNT_URLS = {
 // ============================================
 export const ADMIN_URLS = {
   DASHBOARD: "/admin",
+  SETTINGS: "/admin/settings",
   PRODUCTS: "/admin/products",
   NEW_PRODUCT: "/admin/products/new",
   ORDERS: "/admin/orders",
@@ -159,6 +160,12 @@ export const ROUTE_CONFIG_MAP: Record<string, RouteConfig> = {
     access: "admin",
     name: "관리자 대시보드",
     description: "관리자 대시보드 페이지",
+  },
+  [ADMIN_URLS.SETTINGS]: {
+    path: ADMIN_URLS.SETTINGS,
+    access: "admin",
+    name: "설정",
+    description: "관리자 설정 페이지",
   },
   [ADMIN_URLS.PRODUCTS]: {
     path: ADMIN_URLS.PRODUCTS,

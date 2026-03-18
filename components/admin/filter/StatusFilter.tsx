@@ -45,7 +45,7 @@ export function StatusFilter<T extends string>({
           key={String(opt.value)}
           type="button"
           onClick={() => handleChange(opt.value)}
-          className="px-3 py-1.5 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+          className="cursor-pointer px-3 py-1.5 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
           style={{
             backgroundColor:
               value === opt.value
