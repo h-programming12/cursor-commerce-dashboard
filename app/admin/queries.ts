@@ -756,6 +756,94 @@ export async function getOrderDetail(
 
 // --- 상품 리스트·상세 ---
 
+export interface ReviewListItem {
+  id: string;
+  user_id: string;
+  user_email: string | null;
+  product_id: string;
+  product_name: string;
+  rating: number;
+  content: string | null;
+  created_at: string | null;
+}
+
+export interface ReviewListFilters {
+  rating?: string;
+}
+
+export async function getReviewsList(
+  page: number,
+  pageSize: number,
+  filters?: ReviewListFilters
+): Promise<{ data: ReviewListItem[]; total: number }> {
+  const supabase = await createClient();
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  let q = supabase
+    .from("reviews")
+    .select("id, user_id, product_id, rating, content, created_at", {
+      count: "exact",
+    })
+    .order("created_at", { ascending: false });
+
+  if (filters?.rating) {
+    const ratingNumber = Number(filters.rating);
+    if (!Number.isNaN(ratingNumber)) {
+      q = q.eq("rating", ratingNumber);
+    }
+  }
+
+  const { data: rows, count, error } = await q.range(from, to);
+  if (error) return { data: [], total: 0 };
+
+  type ReviewRow = {
+    id: string;
+    user_id: string;
+    product_id: string;
+    rating: number;
+    content: string | null;
+    created_at: string | null;
+  };
+  const reviews = (rows ?? []) as ReviewRow[];
+  const total = count ?? 0;
+  if (!reviews.length) return { data: [], total };
+
+  const userIds = [...new Set(reviews.map((r) => r.user_id))];
+  const productIds = [...new Set(reviews.map((r) => r.product_id))];
+
+  const [{ data: userRows }, { data: productRows }] = await Promise.all([
+    supabase.from("users").select("id, email").in("id", userIds),
+    supabase.from("products").select("id, name").in("id", productIds),
+  ]);
+
+  type UserRow = { id: string; email: string };
+  type ProductRow = { id: string; name: string };
+
+  const userEmailMap = new Map<string, string>();
+  for (const u of (userRows ?? []) as UserRow[]) {
+    userEmailMap.set(u.id, u.email);
+  }
+
+  const productNameMap = new Map<string, string>();
+  for (const p of (productRows ?? []) as ProductRow[]) {
+    productNameMap.set(p.id, p.name);
+  }
+
+  const data: ReviewListItem[] = reviews.map((r) => ({
+    id: r.id,
+    user_id: r.user_id,
+    user_email: userEmailMap.get(r.user_id) ?? null,
+    product_id: r.product_id,
+    product_name: productNameMap.get(r.product_id) ?? "",
+    rating: r.rating,
+    content: r.content,
+    created_at: r.created_at,
+  }));
+
+  return { data, total };
+}
+
 export type ProductListStatusFilter =
   | "all"
   | "registered"
@@ -867,6 +955,19 @@ export interface ProductDetail {
   order_items: ProductDetailOrderItem[];
 }
 
+export interface ReviewDetail {
+  id: string;
+  rating: number;
+  content: string | null;
+  created_at: string | null;
+  user_id: string;
+  user_email: string | null;
+  user_display_name: string | null;
+  product_id: string;
+  product_name: string;
+  product_image_url: string | null;
+}
+
 export async function getProductDetail(
   productId: string
 ): Promise<ProductDetail | null> {
@@ -963,5 +1064,81 @@ export async function getProductDetail(
       quantity: oi.quantity,
       created_at: oi.created_at,
     })),
+  };
+}
+
+export interface ReviewDetail {
+  id: string;
+  rating: number;
+  content: string | null;
+  created_at: string | null;
+  user_id: string;
+  user_email: string | null;
+  user_display_name: string | null;
+  product_id: string;
+  product_name: string;
+  product_image_url: string | null;
+}
+
+export async function getReviewDetail(
+  reviewId: string
+): Promise<ReviewDetail | null> {
+  const supabase = await createClient();
+
+  const { data: reviewRow, error } = await supabase
+    .from("reviews")
+    .select("id, user_id, product_id, rating, content, created_at")
+    .eq("id", reviewId)
+    .maybeSingle();
+
+  if (error || !reviewRow) return null;
+
+  type ReviewRow = {
+    id: string;
+    user_id: string;
+    product_id: string;
+    rating: number;
+    content: string | null;
+    created_at: string | null;
+  };
+  const r = reviewRow as ReviewRow;
+
+  const [{ data: userRow }, { data: productRow }] = await Promise.all([
+    supabase
+      .from("users")
+      .select("email, display_name")
+      .eq("id", r.user_id)
+      .maybeSingle(),
+    supabase
+      .from("products")
+      .select("id, name, image_url")
+      .eq("id", r.product_id)
+      .maybeSingle(),
+  ]);
+
+  type UserRow = {
+    email: string;
+    display_name: string | null;
+  } | null;
+  type ProductRow = {
+    id: string;
+    name: string;
+    image_url: string | null;
+  } | null;
+
+  const u = (userRow ?? null) as UserRow;
+  const p = (productRow ?? null) as ProductRow;
+
+  return {
+    id: r.id,
+    rating: r.rating,
+    content: r.content,
+    created_at: r.created_at,
+    user_id: r.user_id,
+    user_email: u?.email ?? null,
+    user_display_name: u?.display_name ?? null,
+    product_id: p?.id ?? r.product_id,
+    product_name: p?.name ?? "",
+    product_image_url: p?.image_url ?? null,
   };
 }

@@ -14,6 +14,7 @@ import {
   FiSettings,
   FiChevronRight,
   FiChevronDown,
+  FiStar,
 } from "react-icons/fi";
 import { cn } from "@/commons/utils/cn";
 import { ADMIN_URLS } from "@/commons/constants/url";
@@ -153,6 +154,12 @@ export function AdminSidebar({ className }: { className?: string }) {
               label="Transaction"
               icon={<FiFileText size={22} style={{ color: "inherit" }} />}
               active={isActive(ADMIN_URLS.PAYMENTS)}
+            />
+            <SidebarLink
+              href={ADMIN_URLS.REVIEWS}
+              label="Review List"
+              icon={<FiStar size={22} style={{ color: "inherit" }} />}
+              active={isActive(ADMIN_URLS.REVIEWS)}
             />
           </div>
         </div>

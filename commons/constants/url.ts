@@ -46,6 +46,7 @@ export const ADMIN_URLS = {
   USERS: "/admin/users",
   ADMINS: "/admin/admin_users",
   PAYMENTS: "/admin/payments",
+  REVIEWS: "/admin/reviews",
 } as const;
 
 export function getAdminUserDetailUrl(userId: string): string {
@@ -62,6 +63,9 @@ export function getAdminOrderDetailUrl(orderId: string): string {
 }
 export function getAdminProductDetailUrl(productId: string): string {
   return `${ADMIN_URLS.PRODUCTS}/${productId}`;
+}
+export function getAdminReviewDetailUrl(reviewId: string): string {
+  return `${ADMIN_URLS.REVIEWS}/${reviewId}`;
 }
 
 // ============================================
@@ -186,6 +190,12 @@ export const ROUTE_CONFIG_MAP: Record<string, RouteConfig> = {
     name: "결제 관리",
     description: "관리자 결제 목록 페이지",
   },
+  [ADMIN_URLS.REVIEWS]: {
+    path: ADMIN_URLS.REVIEWS,
+    access: "admin",
+    name: "리뷰 관리",
+    description: "관리자 리뷰 목록 페이지",
+  },
 };
 
 // ============================================
@@ -229,6 +239,14 @@ export function getRouteConfig(path: string): RouteConfig | undefined {
       access: "admin" as const,
       name: "주문 상세",
       description: "관리자 주문 상세 페이지",
+    };
+  }
+  if (path.startsWith("/admin/reviews/") && path !== "/admin/reviews") {
+    return {
+      path,
+      access: "admin" as const,
+      name: "리뷰 상세",
+      description: "관리자 리뷰 상세 페이지",
     };
   }
   if (path.startsWith("/admin/users/") && path !== "/admin/users") {

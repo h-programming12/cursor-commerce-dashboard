@@ -1,0 +1,76 @@
+---
+alwaysApply: true
+---
+
+관리자 대시보드에 고객 리뷰 리스트와 상세 페이지를 구현해줘.
+
+현재 상황:
+
+- app/admin/reviews/ 디렉토리 자체가 없음
+- app/admin/queries.ts에 리뷰 전용 리스트/상세 쿼리 없음 (getProductDetail 내부에서만 사용)
+- commons/constants/url.ts에 ADMIN_URLS.REVIEWS, getAdminReviewDetailUrl 없음
+- app/admin/products/[productId]/page.tsx에서 /admin/reviews/${r.id}로 링크하지만 404
+- reviews 테이블: id, user_id, product_id, rating(1~5), content, created_at
+- 기존 리스트 패턴: app/admin/orders/page.tsx + OrdersListClient.tsx
+- 기존 상세 패턴: app/admin/payments/[paymentId]/page.tsx (서버 컴포넌트 단독)
+
+요구사항:
+
+0. 대시보드에 Review List 메뉴 추가
+
+   - 대시보드 좌측 Sidebar MAIN MENU 가장 하단에 Review List 메뉴 추가
+   - /admin/reviews 리스트 url로 연결
+   - 아이콘은 react-icons에서 추가
+
+1. commons/constants/url.ts 수정:
+
+   - ADMIN_URLS에 REVIEWS: "/admin/reviews" 추가
+   - getAdminReviewDetailUrl(reviewId) 함수 추가
+   - getRouteConfig에 /admin/reviews/ 동적 라우트 매칭 추가
+
+2. queries.ts에 추가:
+
+   - ReviewListItem: id, user_id, user_email, product_id, product_name, rating, content, created_at
+   - getReviewsList(page, pageSize, filters?): getOrdersList와 동일 패턴
+     - reviews 테이블 조회, count: "exact" + .range() 페이지네이션
+     - filters.rating이 있으면 .eq("rating", Number(filters.rating))
+     - users 테이블 조인으로 user_email 매핑
+     - products 테이블 조인으로 product_name 매핑
+     - created_at DESC 정렬
+   - ReviewDetail: id, rating, content, created_at + user_id, user_email, user_display_name + product_id, product_name, product_image_url
+   - getReviewDetail(reviewId): getPaymentDetail 패턴
+     - reviews 단건 조회 → users, products 각각 조인
+
+3. app/admin/reviews/page.tsx + ReviewsListClient.tsx 신규:
+
+   - app/admin/orders/page.tsx + OrdersListClient.tsx와 동일 구조
+   - StatusFilter 재사용, paramName="rating"
+   - 필터 옵션: 전체(all), ★5, ★4, ★3, ★2, ★1
+   - 테이블 컬럼: 리뷰 ID(8자리 Link), 작성자 이메일, 상품명, 평점(★ 표시), 내용 미리보기(30자 축약), 작성일
+   - 행 클릭 시 getAdminReviewDetailUrl(row.id)로 이동
+   - 빈 상태: "리뷰가 없습니다."
+   - 페이지네이션: 기존 패턴 동일
+
+4. app/admin/reviews/[reviewId]/page.tsx 신규:
+   - app/admin/payments/[paymentId]/page.tsx와 동일 구조 서버 컴포넌트
+   - 타이틀 "리뷰 상세" + "뒤로가기" 링크 (ADMIN_URLS.REVIEWS)
+   - 카드 3개:
+     ① 리뷰 정보 — ID, 평점(★), 내용 전문, 작성일
+     ② 작성자 정보 — 유저 ID(Link→유저 상세), 이메일, 이름
+     ③ 상품 정보 — 상품명(Link→상품 상세), 이미지 썸네일
+
+디자인:
+
+- Admin 디자인 토큰 (--admin-\*) 사용, 하드코딩 금지
+- 리스트: thStyle/tdStyle, StatusFilter, 페이지네이션 기존 패턴 동일
+- 상세: cardStyle/labelStyle/valueStyle 기존 상세 페이지와 동일
+- 접근성: focus-visible ring
+
+참고 파일 (반드시 읽고 패턴 일치시킬 것):
+
+- app/admin/orders/page.tsx + OrdersListClient.tsx — 리스트 패턴
+- app/admin/payments/[paymentId]/page.tsx — 상세 페이지 패턴
+- app/admin/products/[productId]/page.tsx — 뒤로가기 링크, 리뷰 목록 링크 (이미 /admin/reviews/로 링크 중)
+- app/admin/queries.ts — getOrdersList, getPaymentDetail 쿼리 패턴
+- components/admin/filter/StatusFilter.tsx — 필터 컴포넌트
+- commons/constants/url.ts — URL 상수 및 getRouteConfig
