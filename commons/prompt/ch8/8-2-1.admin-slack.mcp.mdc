@@ -1,0 +1,39 @@
+---
+alwaysApply: true
+---
+
+대시보드 설정 페이지의 Slack "테스트 메시지 보내기" 버튼을 실제로 동작하게 구현해줘.
+
+현재 상황:
+
+- app/admin/settings/page.tsx, SettingsClient.tsx, settings-actions.ts가 이전 강의에서 구현됨
+- "테스트 메시지 보내기" 버튼이 disabled 상태로 존재
+- mcp_settings 테이블에 slack_enabled 필드 있음 (토글로 ON/OFF 가능)
+- .env.local에 SLACK_BOT_TOKEN, SLACK_TEAM_ID, SLACK_CHANNEL_ID 환경변수 설정 완료
+
+요구사항:
+
+1. settings-actions.ts에 추가:
+
+   - sendSlackTestMessage() Server Action:
+     - requireAdminAccess() 권한 체크
+     - getMcpSettings()로 slack_enabled 확인 — false면 { success: false, message: "Slack 알림이 비활성화 상태입니다" }
+     - 환경변수에서 SLACK_BOT_TOKEN, SLACK_CHANNEL_ID 읽기 — 없으면 에러 반환
+     - fetch로 https://slack.com/api/chat.postMessage 호출
+     - body: { channel: SLACK_CHANNEL_ID, text: "🔔 [테스트] 커머스 대시보드에서 보낸 테스트 메시지입니다.\n전송 시각: {현재시각}" }
+     - 응답의 ok 필드로 성공/실패 판단
+     - 반환: { success: boolean, message: string }
+
+2. SettingsClient.tsx 수정:
+   - "테스트 메시지 보내기" 버튼 활성화 (slack_enabled가 true일 때만)
+   - 클릭 시 sendSlackTestMessage 호출
+   - 로딩 상태 표시 (버튼 텍스트 "전송 중...", disabled)
+   - 성공 시 버튼 아래에 "✅ 테스트 메시지를 전송했습니다" 표시 (--admin-semantic-success)
+   - 실패 시 "❌ 전송 실패: {에러메시지}" 표시 (--admin-semantic-error)
+   - 결과 메시지는 5초 후 자동 사라짐
+
+참고 파일:
+
+- app/admin/settings/settings-actions.ts — 기존 updateMcpSettings 패턴
+- app/admin/settings/SettingsClient.tsx — 기존 Slack 카드 UI
+- app/admin/queries.ts — getMcpSettings 함수

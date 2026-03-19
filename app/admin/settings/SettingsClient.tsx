@@ -6,7 +6,7 @@ import { FiMessageCircle, FiFileText } from "react-icons/fi";
 import { AdminSettingsCard } from "@/components/admin/AdminSettingsCard/AdminSettingsCard";
 import { AdminToggle } from "@/components/admin/AdminToggle/AdminToggle";
 import type { McpSettings } from "@/app/admin/queries";
-import { updateMcpSettings } from "./settings-actions";
+import { sendSlackTestMessage, updateMcpSettings } from "./settings-actions";
 
 interface SettingsClientProps {
   settings: McpSettings;
@@ -15,6 +15,11 @@ interface SettingsClientProps {
 export const SettingsClient: React.FC<SettingsClientProps> = ({ settings }) => {
   const [localSettings, setLocalSettings] = useState<McpSettings>(settings);
   const [isPending, startTransition] = useTransition();
+  const [isSendingSlackTest, setIsSendingSlackTest] = useState(false);
+  const [slackTestResult, setSlackTestResult] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
   const router = useRouter();
 
   const handleUpdate = useCallback(
@@ -63,6 +68,12 @@ export const SettingsClient: React.FC<SettingsClientProps> = ({ settings }) => {
     cursor: "not-allowed",
   };
 
+  const activeButtonStyle: React.CSSProperties = {
+    ...disabledButtonStyle,
+    opacity: 1,
+    cursor: "pointer",
+  };
+
   const inputBaseStyle: React.CSSProperties = {
     width: "100%",
     padding: "10px 12px",
@@ -74,6 +85,28 @@ export const SettingsClient: React.FC<SettingsClientProps> = ({ settings }) => {
     color: "var(--admin-text-primary)",
     outline: "none",
   };
+
+  const handleSendSlackTestMessage = useCallback(async () => {
+    setIsSendingSlackTest(true);
+    const result = await sendSlackTestMessage();
+    setIsSendingSlackTest(false);
+
+    if (result.success) {
+      setSlackTestResult({
+        type: "success",
+        message: result.message,
+      });
+    } else {
+      setSlackTestResult({
+        type: "error",
+        message: `❌ 전송 실패: ${result.message}`,
+      });
+    }
+
+    setTimeout(() => {
+      setSlackTestResult(null);
+    }, 5000);
+  }, []);
 
   return (
     <div className="flex flex-col gap-6">
@@ -116,7 +149,7 @@ export const SettingsClient: React.FC<SettingsClientProps> = ({ settings }) => {
           <input
             type="text"
             readOnly
-            placeholder="#주문-공지"
+            placeholder="#전체-공지-알림"
             style={{
               ...inputBaseStyle,
               backgroundColor: "var(--admin-background-light)",
@@ -135,18 +168,39 @@ export const SettingsClient: React.FC<SettingsClientProps> = ({ settings }) => {
             color: "var(--admin-text-help)",
           }}
         >
-          Slack 워크스페이스 &quot;주문-공지&quot; 채널에 테스트 메시지를
+          Slack 워크스페이스 &quot;전체-공지-알림&quot; 채널에 테스트 메시지를
           전송해보세요
         </p>
 
         <button
           type="button"
-          disabled
-          style={disabledButtonStyle}
-          aria-label="Slack 테스트 메시지 보내기 (준비 중)"
+          disabled={!localSettings.slack_enabled || isSendingSlackTest}
+          onClick={handleSendSlackTestMessage}
+          style={
+            !localSettings.slack_enabled || isSendingSlackTest
+              ? disabledButtonStyle
+              : activeButtonStyle
+          }
+          aria-label="Slack 테스트 메시지 보내기"
         >
-          테스트 메시지 보내기
+          {isSendingSlackTest ? "전송 중..." : "테스트 메시지 보내기"}
         </button>
+        {slackTestResult && (
+          <p
+            className="mt-2"
+            style={{
+              fontSize: "var(--admin-text-xs)",
+              lineHeight: "18px",
+              fontFamily: "var(--admin-font-inter)",
+              color:
+                slackTestResult.type === "success"
+                  ? "var(--admin-semantic-success)"
+                  : "var(--admin-semantic-error)",
+            }}
+          >
+            {slackTestResult.message}
+          </p>
+        )}
       </AdminSettingsCard>
 
       <AdminSettingsCard
