@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
+import { sendPaymentSlackNotification } from "@/lib/slack/notify";
 import type { Database, Json } from "@/types/supabase";
 
 type OrderRow = Database["public"]["Tables"]["orders"]["Row"];
@@ -206,6 +207,14 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+
+  void sendPaymentSlackNotification({
+    orderId: order.id,
+    amount,
+    method: typeof tossData.method === "string" ? tossData.method : "UNKNOWN",
+    userEmail: session.user.email ?? "unknown@example.com",
+    approvedAt,
+  });
 
   return NextResponse.json({
     success: true,

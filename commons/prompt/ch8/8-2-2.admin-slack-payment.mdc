@@ -1,0 +1,45 @@
+---
+alwaysApply: true
+---
+
+결제 완료 시 Slack 알림을 자동 전송하는 기능을 구현해줘.
+
+현재 상황:
+
+- app/api/payments/confirm/route.ts: 토스페이먼츠 결제 승인 후 payments/orders 테이블 업데이트
+- app/admin/settings/settings-actions.ts: sendSlackTestMessage() 구현됨 (참고용 패턴)
+- app/admin/queries.ts: getMcpSettings() 함수 있음
+- .env.local에 SLACK_BOT_TOKEN, SLACK_CHANNEL_ID 설정 완료
+- mcp_settings 테이블에 slack_enabled 컬럼 존재
+
+요구사항:
+
+1. lib/slack/notify.ts 신규 생성:
+
+   - PaymentNotificationData 인터페이스: { orderId, amount, method, userEmail, approvedAt }
+   - sendPaymentSlackNotification(data): Promise<void>
+     - createClient()로 mcp_settings의 slack_enabled 직접 조회
+       (getMcpSettings() import 금지 — API Route 컨텍스트 오류 방지)
+     - slack_enabled가 false이면 즉시 return
+     - 환경변수 없으면 즉시 return
+     - approvedAt을 KST로 변환 (toLocaleString, Asia/Seoul)
+     - amount를 Intl.NumberFormat으로 원화 포맷 (₩50,000)
+     - Block Kit: header + section fields(주문번호/금액/수단/구매자) + context(결제시각)
+     - try-catch로 모든 에러 무시
+
+2. app/api/payments/confirm/route.ts 수정:
+   - sendPaymentSlackNotification import 추가
+   - orders 업데이트 성공 후, return 직전에 void 호출 추가
+   - 기존 return NextResponse.json({ success: true, orderId: order.id }) 유지
+
+주의사항:
+
+- notify.ts에서 getMcpSettings() import 금지, createClient()로 직접 쿼리
+- try-catch 필수 — 알림 실패가 결제 응답에 영향 주면 안 됨
+- void 키워드로 floating promise 명시적 처리
+
+참고 파일:
+
+- app/api/payments/confirm/route.ts — 수정 대상
+- app/admin/settings/settings-actions.ts — sendSlackTestMessage 패턴 참고
+- lib/supabase/server.ts — createClient 패턴
