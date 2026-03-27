@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useState, useTransition } from "react";
+import React, { useCallback, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { FiMessageCircle, FiFileText } from "react-icons/fi";
 import { AdminSettingsCard } from "@/components/admin/AdminSettingsCard/AdminSettingsCard";
@@ -20,6 +20,13 @@ export const SettingsClient: React.FC<SettingsClientProps> = ({ settings }) => {
     type: "success" | "error";
     message: string;
   } | null>(null);
+  const [notionTestMessage, setNotionTestMessage] = useState("");
+  const [isSendingNotionTest, setIsSendingNotionTest] = useState(false);
+  const [notionTestResult, setNotionTestResult] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+  const parentNotionUrlInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
   const handleUpdate = useCallback(
@@ -107,6 +114,62 @@ export const SettingsClient: React.FC<SettingsClientProps> = ({ settings }) => {
       setSlackTestResult(null);
     }, 5000);
   }, []);
+
+  const handleSendNotionTestReport = useCallback(async () => {
+    const parentPageUrl =
+      parentNotionUrlInputRef.current?.value.trim() ??
+      localSettings.notion_url?.trim() ??
+      "";
+    if (!parentPageUrl) {
+      setNotionTestResult({
+        type: "error",
+        message: "❌ 전송 실패: 리포트 생성 Parent URL을 입력하세요.",
+      });
+      setTimeout(() => setNotionTestResult(null), 5000);
+      return;
+    }
+
+    setIsSendingNotionTest(true);
+    try {
+      const res = await fetch("/api/admin/notion/create-test-report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          parentPageUrl,
+          testMessage: notionTestMessage,
+        }),
+      });
+      const data = (await res.json()) as {
+        success?: boolean;
+        pageUrl?: string;
+        error?: string;
+      };
+
+      if (data.success && data.pageUrl) {
+        setNotionTestResult({
+          type: "success",
+          message: `생성된 페이지: ${data.pageUrl}`,
+        });
+        handleUpdate({ notion_url: parentPageUrl });
+      } else {
+        setNotionTestResult({
+          type: "error",
+          message: `❌ 전송 실패: ${data.error ?? "알 수 없는 오류"}`,
+        });
+      }
+    } catch {
+      setNotionTestResult({
+        type: "error",
+        message: "❌ 전송 실패: 요청을 처리할 수 없습니다.",
+      });
+    } finally {
+      setIsSendingNotionTest(false);
+    }
+
+    setTimeout(() => {
+      setNotionTestResult(null);
+    }, 5000);
+  }, [handleUpdate, localSettings.notion_url, notionTestMessage]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -242,6 +305,7 @@ export const SettingsClient: React.FC<SettingsClientProps> = ({ settings }) => {
                 리포트 생성 Parent URL
               </label>
               <input
+                ref={parentNotionUrlInputRef}
                 type="url"
                 defaultValue={localSettings.notion_url ?? ""}
                 onBlur={handleNotionUrlBlur}
@@ -263,14 +327,61 @@ export const SettingsClient: React.FC<SettingsClientProps> = ({ settings }) => {
             </div>
 
             <div>
+              <label
+                className="mb-1 block"
+                style={{
+                  fontSize: "var(--admin-text-sm)",
+                  lineHeight: "20px",
+                  fontFamily: "var(--admin-font-inter)",
+                  color: "var(--admin-text-label)",
+                }}
+              >
+                테스트 리포트 본문
+              </label>
+              <textarea
+                value={notionTestMessage}
+                onChange={(e) => setNotionTestMessage(e.target.value)}
+                rows={5}
+                placeholder="테스트로 남길 메시지를 입력하세요 (선택)"
+                style={{
+                  ...inputBaseStyle,
+                  minHeight: "120px",
+                  resize: "vertical",
+                }}
+                aria-label="Notion 테스트 리포트 본문"
+              />
+            </div>
+
+            <div>
               <button
                 type="button"
-                disabled
-                style={disabledButtonStyle}
-                aria-label="Notion 테스트 리포트 생성하기 (준비 중)"
+                disabled={!localSettings.notion_enabled || isSendingNotionTest}
+                onClick={handleSendNotionTestReport}
+                style={
+                  !localSettings.notion_enabled || isSendingNotionTest
+                    ? disabledButtonStyle
+                    : activeButtonStyle
+                }
+                aria-label="Notion 테스트 리포트 생성하기"
               >
-                테스트 리포트 생성하기
+                {isSendingNotionTest ? "생성 중..." : "테스트 리포트 생성하기"}
               </button>
+              {notionTestResult && (
+                <p
+                  className="mt-2"
+                  style={{
+                    fontSize: "var(--admin-text-xs)",
+                    lineHeight: "18px",
+                    fontFamily: "var(--admin-font-inter)",
+                    color:
+                      notionTestResult.type === "success"
+                        ? "var(--admin-semantic-success)"
+                        : "var(--admin-semantic-error)",
+                  }}
+                >
+                  {notionTestResult.message}
+                </p>
+              )}
             </div>
 
             <div className="flex flex-col gap-3">

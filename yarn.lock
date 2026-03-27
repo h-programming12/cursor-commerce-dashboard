@@ -1832,6 +1832,11 @@
   resolved "https://registry.yarnpkg.com/@nolyfill/is-core-module/-/is-core-module-1.0.39.tgz#3dc35ba0f1e66b403c00b39344f870298ebb1c8e"
   integrity sha512-nn5ozdjYQpUCZlWGuxcJY/KpxkWQs4DcbMCmKojjyrYDEAGy4Ce19NN4v5MduafTwJlbKc99UA8YhSVqq9yPZA==
 
+"@notionhq/client@^5.15.0":
+  version "5.15.0"
+  resolved "https://registry.yarnpkg.com/@notionhq/client/-/client-5.15.0.tgz#fe11c419571c4600bca3577f06e7601d5f93d397"
+  integrity sha512-boQ+zMmTu/HRfPajynYjlXkytkmn0rUgD0FJrbMaz6n1WC6HPxe2Lgn/Ay/VEA2j2dMzB1Hpnhtrtkz4Q1I/rw==
+
 "@pkgjs/parseargs@^0.11.0":
   version "0.11.0"
   resolved "https://registry.yarnpkg.com/@pkgjs/parseargs/-/parseargs-0.11.0.tgz#a77ea742fab25775145434eb1d2328cf5013ac33"

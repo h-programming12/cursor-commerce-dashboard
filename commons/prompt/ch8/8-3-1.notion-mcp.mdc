@@ -1,0 +1,49 @@
+---
+alwaysApply: true
+---
+
+# Notion Integration 연동 기능 구현 요청
+
+## 1. 현재 상황 및 환경
+
+- 프로젝트: Next.js (App Router)
+- `@notionhq/client` 설치 필요 (설치 명령어 포함할 것)
+- 기존 관리자 설정 페이지(`app/admin/settings/SettingsClient.tsx`)에 Notion 설정 카드 존재
+- `lib/auth/admin.ts`의 `checkAdminAccess()`를 통한 권한 제어 필요
+
+## 2. 요구사항 및 구현 파일
+
+### [Backend & Utils]
+
+1. **lib/notion/client.ts**: `NOTION_API_KEY` 환경변수 검증 및 `new Client()` 반환 함수 작성.
+2. **lib/notion/utils.ts**:
+   - `extractPageId(url)`: 정규식 `/([a-f0-9]{32}|[a-f0-9-]{36})$/i` 사용, 하이픈 제거 후 32자리 반환.
+   - `formatPageUrl(id)`: Notion 표준 URL 포맷 반환.
+3. **lib/notion/create-page.ts**:
+   - `testMessage`를 2000자 단위로 split하여 `paragraph` 블록들로 변환.
+   - 첫 블록은 `bulleted_list_item`으로 생성 일시 포함.
+4. **app/api/admin/notion/create-test-report/route.ts**:
+   - `POST` 핸들러 구현. `checkAdminAccess` 필수.
+   - `APIResponseError` 발생 시 `object_not_found`, `unauthorized` 등 에러 코드별 한국어 메시지 응답.
+
+### [Frontend - SettingsClient.tsx]
+
+1. **State 추가**: `notionTestMessage`, `isSendingNotionTest`, `notionTestResult` 상태 관리.
+2. **핸들러**: `handleSendNotionTestReport` 구현.
+   - 성공 시 응답받은 `pageUrl`로 `localSettings.notion_url` 업데이트.
+   - 결과 메시지는 5초 후 자동 삭제.
+3. **UI 수정**:
+   - Notion 카드의 `Parent URL` 입력 필드 아래에 `testMessage` 입력용 `<textarea>` 추가 (`inputBaseStyle` 적용).
+   - '테스트 리포트 생성하기' 버튼 활성화 및 로딩 상태 처리.
+   - 결과 메시지(성공/에러)를 Slack 카드와 동일한 스타일로 노출.
+
+## 3. 주의사항
+
+- **디자인**: 하드코딩된 색상 대신 `var(--admin-*)` 변수와 기존 UI 클래스(`disabledButtonStyle` 등)를 100% 재사용할 것.
+- **안정성**: `checkAdminAccess()` 등 기존 인증 로직을 수정하지 말고 그대로 호출할 것.
+- **에러**: Notion API 특유의 에러 객체 타입을 정확히 사용하여 예외 처리할 것.
+
+## 4. 참고 파일
+
+- `app/admin/settings/SettingsClient.tsx` (수정 대상)
+- `app/api/admin/generate-product-description/route.ts` (API 구조 참고)
