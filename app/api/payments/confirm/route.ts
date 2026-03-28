@@ -216,6 +216,10 @@ export async function POST(request: NextRequest) {
     approvedAt,
   });
 
+  void import("@/lib/notion/create-report")
+    .then(({ createOrderReport }) => createOrderReport(order.id))
+    .catch((err) => console.error("[notion] 주문 리포트 생성 실패:", err));
+
   return NextResponse.json({
     success: true,
     orderId: order.id,

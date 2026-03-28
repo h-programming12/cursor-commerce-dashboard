@@ -26,6 +26,12 @@ export const SettingsClient: React.FC<SettingsClientProps> = ({ settings }) => {
     type: "success" | "error";
     message: string;
   } | null>(null);
+  const [isCreatingMonthlyNotionReport, setIsCreatingMonthlyNotionReport] =
+    useState(false);
+  const [monthlyNotionReportResult, setMonthlyNotionReportResult] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
   const parentNotionUrlInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
@@ -170,6 +176,40 @@ export const SettingsClient: React.FC<SettingsClientProps> = ({ settings }) => {
       setNotionTestResult(null);
     }, 5000);
   }, [handleUpdate, localSettings.notion_url, notionTestMessage]);
+
+  const handleCreateMonthlyNotionReport = useCallback(async () => {
+    setIsCreatingMonthlyNotionReport(true);
+    setMonthlyNotionReportResult(null);
+    try {
+      const res = await fetch("/api/admin/notion/create-monthly-report", {
+        method: "POST",
+      });
+      const data = (await res.json()) as {
+        success?: boolean;
+        pageUrl?: string;
+        error?: string;
+      };
+      if (data.success && data.pageUrl) {
+        setMonthlyNotionReportResult({
+          type: "success",
+          message: `생성된 페이지: ${data.pageUrl}`,
+        });
+      } else {
+        setMonthlyNotionReportResult({
+          type: "error",
+          message: `❌ 실패: ${data.error ?? "알 수 없는 오류"}`,
+        });
+      }
+    } catch {
+      setMonthlyNotionReportResult({
+        type: "error",
+        message: "❌ 실패: 요청을 처리할 수 없습니다.",
+      });
+    } finally {
+      setIsCreatingMonthlyNotionReport(false);
+    }
+    setTimeout(() => setMonthlyNotionReportResult(null), 8000);
+  }, []);
 
   return (
     <div className="flex flex-col gap-6">
@@ -416,38 +456,79 @@ export const SettingsClient: React.FC<SettingsClientProps> = ({ settings }) => {
                 />
               </div>
 
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p
-                    style={{
-                      fontSize: "var(--admin-text-sm)",
-                      lineHeight: "20px",
-                      fontFamily: "var(--admin-font-inter)",
-                      fontWeight: "var(--admin-font-semibold)",
-                      color: "var(--admin-text-primary)",
-                    }}
-                  >
-                    월별 요약 페이지 수동 생성
-                  </p>
-                  <p
-                    style={{
-                      fontSize: "var(--admin-text-xs)",
-                      lineHeight: "18px",
-                      fontFamily: "var(--admin-font-inter)",
-                      color: "var(--admin-text-help)",
-                    }}
-                  >
-                    필요한 시점에 월별 주문 요약 페이지를 직접 생성합니다.
-                  </p>
+              <div className="flex flex-col gap-3">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p
+                      style={{
+                        fontSize: "var(--admin-text-sm)",
+                        lineHeight: "20px",
+                        fontFamily: "var(--admin-font-inter)",
+                        fontWeight: "var(--admin-font-semibold)",
+                        color: "var(--admin-text-primary)",
+                      }}
+                    >
+                      월별 요약 페이지 수동 생성
+                    </p>
+                    <p
+                      style={{
+                        fontSize: "var(--admin-text-xs)",
+                        lineHeight: "18px",
+                        fontFamily: "var(--admin-font-inter)",
+                        color: "var(--admin-text-help)",
+                      }}
+                    >
+                      필요한 시점에 최근 30일 기준 월간 요약 페이지를
+                      생성합니다.
+                    </p>
+                  </div>
+                  <AdminToggle
+                    checked={localSettings.notion_report_monthly_manual}
+                    onChange={handleToggle("notion_report_monthly_manual")}
+                    disabled={isPending}
+                  />
                 </div>
-                <button
-                  type="button"
-                  disabled
-                  style={disabledButtonStyle}
-                  aria-label="월별 요약 페이지 수동 생성 (준비 중)"
-                >
-                  리포트 생성하기
-                </button>
+                <div>
+                  <button
+                    type="button"
+                    disabled={
+                      !localSettings.notion_report_monthly_manual ||
+                      !localSettings.notion_url?.trim() ||
+                      isPending ||
+                      isCreatingMonthlyNotionReport
+                    }
+                    onClick={handleCreateMonthlyNotionReport}
+                    style={
+                      !localSettings.notion_report_monthly_manual ||
+                      !localSettings.notion_url?.trim() ||
+                      isPending ||
+                      isCreatingMonthlyNotionReport
+                        ? disabledButtonStyle
+                        : activeButtonStyle
+                    }
+                    aria-label="최근 30일 월간 Notion 리포트 생성"
+                  >
+                    {isCreatingMonthlyNotionReport
+                      ? "생성 중..."
+                      : "리포트 생성하기"}
+                  </button>
+                  {monthlyNotionReportResult && (
+                    <p
+                      className="mt-2"
+                      style={{
+                        fontSize: "var(--admin-text-xs)",
+                        lineHeight: "18px",
+                        fontFamily: "var(--admin-font-inter)",
+                        color:
+                          monthlyNotionReportResult.type === "success"
+                            ? "var(--admin-semantic-success)"
+                            : "var(--admin-semantic-error)",
+                      }}
+                    >
+                      {monthlyNotionReportResult.message}
+                    </p>
+                  )}
+                </div>
               </div>
 
               <div className="flex items-start justify-between gap-4">

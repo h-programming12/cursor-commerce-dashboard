@@ -1,0 +1,123 @@
+---
+alwaysApply: true
+---
+
+Notion 주문 1건당 페이지 생성, 월별 요약 페이지 수동 생성, 월간 리포트 자동 생성 기능을 구현해줘.
+
+## 현재 상황
+
+- 8-3-1에서 Notion Integration 연결 완료 (NOTION_API_KEY, Parent 페이지 설정)
+- lib/notion/client.ts: createNotionClient() 구현됨
+- lib/notion/utils.ts: extractPageId(), formatPageUrl() 구현됨
+- app/admin/queries.ts: getMcpSettings() 구현됨
+- mcp_settings 테이블 컬럼:
+  - notion_enabled (boolean)
+  - notion_url (text) — Parent 페이지 URL
+  - notion_report_per_payment (boolean)
+  - notion_report_monthly_auto (boolean)
+- lib/supabase/server.ts: createClient(), createAdminClient() 구현됨
+
+## 구현할 파일 목록
+
+### 1. lib/notion/report-queries.ts (신규)
+
+- getMonthlyReportData(startDate: string, endDate: string): Promise<MonthlyReportData>
+
+  - createAdminClient()로 orders 테이블 조회
+  - .gte("created_at", `${startDate}T00:00:00`), .lte("created_at", `${endDate}T23:59:59`)
+  - order_items(product_name, quantity, unit_price), payments(method, amount, status) 함께 select
+  - 메모리에서 집계: totalOrders, totalRevenue, avgOrderAmount
+  - dailySales: created_at 날짜별 orders/revenue 누적, 날짜 오름차순 정렬
+  - productSales: order_items 순회하여 quantity/revenue 누적, revenue 내림차순 정렬
+  - paymentMethods: payments[0] 기준 method별 count/revenue
+  - orderStatuses: order.status별 건수
+  - 오류 또는 주문 없을 때: 0과 빈 배열/객체로 채운 구조 반환 (throw 금지)
+
+- getOrderReportData(orderId: string): Promise<OrderReportData>
+  - 단일 주문 + order_items + users(name, email) + payments 조인 조회
+
+### 2. lib/notion/create-report.ts (신규)
+
+- makeHeading(text: string): NotionBlock — heading_2 블록 반환 헬퍼
+- makeBullet(text: string): NotionBlock — bulleted_list_item 블록 반환 헬퍼
+- formatCurrency(amount: number): string
+
+  - Intl.NumberFormat("ko-KR", { style: "currency", currency: "KRW" })
+  - ⚠️ /100 없이 원 단위 그대로 사용
+
+- createMonthlyReport(startDate, endDate, title): Promise<{ success, pageUrl?, error? }>
+
+  - getMcpSettings()로 notion_enabled, notion_url 확인
+  - extractPageId()로 parentPageId 추출
+  - getMonthlyReportData() 호출
+  - 블록 구성 순서:
+    1. 📊 월간 요약 (기간, 총 주문 수, 총 매출, 평균 주문 금액)
+    2. 📈 일별 매출 추이 (revenue 내림차순 상위 10일)
+    3. 🏆 베스트셀러 Top 10 (productSales 상위 10개)
+    4. 💰 결제 수단별 통계
+    5. 📋 주문 상태별 통계
+  - 각 섹션 데이터 없을 때: "데이터 없음" 불릿 하나 출력
+  - notion.pages.create로 parent 아래에 생성
+  - try-catch로 에러 잡아 { success: false, error: message } 반환
+
+- createOrderReport(orderId: string): Promise<{ success, pageUrl?, error? }>
+  - getOrderReportData() 호출
+  - 블록 구성: 👤 주문자 정보, 🛍️ 주문 상품, 💳 결제 정보, 📦 배송 정보
+  - 동일하게 notion.pages.create로 Parent 아래 생성
+
+### 3. app/api/admin/notion/create-monthly-report/route.ts (신규)
+
+- POST 핸들러
+- checkAdminAccess() 호출
+- getMcpSettings()로 notion_enabled 확인, false면 400 반환
+- 날짜 계산: endDate = 오늘, startDate = 30일 전 (toISOString().split("T")[0])
+- title = `월간 리포트 (최근 30일) - ${endDate}`
+- console.log로 startDate, endDate, title 출력
+- createMonthlyReport() 호출 후 { success, pageUrl } 반환
+
+### 4. app/api/cron/notion-monthly-report/route.ts (신규)
+
+- GET 핸들러
+- Authorization 헤더 확인: `Bearer ${process.env.CRON_SECRET}` 와 불일치 시 401 반환
+- getMcpSettings()로 notion_enabled AND notion_report_monthly_auto 확인
+  - 하나라도 false면 { message: "disabled" } 반환 (에러 아님)
+- 전월 날짜 계산:
+  - lastDayOfLastMonth = 이번 달 1일 - 1ms
+  - firstDayOfLastMonth = 전월 1일 (new Date(년, 월, 1))
+  - startDate, endDate = toISOString().split("T")[0]
+- title = `월간 리포트 - ${year}년 ${month}월`
+- console.log로 생성 시작/완료/실패 로그 출력
+- createMonthlyReport() 호출
+
+### 5. vercel.json (수정 또는 신규)
+
+- crons 배열에 추가:
+  { "path": "/api/cron/notion-monthly-report", "schedule": "0 15 1 \* \*" }
+
+### 6. app/checkout/toss/actions.ts (수정)
+
+- processPaymentSuccess 내부, DB 업데이트 성공 후:
+  - getMcpSettings()로 notion_enabled AND notion_report_per_payment 확인
+  - 둘 다 true면:
+    import("@/lib/notion/create-report")
+    .then(({ createOrderReport }) => createOrderReport(dbOrderId))
+    .catch((err) => console.error("[notion] 주문 리포트 생성 실패:", err))
+  - await 없이 호출 (fire-and-forget)
+  - 기존 return 값 유지
+
+## 주의사항
+
+- createAdminClient()는 서버 전용 — 클라이언트 컴포넌트에서 import 금지
+- getMcpSettings()는 Server Action 전용 — API Route에서 직접 import 후 호출
+- formatCurrency에서 /100 하지 말 것 (원 단위 저장 기준)
+- Notion API 블록 100개 초과 시 appendBlocksInChunks 패턴 적용
+- 크론 핸들러 실패 시 throw 대신 { success: false, error } 반환으로 500 방지
+- void / .catch로 비동기 알림의 에러가 결제 플로우로 전파되지 않도록
+
+## 참고 파일
+
+- lib/notion/client.ts — createNotionClient 패턴
+- lib/notion/utils.ts — extractPageId, formatPageUrl
+- lib/notion/create-page.ts — createTestReportPage 블록 구성 참고
+- app/admin/queries.ts — getMcpSettings 구조
+- lib/supabase/server.ts — createAdminClient 패턴

@@ -28,7 +28,7 @@ export const AdminToggle: React.FC<AdminToggleProps> = ({
         disabled={disabled}
         className={cn(
           "relative transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
-          disabled && "opacity-50 cursor-not-allowed"
+          disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
         )}
         style={{
           width: "var(--admin-toggle-width)",
