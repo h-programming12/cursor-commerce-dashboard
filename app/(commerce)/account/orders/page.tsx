@@ -99,15 +99,8 @@ export default async function AccountOrdersPage({
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      <div className="flex-1" style={{ padding: "80px 0" }}>
-        <div
-          className="mx-auto"
-          style={{
-            maxWidth: "1120px",
-            paddingLeft: "80px",
-            paddingRight: "80px",
-          }}
-        >
+      <div className="flex-1 py-8 md:py-12 lg:py-20">
+        <div className="mx-auto max-w-[1120px] px-4 md:px-8 lg:px-20">
           <h1
             className="mb-12"
             style={{

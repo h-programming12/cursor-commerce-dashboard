@@ -218,7 +218,6 @@ export function CheckoutForm({
   const sectionStyle: React.CSSProperties = {
     border: sectionBorder,
     borderRadius: "4px",
-    padding: "24px 24px 40px",
     marginBottom: "24px",
   };
 
@@ -248,9 +247,13 @@ export function CheckoutForm({
         onSubmit={handleSubmit}
         className="flex flex-col lg:flex-row gap-8 lg:gap-12"
       >
-        <div className="flex-1 min-w-0 space-y-6">
+        <div className="order-2 lg:order-1 flex-1 min-w-0 space-y-6">
           {/* Contact Information */}
-          <section style={sectionStyle} aria-labelledby="contact-heading">
+          <section
+            className="p-4 pb-8 md:p-6 md:pb-10"
+            style={sectionStyle}
+            aria-labelledby="contact-heading"
+          >
             <h2 id="contact-heading" style={sectionTitleStyle}>
               Contact Information
             </h2>
@@ -303,7 +306,11 @@ export function CheckoutForm({
           </section>
 
           {/* Shipping Address */}
-          <section style={sectionStyle} aria-labelledby="shipping-heading">
+          <section
+            className="p-4 pb-8 md:p-6 md:pb-10"
+            style={sectionStyle}
+            aria-labelledby="shipping-heading"
+          >
             <h2 id="shipping-heading" style={sectionTitleStyle}>
               Shipping Address
             </h2>
@@ -385,7 +392,11 @@ export function CheckoutForm({
           </section>
 
           {/* Payment method */}
-          <section style={sectionStyle} aria-labelledby="payment-heading">
+          <section
+            className="p-4 pb-8 md:p-6 md:pb-10"
+            style={sectionStyle}
+            aria-labelledby="payment-heading"
+          >
             <h2 id="payment-heading" style={sectionTitleStyle}>
               Payment method
             </h2>
@@ -467,7 +478,7 @@ export function CheckoutForm({
           </button>
         </div>
 
-        <aside className="lg:w-[413px] shrink-0">
+        <aside className="order-1 lg:order-2 lg:w-[413px] shrink-0">
           <div className="sticky top-24">
             <OrderSummary
               lineItems={lineItems}

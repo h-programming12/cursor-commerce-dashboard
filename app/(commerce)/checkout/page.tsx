@@ -130,7 +130,7 @@ export default async function CheckoutPage() {
         style={{
           fontFamily: "Poppins",
           fontWeight: 500,
-          fontSize: "54px",
+          fontSize: "clamp(32px, 7vw, 54px)",
           lineHeight: "58px",
           letterSpacing: "-1px",
           color: commerceColors.text.primary,
@@ -166,7 +166,8 @@ export default async function CheckoutPage() {
               color: commerceColors.text.tertiary,
             }}
           >
-            Shopping cart
+            <span className="sm:hidden">Cart</span>
+            <span className="hidden sm:inline">Shopping cart</span>
           </span>
         </div>
         <div className="flex items-center gap-3">
@@ -192,7 +193,8 @@ export default async function CheckoutPage() {
               color: commerceColors.text.primary,
             }}
           >
-            Checkout details
+            <span className="sm:hidden">Checkout</span>
+            <span className="hidden sm:inline">Checkout details</span>
           </span>
         </div>
         <div className="flex items-center gap-3">
@@ -218,7 +220,8 @@ export default async function CheckoutPage() {
               color: commerceColors.text.tertiary,
             }}
           >
-            Order complete
+            <span className="sm:hidden">Complete</span>
+            <span className="hidden sm:inline">Order complete</span>
           </span>
         </div>
       </nav>

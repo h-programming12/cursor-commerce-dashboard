@@ -56,130 +56,240 @@ export const CartItemRow = React.forwardRef<HTMLDivElement, CartItemRowProps>(
     return (
       <div
         ref={ref}
-        className={cn(
-          "grid grid-cols-[1fr_80px_1fr_1fr] gap-4 items-center min-h-[144px] px-4 py-6 border-b",
-          className
-        )}
+        className={cn("px-4 py-6 border-b", className)}
         style={{
           borderColor: commerceColors.neutral["03"]["100"],
         }}
         role="listitem"
         aria-label={`Cart item: ${item.productName}`}
       >
-        {/* Product: 이미지 + 이름/컬러/Remove */}
-        <div className="flex items-start gap-4 min-w-0">
-          <Link href={productUrl} className="shrink-0">
-            <div
-              className="relative overflow-hidden bg-(--commerce-neutral-03-100)"
-              style={{
-                width: "80px",
-                height: "96px",
-                borderRadius: "4px",
-              }}
-            >
-              {item.productImageUrl ? (
-                <Image
-                  src={item.productImageUrl}
-                  alt={item.productName}
-                  fill
-                  className="object-cover"
-                  sizes="80px"
-                />
-              ) : (
-                <div
-                  className="absolute inset-0"
+        <div className="md:hidden flex flex-col gap-4">
+          <div className="flex items-start gap-4 min-w-0">
+            <Link href={productUrl} className="shrink-0">
+              <div className="relative w-20 h-24 overflow-hidden rounded bg-(--commerce-neutral-03-100)">
+                {item.productImageUrl ? (
+                  <Image
+                    src={item.productImageUrl}
+                    alt={item.productName}
+                    fill
+                    className="object-cover"
+                    sizes="80px"
+                  />
+                ) : (
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      backgroundColor: commerceColors.neutral["03"]["100"],
+                    }}
+                    aria-hidden
+                  />
+                )}
+              </div>
+            </Link>
+            <div className="min-w-0 flex flex-1 flex-col gap-3">
+              <Link href={productUrl}>
+                <h3
+                  className="line-clamp-2"
                   style={{
-                    backgroundColor: commerceColors.neutral["03"]["100"],
+                    fontFamily: "Inter",
+                    fontWeight: 600,
+                    fontSize: "14px",
+                    lineHeight: "22px",
+                    color: commerceColors.text.primary,
                   }}
-                  aria-hidden
-                />
+                >
+                  {item.productName}
+                </h3>
+              </Link>
+              {item.color && (
+                <p
+                  style={{
+                    fontFamily: "Inter",
+                    fontWeight: 400,
+                    fontSize: "12px",
+                    lineHeight: "20px",
+                    color: commerceColors.text.tertiary,
+                  }}
+                >
+                  Color: {item.color}
+                </p>
               )}
-            </div>
-          </Link>
-          <div className="min-w-0 flex flex-col gap-1">
-            <Link href={productUrl}>
-              <h3
-                className="line-clamp-2"
+              <div>
+                <p
+                  className="mb-2"
+                  style={{
+                    fontFamily: "Inter",
+                    fontWeight: 400,
+                    fontSize: "14px",
+                    lineHeight: "22px",
+                    color: commerceColors.text.tertiary,
+                  }}
+                >
+                  {formatPrice(Math.round(item.unitPrice))}
+                </p>
+                <QuantitySelector
+                  value={item.quantity}
+                  min={1}
+                  onChange={handleQuantityChange}
+                  size="small"
+                  aria-label={`Quantity for ${item.productName}`}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={handleRemove}
+                className="cursor-pointer inline-flex items-center gap-1 w-fit transition-colors hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#141718]"
                 style={{
                   fontFamily: "Inter",
                   fontWeight: 600,
                   fontSize: "14px",
-                  lineHeight: "22px",
-                  color: commerceColors.text.primary,
-                }}
-              >
-                {item.productName}
-              </h3>
-            </Link>
-            {item.color && (
-              <p
-                style={{
-                  fontFamily: "Inter",
-                  fontWeight: 400,
-                  fontSize: "12px",
-                  lineHeight: "20px",
+                  lineHeight: "24px",
                   color: commerceColors.text.tertiary,
                 }}
+                aria-label={`Remove ${item.productName} from cart`}
               >
-                Color: {item.color}
-              </p>
-            )}
-            <button
-              type="button"
-              onClick={handleRemove}
-              className="cursor-pointer inline-flex items-center gap-1 w-fit transition-colors hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#141718]"
+                <CloseIcon />
+                <span>Remove</span>
+              </button>
+            </div>
+          </div>
+          <div
+            className="flex items-center justify-between border-t pt-3"
+            style={{ borderColor: commerceColors.neutral["03"]["100"] }}
+          >
+            <span
               style={{
                 fontFamily: "Inter",
                 fontWeight: 600,
                 fontSize: "14px",
-                lineHeight: "24px",
+                lineHeight: "22px",
                 color: commerceColors.text.tertiary,
               }}
-              aria-label={`Remove ${item.productName} from cart`}
             >
-              <CloseIcon />
-              <span>Remove</span>
-            </button>
+              Subtotal
+            </span>
+            <span
+              style={{
+                fontFamily: "Inter",
+                fontWeight: 600,
+                fontSize: "18px",
+                lineHeight: "30px",
+                color: "#121212",
+              }}
+            >
+              {formatPrice(Math.round(item.totalPrice))}
+            </span>
           </div>
         </div>
-
-        {/* Quantity */}
-        <div className="flex justify-center">
-          <QuantitySelector
-            value={item.quantity}
-            min={1}
-            onChange={handleQuantityChange}
-            size="small"
-            aria-label={`Quantity for ${item.productName}`}
-          />
-        </div>
-
-        {/* Price */}
-        <div
-          className="text-right"
-          style={{
-            fontFamily: "Inter",
-            fontWeight: 400,
-            fontSize: "18px",
-            lineHeight: "30px",
-            color: "#121212",
-          }}
-        >
-          {formatPrice(Math.round(item.unitPrice))}
-        </div>
-
-        {/* Subtotal */}
-        <div
-          className="text-right"
-          style={{
-            fontFamily: "Inter",
-            fontWeight: 600,
-            fontSize: "18px",
-            lineHeight: "30px",
-            color: "#121212",
-          }}
-        >
-          {formatPrice(Math.round(item.totalPrice))}
+        <div className="hidden md:grid md:grid-cols-[1fr_80px_1fr_1fr] gap-4 items-center min-h-[144px]">
+          <div className="flex items-start gap-4 min-w-0">
+            <Link href={productUrl} className="shrink-0">
+              <div
+                className="relative overflow-hidden bg-(--commerce-neutral-03-100)"
+                style={{
+                  width: "80px",
+                  height: "96px",
+                  borderRadius: "4px",
+                }}
+              >
+                {item.productImageUrl ? (
+                  <Image
+                    src={item.productImageUrl}
+                    alt={item.productName}
+                    fill
+                    className="object-cover"
+                    sizes="80px"
+                  />
+                ) : (
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      backgroundColor: commerceColors.neutral["03"]["100"],
+                    }}
+                    aria-hidden
+                  />
+                )}
+              </div>
+            </Link>
+            <div className="min-w-0 flex flex-col gap-1">
+              <Link href={productUrl}>
+                <h3
+                  className="line-clamp-2"
+                  style={{
+                    fontFamily: "Inter",
+                    fontWeight: 600,
+                    fontSize: "14px",
+                    lineHeight: "22px",
+                    color: commerceColors.text.primary,
+                  }}
+                >
+                  {item.productName}
+                </h3>
+              </Link>
+              {item.color && (
+                <p
+                  style={{
+                    fontFamily: "Inter",
+                    fontWeight: 400,
+                    fontSize: "12px",
+                    lineHeight: "20px",
+                    color: commerceColors.text.tertiary,
+                  }}
+                >
+                  Color: {item.color}
+                </p>
+              )}
+              <button
+                type="button"
+                onClick={handleRemove}
+                className="cursor-pointer inline-flex items-center gap-1 w-fit transition-colors hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#141718]"
+                style={{
+                  fontFamily: "Inter",
+                  fontWeight: 600,
+                  fontSize: "14px",
+                  lineHeight: "24px",
+                  color: commerceColors.text.tertiary,
+                }}
+                aria-label={`Remove ${item.productName} from cart`}
+              >
+                <CloseIcon />
+                <span>Remove</span>
+              </button>
+            </div>
+          </div>
+          <div className="flex justify-center">
+            <QuantitySelector
+              value={item.quantity}
+              min={1}
+              onChange={handleQuantityChange}
+              size="small"
+              aria-label={`Quantity for ${item.productName}`}
+            />
+          </div>
+          <div
+            className="text-right"
+            style={{
+              fontFamily: "Inter",
+              fontWeight: 400,
+              fontSize: "18px",
+              lineHeight: "30px",
+              color: "#121212",
+            }}
+          >
+            {formatPrice(Math.round(item.unitPrice))}
+          </div>
+          <div
+            className="text-right"
+            style={{
+              fontFamily: "Inter",
+              fontWeight: 600,
+              fontSize: "18px",
+              lineHeight: "30px",
+              color: "#121212",
+            }}
+          >
+            {formatPrice(Math.round(item.totalPrice))}
+          </div>
         </div>
       </div>
     );

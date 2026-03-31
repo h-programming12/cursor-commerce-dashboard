@@ -30,7 +30,7 @@ export default function CartPage() {
           style={{
             fontFamily: "Poppins",
             fontWeight: 500,
-            fontSize: "54px",
+            fontSize: "clamp(32px, 7vw, 54px)",
             lineHeight: "58px",
             letterSpacing: "-1px",
             color: commerceColors.text.primary,
@@ -87,7 +87,7 @@ export default function CartPage() {
         style={{
           fontFamily: "Poppins",
           fontWeight: 500,
-          fontSize: "54px",
+          fontSize: "clamp(32px, 7vw, 54px)",
           lineHeight: "58px",
           letterSpacing: "-1px",
           color: commerceColors.text.primary,
@@ -189,7 +189,7 @@ export default function CartPage() {
           >
             {/* Table header */}
             <div
-              className="grid grid-cols-[1fr_80px_1fr_1fr] gap-4 items-center h-[50px] px-4 border-b"
+              className="hidden md:grid md:grid-cols-[1fr_80px_1fr_1fr] gap-4 items-center h-[50px] px-4 border-b"
               style={{
                 borderColor: commerceColors.neutral["04"]["100"],
                 fontFamily: "Inter",

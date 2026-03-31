@@ -1,0 +1,78 @@
+---
+alwaysApply: true
+---
+
+주문 및 결제 관련 페이지의 반응형 레이아웃을 개선해줘.
+
+현재 상황:
+
+- cart/page.tsx: 4컬럼 고정 그리드 테이블(Product, Qty, Price, Subtotal)
+- CartItemRow.tsx: grid-cols-[1fr_80px_1fr_1fr] 고정
+- checkout/page.tsx: 제목 54px 고정, 스테퍼 3단계 flex-wrap
+- CheckoutForm.tsx: 폼+사이드바 flex-col lg:flex-row (양호), 섹션 padding 24px 고정
+- OrderSummary: 모바일에서 폼 아래에 치 (UX 문제)
+- account/orders/page.tsx: paddingLeft/Right 80px 하드코딩
+- CheckoutSuccessClient.tsx: max-w-[832px] px-4 (양호)
+
+수정 대상 및 요구사항:
+
+1. components/commerce/CartItemRow/CartItemRow.tsx:
+
+   - 데스크톱(md 이상): 기존 grid-cols-[1fr_80px_1fr_1fr] 유지
+     → "hidden md:grid md:grid-cols-[1fr_80px_1fr_1fr]" 적용
+   - 모바일(md 미만): 카드형 레이아웃 추가
+     → md:hidden flex 레이아웃
+     → 이미지(좌, w-20 h-24 object-cover) + 정보 스택(우): 상품명, 가격, 수량 셀렉터, Remove
+     → 하단에 소계 표시
+   - 두 레이아웃 모두 하나의 컴포넌트에 포함 (hidden/block 토글)
+
+2. app/(commerce)/cart/page.tsx:
+
+   - 테이블 헤더: "hidden md:grid" 추가 (모바일에서 숨김)
+   - 제목 fontSize "54px" → clamp(32px, 7vw, 54px)
+   - 패딩은 이미 px-4 sm:px-6 lg:px-8로 되어 있으니 유지
+
+3. app/(commerce)/checkout/page.tsx:
+
+   - 제목 fontSize "54px" → clamp(32px, 7vw, 54px)
+   - 스테퍼 텍스트: 모바일에서 축약
+     "Shopping cart" → 모바일: "Cart" (hidden sm:inline / sm:hidden 패턴)
+     "Checkout details" → 모바일: "Checkout"
+     "Order complete" → 모바일: "Complete"
+
+4. components/commerce/CheckoutForm/CheckoutForm.tsx:
+
+   - 폼 영역에 order-2 lg:order-1 추가
+   - aside에 order-1 lg:order-2 추가 (모바일에서 OrderSummary 먼저 표시)
+   - sectionStyle padding "24px 24px 40px"
+     → style에서 padding 제거, className에 "p-4 pb-8 md:p-6 md:pb-10" 추가
+
+5. app/(commerce)/account/orders/page.tsx:
+
+   - style={{ paddingLeft: "80px", paddingRight: "80px" }}
+     → Tailwind px-4 md:px-8 lg:px-20 (style 제거)
+   - style={{ padding: "80px 0" }}
+     → Tailwind py-8 md:py-12 lg:py-20 (style 제거)
+
+6. app/(commerce)/checkout/success/CheckoutSuccessClient.tsx:
+   - 대체로 양호, 변경 최소화
+   - 필요 시 py-12를 py-6 md:py-12로 조정
+
+주의사항:
+
+- CartItemRow는 두 레이아웃(데스크톱 grid + 모바일 flex)을 하나의 컴포넌트에 포함
+  → hidden/md:grid, md:hidden 패턴으로 분기
+- cart/page.tsx의 테이블 헤더도 hidden md:grid로 모바일 숨김
+- clamp()는 style 객체에서 문자열로 전달: fontSize: "clamp(32px, 7vw, 54px)"
+- CSS order 속성은 Tailwind: order-1, order-2, lg:order-1, lg:order-2
+- 기존 디자인 토큰 (commerceColors, commerceTypography) 유지
+- flex-col lg:flex-row 패턴 유지
+- 빌드 에러 확인 필수
+
+참고 파일:
+
+- components/commerce/CartItemRow/CartItemRow.tsx — 카드형 전환 대상
+- components/commerce/CartSummary/CartSummary.tsx — 이미 반응형 양호 (참고)
+- components/commerce/CheckoutForm/CheckoutForm.tsx — 폼+사이드바 구조
+- components/commerce/OrderSummary/OrderSummary.tsx — 체크아웃 사이드바
+- components/commerce/layout/LayoutHeader.tsx — 기존 반응형 패턴 참고 (px-4 sm:px-6 lg:px-8
