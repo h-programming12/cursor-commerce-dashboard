@@ -185,8 +185,8 @@ export function LayoutHeader({
               style={{
                 fontFamily: "var(--commerce-font-poppins)",
                 fontWeight: 500,
-                fontSize: "24px",
-                lineHeight: "24px",
+                fontSize: "clamp(20px, 4.5vw, 24px)",
+                lineHeight: "clamp(22px, 4.8vw, 24px)",
                 letterSpacing: "0",
               }}
             >

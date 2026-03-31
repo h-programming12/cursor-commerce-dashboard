@@ -36,15 +36,7 @@ export default function ProductsPage() {
 
   return (
     <div className="w-full">
-      <div
-        className="mx-auto max-w-[1440px]"
-        style={{
-          paddingLeft: "24px",
-          paddingRight: "24px",
-          paddingTop: "48px",
-          paddingBottom: "48px",
-        }}
-      >
+      <div className="mx-auto max-w-[1440px] px-4 md:px-6 lg:px-6 py-6 md:py-8 lg:py-12">
         <h1
           className="text-4xl font-bold text-center mb-12"
           style={{ color: "var(--commerce-text-primary)" }}
@@ -65,7 +57,7 @@ export default function ProductsPage() {
               products={products}
               columns={4}
               gap="medium"
-              className={cn("w-full")}
+              className={cn("w-full gap-y-6 md:gap-y-8 xl:gap-y-12")}
             />
 
             {hasNextPage && (

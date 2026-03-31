@@ -68,7 +68,7 @@ export function HomeHeroSection({ className }: HomeHeroSectionProps) {
               className="mb-6 text-(--commerce-neutral-07-100)"
               style={{
                 fontFamily: "var(--commerce-font-poppins)",
-                fontSize: "40px",
+                fontSize: "clamp(28px, 5vw, 40px)",
                 fontWeight: 500,
                 lineHeight: "44px",
                 letterSpacing: "-0.4px",
@@ -84,7 +84,7 @@ export function HomeHeroSection({ className }: HomeHeroSectionProps) {
               className="mb-8 text-(--commerce-neutral-07-100)"
               style={{
                 fontFamily: "var(--commerce-font-inter)",
-                fontSize: "20px",
+                fontSize: "clamp(16px, 3vw, 20px)",
                 fontWeight: 400,
                 lineHeight: "32px",
               }}

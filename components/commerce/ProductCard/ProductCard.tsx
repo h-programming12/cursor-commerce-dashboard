@@ -73,7 +73,10 @@ export const ProductCard = React.forwardRef<HTMLDivElement, ProductCardProps>(
     return (
       <div
         ref={ref}
-        className={cn("group relative", className)}
+        className={cn(
+          "group relative w-full max-w-[420px] md:max-w-none mx-auto",
+          className
+        )}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -85,10 +88,7 @@ export const ProductCard = React.forwardRef<HTMLDivElement, ProductCardProps>(
             }}
           >
             {/* 이미지 영역 */}
-            <div
-              className="relative overflow-hidden"
-              style={{ height: "349px" }}
-            >
+            <div className="relative overflow-hidden aspect-4/5">
               <Image
                 src={product.imageUrl}
                 alt={product.name}
@@ -154,13 +154,7 @@ export const ProductCard = React.forwardRef<HTMLDivElement, ProductCardProps>(
             </div>
 
             {/* 콘텐츠 영역 */}
-            <div
-              className="px-0 py-0"
-              style={{
-                height: "72px",
-                paddingTop: "20px",
-              }}
-            >
+            <div className="px-0 py-0 pt-5 min-h-[72px]">
               {/* 별점 */}
               {product.rating !== undefined && (
                 <div className="mb-2" style={{ height: "16px" }}>

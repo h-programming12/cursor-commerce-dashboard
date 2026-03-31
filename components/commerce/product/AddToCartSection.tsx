@@ -102,11 +102,9 @@ export const AddToCartSection: React.FC<AddToCartSectionProps> = ({
         onClick={handleAddToCart}
         disabled={isSoldOut || isPending}
         className={cn(
-          "cursor-pointer flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#141718] disabled:opacity-50 disabled:cursor-not-allowed"
+          "cursor-pointer w-full max-w-[508px] h-[52px] flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#141718] disabled:opacity-50 disabled:cursor-not-allowed"
         )}
         style={{
-          width: "508px",
-          height: "52px",
           borderRadius: "8px",
           backgroundColor: commerceColors.neutral["07"]["100"],
           color: commerceColors.text.inverse,

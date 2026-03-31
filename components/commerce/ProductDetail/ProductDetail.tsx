@@ -22,19 +22,12 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({
 }) => {
   return (
     <div
-      className={cn("flex flex-col lg:flex-row gap-8", className)}
+      className={cn("flex flex-col lg:flex-row gap-6 xl:gap-8", className)}
       role="article"
       aria-label={`Product details for ${product.name}`}
     >
       {/* 이미지 영역 */}
-      <div
-        className="relative shrink-0"
-        style={{
-          width: "100%",
-          maxWidth: "600px",
-          aspectRatio: "1 / 1",
-        }}
-      >
+      <div className="relative shrink-0 w-full lg:w-[48%] lg:max-w-[520px] xl:max-w-[600px] aspect-square">
         {product.image_url ? (
           <Image
             src={product.image_url}
@@ -65,7 +58,7 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({
       </div>
 
       {/* 상품 정보 영역 */}
-      <div className="flex-1 flex flex-col gap-6">
+      <div className="flex-1 min-w-0 flex flex-col gap-6">
         {/* 상품 정보 섹션 */}
         <ProductInfoSection product={product} />
         {/* 장바구니 추가 섹션 */}

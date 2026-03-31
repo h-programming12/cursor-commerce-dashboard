@@ -279,7 +279,7 @@ export const ReviewSummaryDisplay: React.FC<ReviewSummaryDisplayProps> = ({
           <BsRobot size={24} aria-hidden />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="mb-2 flex items-center justify-between gap-2">
+          <div className="mb-2 flex md:items-center justify-between gap-2 flex-col md:flex-row">
             <h4
               style={{
                 fontFamily: commerceTypography.body["2-semi"].fontFamily,
