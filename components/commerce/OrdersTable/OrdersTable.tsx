@@ -37,6 +37,15 @@ function formatOrderDate(iso: string | null): string {
   });
 }
 
+function formatOrderDateKo(iso: string | null): string {
+  if (!iso) return "-";
+  return new Date(iso).toLocaleDateString("ko-KR", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
 function getStatusBadgeVariant(
   status: string
 ): "default" | "success" | "warning" | "error" {
@@ -110,75 +119,110 @@ export function OrdersTable({ orders }: OrdersTableProps) {
   const borderColor = commerceColors.neutral["03"]["100"];
 
   return (
-    <div className="w-full overflow-x-auto">
-      <table className="w-full border-collapse" role="table">
-        <thead>
-          <tr className="border-b" style={{ borderColor }}>
-            <th
-              className="text-left py-3 pr-4"
-              style={{ ...captionStyle, width: "180px" }}
-            >
-              Number ID
-            </th>
-            <th
-              className="text-left py-3 pr-4"
-              style={{ ...captionStyle, width: "180px" }}
-            >
-              Dates
-            </th>
-            <th
-              className="text-left py-3 pr-4"
-              style={{ ...captionStyle, width: "140px" }}
-            >
-              Status
-            </th>
-            <th className="text-left py-3" style={captionStyle}>
-              Price
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {orders.map((order) => (
-            <tr
-              key={order.id}
-              role="button"
-              tabIndex={0}
+    <div className="w-full">
+      <div className="hidden md:block w-full overflow-x-auto">
+        <table className="w-full border-collapse" role="table">
+          <thead>
+            <tr className="border-b" style={{ borderColor }}>
+              <th
+                className="text-left py-3 pr-4"
+                style={{ ...captionStyle, width: "180px" }}
+              >
+                Number ID
+              </th>
+              <th
+                className="text-left py-3 pr-4"
+                style={{ ...captionStyle, width: "180px" }}
+              >
+                Dates
+              </th>
+              <th
+                className="text-left py-3 pr-4"
+                style={{ ...captionStyle, width: "140px" }}
+              >
+                Status
+              </th>
+              <th className="text-left py-3" style={captionStyle}>
+                Price
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {orders.map((order) => (
+              <tr
+                key={order.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => router.push(ACCOUNT_URLS.ORDER_DETAIL(order.id))}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    router.push(ACCOUNT_URLS.ORDER_DETAIL(order.id));
+                  }
+                }}
+                className={cn(
+                  "border-b align-middle cursor-pointer transition-colors",
+                  "hover:bg-(--commerce-background-light) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--commerce-primary-main)"
+                )}
+                style={{ borderColor }}
+                aria-label={`주문 ${order.id} 상세 보기`}
+              >
+                <td
+                  className="py-4 pr-4"
+                  style={{ ...cellStyle, width: "160px" }}
+                >
+                  #{order.id.slice(0, 8)}
+                </td>
+                <td
+                  className="py-4 pr-4"
+                  style={{ ...cellStyle, width: "120px" }}
+                >
+                  {formatOrderDate(order.created_at)}
+                </td>
+                <td className="py-4 pr-4" style={{ width: "120px" }}>
+                  <StatusBadge status={order.status} />
+                </td>
+                <td className="py-4" style={cellStyle}>
+                  {formatPrice(order.total_amount)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <ul
+        className="md:hidden flex flex-col gap-3 list-none p-0 m-0"
+        role="list"
+      >
+        {orders.map((order) => (
+          <li key={order.id}>
+            <button
+              type="button"
               onClick={() => router.push(ACCOUNT_URLS.ORDER_DETAIL(order.id))}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  router.push(ACCOUNT_URLS.ORDER_DETAIL(order.id));
-                }
-              }}
               className={cn(
-                "border-b align-middle cursor-pointer transition-colors",
+                "w-full text-left rounded-lg border p-4 transition-colors",
                 "hover:bg-(--commerce-background-light) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--commerce-primary-main)"
               )}
               style={{ borderColor }}
               aria-label={`주문 ${order.id} 상세 보기`}
             >
-              <td
-                className="py-4 pr-4"
-                style={{ ...cellStyle, width: "160px" }}
-              >
-                #{order.id.slice(0, 8)}
-              </td>
-              <td
-                className="py-4 pr-4"
-                style={{ ...cellStyle, width: "120px" }}
-              >
-                {formatOrderDate(order.created_at)}
-              </td>
-              <td className="py-4 pr-4" style={{ width: "120px" }}>
+              <div className="flex items-start justify-between gap-3 mb-3">
+                <span style={cellStyle}>
+                  #{order.id.slice(0, 8).toUpperCase()}
+                </span>
                 <StatusBadge status={order.status} />
-              </td>
-              <td className="py-4" style={cellStyle}>
-                {formatPrice(order.total_amount)}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span style={captionStyle}>
+                  {formatOrderDateKo(order.created_at)}
+                </span>
+                <span style={cellStyle}>{formatPrice(order.total_amount)}</span>
+              </div>
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

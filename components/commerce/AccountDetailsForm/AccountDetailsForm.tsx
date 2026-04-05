@@ -268,9 +268,8 @@ export function AccountDetailsForm({
           type="submit"
           variant="primary"
           isLoading={isLoading}
-          className="rounded-md cursor-pointer"
+          className="rounded-md cursor-pointer w-full sm:w-[262px]"
           style={{
-            width: "183px",
             height: "52px",
             fontSize: "16px",
             lineHeight: "28px",

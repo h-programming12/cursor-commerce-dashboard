@@ -11,6 +11,9 @@ import toast from "react-hot-toast";
 import { FiCamera } from "react-icons/fi";
 import type { Database } from "@/types/supabase";
 
+/** 마이페이지 사이드바 md 이상 폭(px). Tailwind `md:w-[262px]`와 동일 값 유지 */
+export const SIDEBAR_WIDTH_PX = 262;
+
 export interface AccountSidebarProps {
   displayName?: string | null;
   email?: string | null;
@@ -143,18 +146,14 @@ export function AccountSidebar({
 
   const displayNameText = displayName || email?.split("@")[0] || "User";
 
-  const SIDEBAR_WIDTH_PX = 262;
-
   return (
     <aside
       className={cn(
-        "flex flex-col rounded-lg shrink-0 md:w-[262px] w-full",
+        "flex flex-col rounded-lg shrink-0 w-full md:w-[262px] md:min-w-[262px] p-4 md:py-10 md:px-4",
         className
       )}
       style={{
-        minWidth: `${SIDEBAR_WIDTH_PX}px`,
         backgroundColor: commerceColors.background.light,
-        padding: "40px 16px",
       }}
     >
       {/* Avatar Section */}

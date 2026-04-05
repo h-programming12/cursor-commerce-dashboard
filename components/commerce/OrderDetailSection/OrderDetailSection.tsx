@@ -239,7 +239,7 @@ function OrderDetailProducts({ items }: { items: OrderDetailItem[] }) {
       >
         Products in this order
       </h3>
-      <div className="w-full overflow-x-auto">
+      <div className="hidden md:block w-full overflow-x-auto">
         <table className="w-full border-collapse" role="table">
           <thead>
             <tr className="border-b" style={{ borderColor }}>
@@ -322,6 +322,55 @@ function OrderDetailProducts({ items }: { items: OrderDetailItem[] }) {
           </tbody>
         </table>
       </div>
+
+      <ul className="md:hidden flex flex-col list-none p-0 m-0" role="list">
+        {items.map((item) => (
+          <li
+            key={item.id}
+            className="px-4 py-4 first:pt-2 border-b last:border-b-0"
+            style={{ borderColor }}
+          >
+            <Link
+              href={COMMERCE_URLS.PRODUCT_DETAIL(item.productId)}
+              className="flex gap-3 min-w-0 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--commerce-primary-main) rounded-md"
+            >
+              <div className="relative w-16 h-20 shrink-0 rounded overflow-hidden bg-(--commerce-background-light)">
+                {item.productImageUrl ? (
+                  <Image
+                    src={item.productImageUrl}
+                    alt=""
+                    fill
+                    sizes="64px"
+                    className="object-cover"
+                  />
+                ) : (
+                  <div
+                    className="w-full h-full flex items-center justify-center"
+                    style={{
+                      fontSize: commerceTypography.caption["2"].fontSize,
+                      color: commerceColors.text.tertiary,
+                    }}
+                  >
+                    No image
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-col gap-1 min-w-0 flex-1">
+                <span className="wrap-break-word" style={cellStyle}>
+                  {item.productName || "—"}
+                </span>
+                <span style={captionStyle}>
+                  Price: {formatPrice(item.unitPrice)}
+                </span>
+                <span style={captionStyle}>Qty: {item.quantity}</span>
+                <span style={{ ...cellStyle, fontWeight: 600 }}>
+                  Subtotal: {formatPrice(item.lineTotal)}
+                </span>
+              </div>
+            </Link>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }

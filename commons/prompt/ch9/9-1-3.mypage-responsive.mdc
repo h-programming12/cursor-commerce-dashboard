@@ -1,0 +1,81 @@
+---
+alwaysApply: true
+---
+
+마이페이지 전체의 반응형 레이아웃을 개선해줘.
+
+현재 상황:
+
+- 5개 마이페이지(account, orders, orders/[id], wishlist, reviews)가 동일한 셸 구조 사용
+- 공통 셸: padding "80px 0" 상하, paddingLeft/Right "80px", fontSize "54px" 제목
+- AccountSidebar: style={{ minWidth: "262px" }}가 Tailwind w-full을 override
+- OrdersTable: 4컬럼 HTML table, overflow-x-auto로 가로 스크롤
+- OrderDetailSection 내부: 4컬럼 상품 테이블
+- AccountDetailsForm: Save changes 버튼 width "183px" 고정
+
+수정 대상 및 요구사항:
+
+1. 공통 셸 수정 — 아래 5개 파일에 동일하게 적용:
+
+   - app/(commerce)/account/page.tsx
+   - app/(commerce)/account/orders/page.tsx
+   - app/(commerce)/account/orders/[orderId]/page.tsx
+   - app/(commerce)/account/wishlist/page.tsx
+   - app/(commerce)/account/reviews/page.tsx
+
+   변경 내용:
+
+   - style={{ padding: "80px 0" }} 제거 → className에 py-8 md:py-12 lg:py-20 추가
+   - style={{ paddingLeft: "80px", paddingRight: "80px" }} 제거
+     → className에 px-4 sm:px-6 md:px-8 lg:px-20 추가
+   - style={{ maxWidth: "1120px" }} → max-w-[1120px] (Tailwind 또는 유지)
+   - 제목 fontSize → "clamp(32px, 7vw, 54px)" (style 객체에서 문자열로)
+   - 제목 하단 마진 mb-12 → mb-6 md:mb-12
+
+2. components/commerce/AccountSidebar/AccountSidebar.tsx:
+
+   - style에서 minWidth: "262px" 제거
+   - style에서 padding: "40px 16px" 제거
+   - className을 "w-full md:w-[262px] md:min-w-[262px]"로 변경
+   - className에 p-4 md:py-10 md:px-4 추가
+   - SIDEBAR_WIDTH_PX 상수는 남겨두되 style에서 minWidth로 사용하지 않기
+
+3. components/commerce/OrdersTable/OrdersTable.tsx:
+
+   - 기존 <table>을 <div className="hidden md:block">으로 감싸기 (데스크톱에서만 표시)
+   - 모바일용 카드형 리스트 추가 (md:hidden):
+     - 각 주문을 카드로 표시 — 상단: 주문번호(#앞8자 대문자) + StatusBadge
+     - 하단: 날짜(ko-KR 포맷) + 금액(toLocaleString)
+     - 카드 전체 클릭 시 router.push(ACCOUNT_URLS.ORDER_DETAIL(order.id))
+     - 기존 StatusBadge 컴포넌트 재사용
+
+4. components/commerce/OrderDetailSection/OrderDetailSection.tsx:
+
+   - OrderDetailProducts 함수 내부의 <table>을 hidden md:block으로 감싸기
+   - 모바일용 카드형 리스트 추가 (md:hidden):
+     - 이미지(w-16 h-20 object-cover, 좌) + 상품명/가격/수량/소계(우) 스택
+     - 기존 COMMERCE_URLS.PRODUCT_DETAIL 링크 유지
+
+5. components/commerce/AccountDetailsForm/AccountDetailsForm.tsx:
+   - Save changes 버튼 style={{ width: "183px" }} 제거
+   - className에 w-full sm:w-auto 추가
+   - height: "52px" 유지
+
+주의사항:
+
+- style 객체에서 padding, minWidth 등 반응형 필요 속성 반드시 제거
+  (inline style은 Tailwind 반응형 클래스보다 CSS specificity가 높아 override됨)
+- style에 남겨도 되는 것: borderColor, backgroundColor, fontFamily, fontWeight 등 고정 값
+- clamp()는 style 객체에서 문자열로 전달 가능: fontSize: "clamp(32px, 7vw, 54px)"
+- 5개 셸 파일은 동일한 변경 — 하나 완성 후 나머지 복사
+- 기존 디자인 토큰 (commerceColors, commerceTypography) 유지
+- flex-col md:flex-row 사이드바 레이아웃 패턴 유지
+- 빌드 에러 확인 필수
+
+참고 파일:
+
+- components/commerce/AccountSidebar/AccountSidebar.tsx — minWidth 제거 대상
+- components/commerce/OrdersTable/OrdersTable.tsx — 카드형 전환 대상
+- components/commerce/OrderDetailSection/OrderDetailSection.tsx — 상품 테이블 전환
+- components/commerce/AccountDetailsForm/AccountDetailsForm.tsx — 버튼 반응형
+- components/commerce/layout/LayoutHeader.tsx — px-4 sm:px-6 lg:px-8 반응형 패턴 참고
