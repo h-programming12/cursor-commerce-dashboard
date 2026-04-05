@@ -198,7 +198,7 @@ export function AccountDetailsForm({
               className="p-2 rounded-md"
               disabled
               style={{
-                backgroundColor: "#E8ECEF",
+                backgroundColor: commerceColors.neutral["03"]["100"],
                 opacity: 0.75,
               }}
             />

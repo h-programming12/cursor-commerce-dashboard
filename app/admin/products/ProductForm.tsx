@@ -268,7 +268,7 @@ export function ProductForm({ mode, product }: ProductFormProps) {
                         color: "var(--admin-text-inverse)",
                       }
                     : {
-                        backgroundColor: "#9CA3AF",
+                        backgroundColor: "var(--admin-grey-g75)",
                         color: "var(--admin-text-inverse)",
                       }),
                 }}

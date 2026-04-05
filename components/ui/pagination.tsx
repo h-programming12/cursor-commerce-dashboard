@@ -93,16 +93,16 @@ export const Pagination: React.FC<PaginationProps> = ({
   const visiblePages = getVisiblePages();
 
   const buttonBaseStyles =
-    "flex items-center justify-center w-7 h-7 rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#141718] disabled:opacity-50 disabled:cursor-not-allowed";
+    "flex items-center justify-center w-7 h-7 rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--commerce-neutral-07-100) disabled:opacity-50 disabled:cursor-not-allowed";
 
   const activeButtonStyles = {
     backgroundColor: commerceColors.neutral["07"]["100"],
-    color: "#FFFFFF",
+    color: commerceColors.text.inverse,
   };
 
   const inactiveButtonStyles = {
-    backgroundColor: "#F1F2F6",
-    color: "#8B909A",
+    backgroundColor: commerceColors.neutral["02"]["100"],
+    color: commerceColors.text.tertiary,
   };
 
   return (
@@ -125,7 +125,7 @@ export const Pagination: React.FC<PaginationProps> = ({
           return (
             <span
               key={`ellipsis-${index}`}
-              className="flex items-center justify-center w-7 h-7 text-[#8B909A]"
+              className="flex items-center justify-center w-7 h-7 text-(--commerce-text-tertiary)"
             >
               ...
             </span>

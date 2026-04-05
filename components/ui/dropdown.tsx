@@ -95,10 +95,14 @@ export const Dropdown: React.FC<DropdownProps> = ({
           backgroundColor: adminColors.background.default,
           border: error
             ? `1px solid ${adminColors.semantic.error}`
-            : `1px solid ${disabled ? "#E9E7FD" : adminColors.text.tertiary}`,
+            : `1px solid ${
+                disabled
+                  ? "var(--admin-border-dropdown)"
+                  : adminColors.text.tertiary
+              }`,
           color: selectedOption
             ? adminColors.text.primary
-            : adminColors.text.stormGray || "#8B909A",
+            : "var(--admin-text-placeholder)",
           fontSize: `${adminTypography.semantic.button.medium.fontSize}px`,
           lineHeight: `${adminTypography.semantic.button.medium.lineHeight}px`,
           fontFamily: adminTypography.semantic.button.medium.fontFamily,
@@ -115,9 +119,11 @@ export const Dropdown: React.FC<DropdownProps> = ({
 
       {isOpen && (
         <div
-          className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg"
+          className="absolute z-50 w-full mt-1 rounded-md shadow-lg border"
           role="listbox"
           style={{
+            backgroundColor: "var(--admin-background-default)",
+            borderColor: "var(--admin-border-card)",
             maxHeight: "200px",
             overflowY: "auto",
           }}
@@ -128,8 +134,9 @@ export const Dropdown: React.FC<DropdownProps> = ({
               type="button"
               onClick={() => handleSelect(option.value)}
               className={cn(
-                "w-full text-left px-3 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none transition-colors",
-                selectedValue === option.value && "bg-gray-50"
+                "w-full text-left px-3 py-2 focus:outline-none transition-colors hover:bg-(--admin-background-light) focus:bg-(--admin-background-light)",
+                selectedValue === option.value &&
+                  "bg-(--admin-background-athens-gray)"
               )}
               role="option"
               aria-selected={selectedValue === option.value}
@@ -141,7 +148,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
                 color:
                   selectedValue === option.value
                     ? adminColors.text.primary
-                    : adminColors.text.stormGray || "#8B909A",
+                    : "var(--admin-text-placeholder)",
               }}
             >
               {option.label}

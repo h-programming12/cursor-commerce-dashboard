@@ -461,7 +461,7 @@ export function CheckoutForm({
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full transition-colors hover:opacity-90 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#141718]"
+            className="w-full transition-colors hover:opacity-90 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--commerce-neutral-07-100)"
             style={{
               height: "52px",
               borderRadius: "8px",

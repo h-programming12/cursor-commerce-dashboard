@@ -30,7 +30,7 @@ export const ProductDetailTabs: React.FC<ProductDetailTabsProps> = ({
 
   return (
     <div className={cn("w-full", className)} role="tablist">
-      {/* Figma Tabs/Menu: height 32px, border #e8ecef, Inter Medium 18px, letterSpacing -0.4px */}
+      {/* Figma Tabs/Menu: height 32px, border var(--commerce-neutral-03-100), Inter Medium 18px, letterSpacing -0.4px */}
       <div className="flex h-8 border-b border-(--commerce-neutral-03-100)">
         {TAB_CONFIG.map((tab) => (
           <button

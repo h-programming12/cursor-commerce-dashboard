@@ -3,7 +3,7 @@ import { cn } from "@/commons/utils/cn";
 
 export default function ProductDetailLoading() {
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 md:px-12 lg:px-16 xl:px-20">
       {/* 상품 영역 스켈레톤: 이미지 + 정보 */}
       <div
         className={cn("flex flex-col lg:flex-row gap-8")}

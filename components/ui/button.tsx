@@ -34,9 +34,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variantStyles = {
       primary:
-        "bg-[#141718] text-white hover:bg-[#23262F] focus-visible:ring-[#141718]",
+        "bg-(--commerce-neutral-07-100) text-white hover:bg-(--commerce-neutral-05-100) focus-visible:ring-(--commerce-neutral-07-100)",
       outline:
-        "border border-[#141718] bg-transparent text-[#141718] hover:bg-[#F3F5F7] focus-visible:ring-[#141718]",
+        "border border-(--commerce-neutral-07-100) bg-transparent text-(--commerce-neutral-07-100) hover:bg-(--commerce-background-light) focus-visible:ring-(--commerce-neutral-07-100)",
     };
 
     const sizeStyles = {

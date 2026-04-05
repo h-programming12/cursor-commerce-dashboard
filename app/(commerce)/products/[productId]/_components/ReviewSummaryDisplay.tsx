@@ -286,7 +286,7 @@ export const ReviewSummaryDisplay: React.FC<ReviewSummaryDisplayProps> = ({
                 fontWeight: commerceTypography.body["2-semi"].fontWeight,
                 fontSize: 16,
                 lineHeight: "26px",
-                color: "#111827",
+                color: "var(--commerce-neutral-07-100)",
               }}
             >
               AI Review

@@ -207,7 +207,7 @@ export default function SignupPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword((p) => !p)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 flex h-6 w-6 items-center justify-center text-[#6c7275] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 rounded"
+                className="absolute right-3 top-1/2 -translate-y-1/2 flex h-6 w-6 items-center justify-center text-(--commerce-text-tertiary) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 rounded"
                 aria-label={showPassword ? "비밀번호 숨기기" : "비밀번호 표시"}
               >
                 {showPassword ? <EyeOffIcon /> : <EyeIcon />}
@@ -230,7 +230,7 @@ export default function SignupPage() {
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword((p) => !p)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 flex h-6 w-6 items-center justify-center text-[#6c7275] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 rounded"
+                className="absolute right-3 top-1/2 -translate-y-1/2 flex h-6 w-6 items-center justify-center text-(--commerce-text-tertiary) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 rounded"
                 aria-label={
                   showConfirmPassword ? "비밀번호 숨기기" : "비밀번호 표시"
                 }

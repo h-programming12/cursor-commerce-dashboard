@@ -45,7 +45,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         lineHeight: commerceTypography.body["2"].lineHeight,
         borderRadius: "6px",
         backgroundColor: commerceColors.background.default,
-        borderColor: error ? commerceColors.semantic.error : "#CBCBCB",
+        borderColor: error
+          ? commerceColors.semantic.error
+          : commerceColors.neutral["03"]["100"],
         placeholderColor: commerceColors.text.tertiary,
         textColor: commerceColors.text.primary,
         focusRingColor: commerceColors.neutral["07"]["100"],
@@ -60,7 +62,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         borderColor: error
           ? adminColors.semantic.error
           : adminColors.neutral["03"]["100"],
-        placeholderColor: adminColors.text.stormGray || "#8B909A",
+        placeholderColor: "var(--admin-text-placeholder)",
         textColor: adminColors.text.primary,
         focusRingColor: adminColors.neutral["07"]["100"],
       },

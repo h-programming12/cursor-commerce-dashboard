@@ -138,7 +138,7 @@ export const CartItemRow = React.forwardRef<HTMLDivElement, CartItemRowProps>(
               <button
                 type="button"
                 onClick={handleRemove}
-                className="cursor-pointer inline-flex items-center gap-1 w-fit transition-colors hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#141718]"
+                className="cursor-pointer inline-flex items-center gap-1 w-fit transition-colors hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-(--commerce-neutral-07-100)"
                 style={{
                   fontFamily: "Inter",
                   fontWeight: 600,
@@ -174,7 +174,7 @@ export const CartItemRow = React.forwardRef<HTMLDivElement, CartItemRowProps>(
                 fontWeight: 600,
                 fontSize: "18px",
                 lineHeight: "30px",
-                color: "#121212",
+                color: commerceColors.grey["600"],
               }}
             >
               {formatPrice(Math.round(item.totalPrice))}
@@ -242,7 +242,7 @@ export const CartItemRow = React.forwardRef<HTMLDivElement, CartItemRowProps>(
               <button
                 type="button"
                 onClick={handleRemove}
-                className="cursor-pointer inline-flex items-center gap-1 w-fit transition-colors hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#141718]"
+                className="cursor-pointer inline-flex items-center gap-1 w-fit transition-colors hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-(--commerce-neutral-07-100)"
                 style={{
                   fontFamily: "Inter",
                   fontWeight: 600,
@@ -273,7 +273,7 @@ export const CartItemRow = React.forwardRef<HTMLDivElement, CartItemRowProps>(
               fontWeight: 400,
               fontSize: "18px",
               lineHeight: "30px",
-              color: "#121212",
+              color: commerceColors.grey["600"],
             }}
           >
             {formatPrice(Math.round(item.unitPrice))}
@@ -285,7 +285,7 @@ export const CartItemRow = React.forwardRef<HTMLDivElement, CartItemRowProps>(
               fontWeight: 600,
               fontSize: "18px",
               lineHeight: "30px",
-              color: "#121212",
+              color: commerceColors.grey["600"],
             }}
           >
             {formatPrice(Math.round(item.totalPrice))}

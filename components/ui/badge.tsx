@@ -20,7 +20,7 @@ export const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
       },
       success: {
         backgroundColor: commerceColors.semantic.success,
-        color: "#FEFEFE",
+        color: commerceColors.neutral["01"]["100"],
       },
       new: {
         backgroundColor: commerceColors.background.default,
@@ -28,11 +28,11 @@ export const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
       },
       discount: {
         backgroundColor: commerceColors.semantic.success,
-        color: "#FEFEFE",
+        color: commerceColors.neutral["01"]["100"],
       },
       sale: {
         backgroundColor: commerceColors.semantic.success,
-        color: "#FEFEFE",
+        color: commerceColors.neutral["01"]["100"],
       },
     };
 

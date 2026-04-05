@@ -83,7 +83,10 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
             borderRadius: "16px",
           }}
         >
-          <div className="flex items-center text-[#99A1AF]">
+          <div
+            className="flex items-center"
+            style={{ color: commerceColors.grey["200"] }}
+          >
             <SearchIcon size={24} />
           </div>
           <input
@@ -151,7 +154,7 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
           aria-label="Search"
           {...props}
         />
-        <div className="flex items-center text-[#8B909A]">
+        <div className="flex items-center text-(--admin-text-placeholder)">
           <SearchIcon size={18} />
         </div>
       </div>

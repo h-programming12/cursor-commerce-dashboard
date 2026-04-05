@@ -104,7 +104,7 @@ export const LikeButton: React.FC<LikeButtonProps> = ({
       onClick={handleClick}
       disabled={isPending || disabled}
       className={cn(
-        "flex items-center justify-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#141718] disabled:opacity-50 disabled:cursor-not-allowed",
+        "flex items-center justify-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--commerce-neutral-07-100) disabled:opacity-50 disabled:cursor-not-allowed",
         isIconOnly &&
           "rounded-full bg-(--commerce-background-default) hover:scale-110",
         isPending && "opacity-50 cursor-wait",

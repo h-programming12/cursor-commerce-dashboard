@@ -179,7 +179,7 @@ export function AccountSidebar({
               style={{
                 width: "80px",
                 height: "80px",
-                backgroundColor: "#121212",
+                backgroundColor: "var(--commerce-grey-600)",
               }}
             >
               {imageUrl ? (
@@ -192,8 +192,8 @@ export function AccountSidebar({
                 <div
                   className="w-full h-full flex items-center justify-center"
                   style={{
-                    backgroundColor: "#121212",
-                    color: "#ffffff",
+                    backgroundColor: "var(--commerce-grey-600)",
+                    color: "var(--commerce-text-inverse)",
                     fontSize: "32px",
                     fontFamily: commerceTypography.body["1"].fontFamily,
                     fontWeight: 600,
@@ -210,7 +210,7 @@ export function AccountSidebar({
                 width: "30px",
                 height: "30px",
                 backgroundColor: commerceColors.neutral["07"]["100"],
-                border: "2px solid #ffffff",
+                border: "2px solid var(--commerce-text-inverse)",
               }}
             >
               <FiCamera size={16} color="white" />

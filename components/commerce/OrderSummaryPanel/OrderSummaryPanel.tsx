@@ -149,8 +149,9 @@ export const OrderSummaryPanel = React.forwardRef<
                   type="button"
                   onClick={() => handleShippingOptionClick(index)}
                   className={cn(
-                    "flex items-center justify-between w-full p-4 transition-colors hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#141718]",
-                    option.selected && "ring-2 ring-offset-1 ring-[#141718]"
+                    "flex items-center justify-between w-full p-4 transition-colors hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-(--commerce-neutral-07-100)",
+                    option.selected &&
+                      "ring-2 ring-offset-1 ring-(--commerce-neutral-07-100)"
                   )}
                   style={{
                     backgroundColor: commerceColors.background.light,

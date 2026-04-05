@@ -107,7 +107,7 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
         <Link
           href={ACCOUNT_URLS.CHECKOUT}
           className={cn(
-            "flex items-center justify-center w-full transition-colors hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#141718]"
+            "flex items-center justify-center w-full transition-colors hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--commerce-neutral-07-100)"
           )}
           style={{
             height: "52px",
@@ -127,7 +127,7 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
 
         <Link
           href={COMMERCE_URLS.PRODUCTS}
-          className="block text-center transition-colors hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#141718]"
+          className="block text-center transition-colors hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-(--commerce-neutral-07-100)"
           style={{
             fontFamily: "Inter",
             fontWeight: 400,

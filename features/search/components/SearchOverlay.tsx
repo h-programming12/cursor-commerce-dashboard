@@ -139,18 +139,21 @@ export function SearchOverlay() {
           {/* 검색 입력 필드 컨테이너 */}
           <div
             className={cn(
-              "flex items-center gap-3 rounded-2xl border transition-colors focus-within:ring-2 focus-within:ring-offset-2"
+              "flex items-center gap-3 rounded-2xl border transition-colors focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-(--commerce-neutral-07-100)"
             )}
             style={{
               height: "72px",
               paddingLeft: "24px",
               paddingRight: "16px",
               backgroundColor: commerceColors.background.paper,
-              borderColor: "#e8ecef",
+              borderColor: "var(--commerce-neutral-03-100)",
               borderRadius: "16px",
             }}
           >
-            <div className="flex items-center" style={{ color: "#99a1af" }}>
+            <div
+              className="flex items-center"
+              style={{ color: commerceColors.grey["200"] }}
+            >
               <SearchIcon />
             </div>
             <input

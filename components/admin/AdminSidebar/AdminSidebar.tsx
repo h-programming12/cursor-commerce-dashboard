@@ -49,7 +49,7 @@ const SECTION_STYLE = {
   lineHeight: "14px",
   fontFamily: "var(--admin-font-public-sans)",
   fontWeight: "var(--admin-font-regular)" as const,
-  color: "#8b909a",
+  color: "var(--admin-text-placeholder)",
   textTransform: "uppercase" as const,
 };
 
@@ -73,7 +73,9 @@ function SidebarLink({ href, label, icon, active }: SidebarLinkProps) {
         !active && "hover:bg-[var(--admin-background-light)]"
       )}
       style={{
-        color: active ? "#23272e" : "#8b909a",
+        color: active
+          ? "var(--admin-text-secondary)"
+          : "var(--admin-text-placeholder)",
         fontFamily: "var(--admin-font-public-sans)",
         fontSize: "15px",
         lineHeight: "22px",
@@ -121,7 +123,7 @@ export function AdminSidebar({ className }: { className?: string }) {
       className={cn("flex shrink-0 flex-col", className)}
       style={{
         width: "260px",
-        backgroundColor: "#ffffff",
+        backgroundColor: "var(--admin-background-default)",
         borderRight: "1px solid var(--admin-neutral-03-100)",
       }}
     >

@@ -131,7 +131,7 @@ export default async function ProductDetailPage({
   const initialIsLiked = await isProductLiked(productId);
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 md:px-8 lg:px-12 xl:px-16">
       <ProductDetail product={product} initialIsLiked={initialIsLiked} />
       <div className="mt-10">
         <ProductDetailTabs

@@ -31,7 +31,9 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
               "peer h-6 w-6 shrink-0 cursor-pointer appearance-none rounded border transition-colors",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
               "disabled:cursor-not-allowed disabled:opacity-50",
-              "checked:bg-[#141718]! checked:border-[#141718]!",
+              variant === "commerce"
+                ? "checked:bg-(--commerce-neutral-07-100)! checked:border-(--commerce-neutral-07-100)!"
+                : "checked:bg-(--admin-neutral-07-100)! checked:border-(--admin-neutral-07-100)!",
               className
             )}
             style={{
@@ -56,7 +58,7 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
             >
               <path
                 d="M11.6667 3.5L5.25 9.91667L2.33333 7"
-                stroke="#ffffff"
+                stroke={colors.text.inverse}
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"

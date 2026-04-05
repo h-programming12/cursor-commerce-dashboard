@@ -97,7 +97,7 @@ export const QuantitySelector = React.forwardRef<
         lineHeight: commerceTypography.button.s.lineHeight,
         iconSize: 20,
         borderColor: "transparent",
-        backgroundColor: "#F5F5F5",
+        backgroundColor: commerceColors.neutral["02"]["100"],
       },
       large: {
         width: "127px",
@@ -107,7 +107,7 @@ export const QuantitySelector = React.forwardRef<
         lineHeight: commerceTypography.button.m.lineHeight,
         iconSize: 20,
         borderColor: "transparent",
-        backgroundColor: "#F5F5F5",
+        backgroundColor: commerceColors.neutral["02"]["100"],
       },
     };
 
@@ -133,7 +133,7 @@ export const QuantitySelector = React.forwardRef<
           onClick={handleDecrease}
           disabled={isMinDisabled}
           className={cn(
-            "flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#141718]",
+            "flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-(--commerce-neutral-07-100)",
             isMinDisabled
               ? "cursor-not-allowed opacity-50"
               : "cursor-pointer hover:opacity-70"
@@ -168,7 +168,7 @@ export const QuantitySelector = React.forwardRef<
           onClick={handleIncrease}
           disabled={isMaxDisabled}
           className={cn(
-            "flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#141718]",
+            "flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-(--commerce-neutral-07-100)",
             isMaxDisabled
               ? "cursor-not-allowed opacity-50"
               : "cursor-pointer hover:opacity-70"

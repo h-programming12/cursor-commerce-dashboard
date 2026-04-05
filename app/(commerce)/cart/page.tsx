@@ -59,7 +59,7 @@ export default function CartPage() {
           </p>
           <Link
             href={COMMERCE_URLS.PRODUCTS}
-            className="inline-flex items-center justify-center transition-colors hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#141718]"
+            className="inline-flex items-center justify-center transition-colors hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--commerce-neutral-07-100)"
             style={{
               height: "52px",
               paddingLeft: "24px",
@@ -196,7 +196,7 @@ export default function CartPage() {
                 fontWeight: 600,
                 fontSize: "16px",
                 lineHeight: "26px",
-                color: "#121212",
+                color: commerceColors.grey["600"],
               }}
             >
               <span>Product</span>
