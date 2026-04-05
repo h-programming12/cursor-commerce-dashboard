@@ -206,9 +206,8 @@ export function OrdersTable({ orders }: OrdersTableProps) {
               type="button"
               onClick={() => router.push(ACCOUNT_URLS.ORDER_DETAIL(order.id))}
               className={cn(
-                "w-full text-left rounded-lg border p-4",
-                INTERACTIVE_HOVER_COMMERCE,
-                FOCUS_RING_COMMERCE
+                "w-full text-left rounded-lg border p-4 transition-colors",
+                "hover:bg-(--commerce-background-light) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--commerce-primary-main)"
               )}
               style={{ borderColor }}
               aria-label={`주문 ${order.id} 상세 보기`}
