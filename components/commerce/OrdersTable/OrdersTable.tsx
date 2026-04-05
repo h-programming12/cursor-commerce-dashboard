@@ -6,6 +6,10 @@ import { commerceTypography } from "@/commons/constants/typography";
 import { formatPrice } from "@/commons/utils/formatPrice";
 import { ACCOUNT_URLS } from "@/commons/constants/url";
 import { cn } from "@/commons/utils/cn";
+import {
+  FOCUS_RING_COMMERCE,
+  INTERACTIVE_HOVER_COMMERCE,
+} from "@/commons/styles/tailwind-patterns";
 
 export interface OrderRow {
   id: string;
@@ -161,8 +165,9 @@ export function OrdersTable({ orders }: OrdersTableProps) {
                   }
                 }}
                 className={cn(
-                  "border-b align-middle cursor-pointer transition-colors",
-                  "hover:bg-(--commerce-background-light) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--commerce-primary-main)"
+                  "border-b align-middle cursor-pointer",
+                  INTERACTIVE_HOVER_COMMERCE,
+                  FOCUS_RING_COMMERCE
                 )}
                 style={{ borderColor }}
                 aria-label={`주문 ${order.id} 상세 보기`}
@@ -201,8 +206,9 @@ export function OrdersTable({ orders }: OrdersTableProps) {
               type="button"
               onClick={() => router.push(ACCOUNT_URLS.ORDER_DETAIL(order.id))}
               className={cn(
-                "w-full text-left rounded-lg border p-4 transition-colors",
-                "hover:bg-(--commerce-background-light) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--commerce-primary-main)"
+                "w-full text-left rounded-lg border p-4",
+                INTERACTIVE_HOVER_COMMERCE,
+                FOCUS_RING_COMMERCE
               )}
               style={{ borderColor }}
               aria-label={`주문 ${order.id} 상세 보기`}

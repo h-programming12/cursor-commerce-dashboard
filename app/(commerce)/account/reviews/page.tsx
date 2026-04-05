@@ -1,10 +1,8 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { checkAdminAccess } from "@/lib/auth/admin";
-import { AccountSidebar } from "@/components/commerce/AccountSidebar";
+import { AccountPageShell } from "@/components/commerce";
 import { MyReviewsSection } from "@/components/commerce/MyReviewsSection/MyReviewsSection";
-import { commerceColors } from "@/commons/constants/color";
-import { commerceTypography } from "@/commons/constants/typography";
 import { ACCOUNT_URLS } from "@/commons/constants/url";
 import type { Review } from "@/components/commerce/types";
 
@@ -136,42 +134,20 @@ export default async function AccountReviewsPage({
   });
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
-      <div className="flex-1 py-8 md:py-12 lg:py-20">
-        <div className="mx-auto max-w-[1120px] px-4 sm:px-6 md:px-8 lg:px-20">
-          <h1
-            className="mb-6 md:mb-12"
-            style={{
-              fontSize: "clamp(32px, 7vw, 54px)",
-              lineHeight: "58px",
-              fontFamily: commerceTypography.headline.h3.fontFamily,
-              fontWeight: commerceTypography.headline.h3.fontWeight,
-              letterSpacing: "-1px",
-              color: commerceColors.text.primary,
-            }}
-          >
-            My Reviews
-          </h1>
-
-          <div className="flex flex-col md:flex-row gap-6">
-            <AccountSidebar
-              displayName={displayName}
-              email={email}
-              imageUrl={imageUrl}
-              activeItem="reviews"
-              isAdmin={isAdmin}
-            />
-            <div className="flex-1 min-w-0">
-              <MyReviewsSection
-                reviews={reviews}
-                totalPages={totalPages}
-                currentPage={currentPage}
-                currentUserId={authUser.id}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <AccountPageShell
+      title="My Reviews"
+      activeItem="reviews"
+      displayName={displayName}
+      email={email}
+      imageUrl={imageUrl}
+      isAdmin={isAdmin}
+    >
+      <MyReviewsSection
+        reviews={reviews}
+        totalPages={totalPages}
+        currentPage={currentPage}
+        currentUserId={authUser.id}
+      />
+    </AccountPageShell>
   );
 }

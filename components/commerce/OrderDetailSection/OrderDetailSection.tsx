@@ -1,11 +1,14 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { commerceColors } from "@/commons/constants/color";
 import { commerceTypography } from "@/commons/constants/typography";
 import { formatPrice } from "@/commons/utils/formatPrice";
 import { ACCOUNT_URLS, COMMERCE_URLS } from "@/commons/constants/url";
+import { cn } from "@/commons/utils/cn";
+import { FOCUS_RING_COMMERCE } from "@/commons/styles/tailwind-patterns";
 import { OrderStatusBadge } from "@/components/commerce/OrderStatusBadge";
 import { PaymentStatusBadge } from "@/components/commerce/PaymentStatusBadge";
 import type {
@@ -13,6 +16,60 @@ import type {
   OrderDetailItem,
   OrderDetailPayment,
 } from "@/app/(commerce)/account/orders/[orderId]/queries";
+
+const BORDER_COLOR = commerceColors.neutral["03"]["100"];
+
+const SECTION_CARD_STYLE: CSSProperties = {
+  borderColor: BORDER_COLOR,
+  backgroundColor: commerceColors.background.paper,
+};
+
+const SECTION_TITLE_STYLE: CSSProperties = {
+  fontSize: commerceTypography.headline.h7.fontSize,
+  lineHeight: "32px",
+  fontFamily: commerceTypography.headline.h7.fontFamily,
+  fontWeight: 600,
+  color: commerceColors.text.primary,
+};
+
+const LABEL_STYLE: CSSProperties = {
+  fontSize: commerceTypography.caption["1"].fontSize,
+  lineHeight: 1.5,
+  fontFamily: commerceTypography.caption["1"].fontFamily,
+  color: commerceColors.text.tertiary,
+};
+
+const VALUE_STYLE: CSSProperties = {
+  fontSize: commerceTypography.caption["1"].fontSize,
+  lineHeight: 1.5,
+  fontFamily: commerceTypography.caption["1"].fontFamily,
+  fontWeight: 600,
+  color: commerceColors.text.primary,
+};
+
+const NEUTRAL_VALUE_STYLE: CSSProperties = {
+  ...VALUE_STYLE,
+  fontWeight: 400,
+  color: commerceColors.neutral["07"]["100"],
+};
+
+const BREADCRUMB_CAPTION_STYLE: CSSProperties = {
+  ...LABEL_STYLE,
+  fontWeight: 400,
+};
+
+const PRODUCTS_TABLE_HEAD_CELL_STYLE: CSSProperties = {
+  fontSize: commerceTypography.caption["1"].fontSize,
+  lineHeight: "22px",
+  fontFamily: commerceTypography.caption["1"].fontFamily,
+  fontWeight: 400,
+  color: commerceColors.text.tertiary,
+};
+
+const NO_IMAGE_PLACEHOLDER_STYLE: CSSProperties = {
+  fontSize: commerceTypography.caption["2"].fontSize,
+  color: commerceColors.text.tertiary,
+};
 
 export interface OrderDetailSectionProps {
   order: OrderDetail;
@@ -39,27 +96,23 @@ function formatDateTime(iso: string | null): string {
 }
 
 function OrderDetailBreadcrumb({ orderId }: { orderId: string }) {
-  const captionStyle = {
-    fontSize: commerceTypography.caption["1"].fontSize,
-    lineHeight: 1.5,
-    fontFamily: commerceTypography.caption["1"].fontFamily,
-    fontWeight: 400,
-    color: commerceColors.text.tertiary,
-  };
-  const linkStyle = {
-    ...captionStyle,
+  const linkStyle: CSSProperties = {
+    ...BREADCRUMB_CAPTION_STYLE,
     color: commerceColors.text.secondary,
     textDecoration: "none",
   };
 
   return (
     <nav aria-label="Breadcrumb" className="mb-6">
-      <ol className="flex flex-wrap items-center gap-1" style={captionStyle}>
+      <ol
+        className="flex flex-wrap items-center gap-1"
+        style={BREADCRUMB_CAPTION_STYLE}
+      >
         <li>
           <Link
             href={ACCOUNT_URLS.ACCOUNT}
             style={linkStyle}
-            className="hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--commerce-primary-main)"
+            className={cn("hover:underline", FOCUS_RING_COMMERCE)}
           >
             My Account
           </Link>
@@ -69,7 +122,7 @@ function OrderDetailBreadcrumb({ orderId }: { orderId: string }) {
           <Link
             href={ACCOUNT_URLS.ORDERS}
             style={linkStyle}
-            className="hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--commerce-primary-main)"
+            className={cn("hover:underline", FOCUS_RING_COMMERCE)}
           >
             Orders
           </Link>
@@ -94,28 +147,14 @@ function OrderDetailHeader({
   status: string;
   paymentStatus: string;
 }) {
-  const borderColor = commerceColors.neutral["03"]["100"];
-
   return (
     <section
       className="rounded-lg border p-6 mb-6"
-      style={{
-        borderColor,
-        backgroundColor: commerceColors.background.paper,
-      }}
+      style={SECTION_CARD_STYLE}
       aria-labelledby="order-header-title"
     >
       <div className="flex flex-wrap items-center gap-4">
-        <h2
-          id="order-header-title"
-          style={{
-            fontSize: commerceTypography.headline.h7.fontSize,
-            lineHeight: "32px",
-            fontFamily: commerceTypography.headline.h7.fontFamily,
-            fontWeight: 600,
-            color: commerceColors.text.primary,
-          }}
-        >
+        <h2 id="order-header-title" style={SECTION_TITLE_STYLE}>
           Order #{orderId.slice(0, 8)}
         </h2>
         <span
@@ -137,64 +176,38 @@ function OrderDetailHeader({
 }
 
 function OrderDetailSummary({ order }: { order: OrderDetail }) {
-  const borderColor = commerceColors.neutral["03"]["100"];
-  const labelStyle = {
-    fontSize: commerceTypography.caption["1"].fontSize,
-    lineHeight: 1.5,
-    fontFamily: commerceTypography.caption["1"].fontFamily,
-    color: commerceColors.text.tertiary,
-  };
-  const valueStyle = {
-    fontSize: commerceTypography.caption["1"].fontSize,
-    lineHeight: 1.5,
-    fontFamily: commerceTypography.caption["1"].fontFamily,
-    fontWeight: 600,
-    color: commerceColors.text.primary,
-  };
-
   return (
     <section
       className="rounded-lg border p-6 mb-6"
-      style={{
-        borderColor,
-        backgroundColor: commerceColors.background.paper,
-      }}
+      style={SECTION_CARD_STYLE}
       aria-labelledby="order-summary-title"
     >
-      <h3
-        id="order-summary-title"
-        className="mb-4"
-        style={{
-          fontSize: commerceTypography.headline.h7.fontSize,
-          lineHeight: "32px",
-          fontFamily: commerceTypography.headline.h7.fontFamily,
-          fontWeight: 600,
-          color: commerceColors.text.primary,
-        }}
-      >
+      <h3 id="order-summary-title" className="mb-4" style={SECTION_TITLE_STYLE}>
         Order Summary
       </h3>
       <div className="flex flex-col gap-2">
         <div className="flex justify-between">
-          <span style={labelStyle}>Items total</span>
-          <span style={valueStyle}>{formatPrice(order.subtotalAmount)}</span>
+          <span style={LABEL_STYLE}>Items total</span>
+          <span style={VALUE_STYLE}>{formatPrice(order.subtotalAmount)}</span>
         </div>
         <div className="flex justify-between">
-          <span style={labelStyle}>Shipping</span>
-          <span style={valueStyle}>{formatPrice(order.shippingFee)}</span>
+          <span style={LABEL_STYLE}>Shipping</span>
+          <span style={VALUE_STYLE}>{formatPrice(order.shippingFee)}</span>
         </div>
         {order.discountAmount > 0 && (
           <div className="flex justify-between">
-            <span style={labelStyle}>Discount</span>
-            <span style={valueStyle}>-{formatPrice(order.discountAmount)}</span>
+            <span style={LABEL_STYLE}>Discount</span>
+            <span style={VALUE_STYLE}>
+              -{formatPrice(order.discountAmount)}
+            </span>
           </div>
         )}
         <div
           className="flex justify-between pt-2 mt-2 border-t"
-          style={{ borderColor }}
+          style={{ borderColor: BORDER_COLOR }}
         >
-          <span style={{ ...labelStyle, fontWeight: 600 }}>Total</span>
-          <span style={valueStyle}>{formatPrice(order.totalAmount)}</span>
+          <span style={{ ...LABEL_STYLE, fontWeight: 600 }}>Total</span>
+          <span style={VALUE_STYLE}>{formatPrice(order.totalAmount)}</span>
         </div>
       </div>
     </section>
@@ -202,66 +215,45 @@ function OrderDetailSummary({ order }: { order: OrderDetail }) {
 }
 
 function OrderDetailProducts({ items }: { items: OrderDetailItem[] }) {
-  const borderColor = commerceColors.neutral["03"]["100"];
-  const captionStyle = {
-    fontSize: commerceTypography.caption["1"].fontSize,
-    lineHeight: "22px",
-    fontFamily: commerceTypography.caption["1"].fontFamily,
-    fontWeight: 400,
-    color: commerceColors.text.tertiary,
-  };
-  const cellStyle = {
-    fontSize: commerceTypography.caption["1"].fontSize,
-    lineHeight: 1.5,
-    fontFamily: commerceTypography.caption["1"].fontFamily,
-    color: commerceColors.neutral["07"]["100"],
-  };
-
   return (
     <section
       className="rounded-lg border overflow-hidden mb-6"
-      style={{
-        borderColor,
-        backgroundColor: commerceColors.background.paper,
-      }}
+      style={SECTION_CARD_STYLE}
       aria-labelledby="order-products-title"
     >
       <h3
         id="order-products-title"
         className="p-6 pb-0"
-        style={{
-          fontSize: commerceTypography.headline.h7.fontSize,
-          lineHeight: "32px",
-          fontFamily: commerceTypography.headline.h7.fontFamily,
-          fontWeight: 600,
-          color: commerceColors.text.primary,
-        }}
+        style={SECTION_TITLE_STYLE}
       >
         Products in this order
       </h3>
       <div className="hidden md:block w-full overflow-x-auto">
         <table className="w-full border-collapse" role="table">
           <thead>
-            <tr className="border-b" style={{ borderColor }}>
+            <tr className="border-b" style={{ borderColor: BORDER_COLOR }}>
               <th
                 className="text-left py-3 px-6"
-                style={{ ...captionStyle, width: "40%" }}
+                style={{ ...PRODUCTS_TABLE_HEAD_CELL_STYLE, width: "40%" }}
               >
                 Product
               </th>
               <th
                 className="text-left py-3 px-6"
-                style={{ ...captionStyle, width: "15%" }}
+                style={{ ...PRODUCTS_TABLE_HEAD_CELL_STYLE, width: "15%" }}
               >
                 Price
               </th>
               <th
                 className="text-left py-3 px-6"
-                style={{ ...captionStyle, width: "15%" }}
+                style={{ ...PRODUCTS_TABLE_HEAD_CELL_STYLE, width: "15%" }}
               >
                 Qty
               </th>
-              <th className="text-left py-3 px-6" style={captionStyle}>
+              <th
+                className="text-left py-3 px-6"
+                style={PRODUCTS_TABLE_HEAD_CELL_STYLE}
+              >
                 Subtotal
               </th>
             </tr>
@@ -271,13 +263,16 @@ function OrderDetailProducts({ items }: { items: OrderDetailItem[] }) {
               <tr
                 key={item.id}
                 className="border-b align-middle"
-                style={{ borderColor }}
+                style={{ borderColor: BORDER_COLOR }}
               >
-                <td className="py-4 px-6" style={cellStyle}>
+                <td className="py-4 px-6" style={NEUTRAL_VALUE_STYLE}>
                   <div className="flex items-center gap-3">
                     <Link
                       href={COMMERCE_URLS.PRODUCT_DETAIL(item.productId)}
-                      className="flex items-center gap-3 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--commerce-primary-main)"
+                      className={cn(
+                        "flex items-center gap-3 hover:opacity-80",
+                        FOCUS_RING_COMMERCE
+                      )}
                     >
                       <div
                         className="relative shrink-0 rounded overflow-hidden bg-(--commerce-background-light)"
@@ -294,11 +289,7 @@ function OrderDetailProducts({ items }: { items: OrderDetailItem[] }) {
                         ) : (
                           <div
                             className="w-full h-full flex items-center justify-center"
-                            style={{
-                              fontSize:
-                                commerceTypography.caption["2"].fontSize,
-                              color: commerceColors.text.tertiary,
-                            }}
+                            style={NO_IMAGE_PLACEHOLDER_STYLE}
                           >
                             No image
                           </div>
@@ -308,13 +299,13 @@ function OrderDetailProducts({ items }: { items: OrderDetailItem[] }) {
                     </Link>
                   </div>
                 </td>
-                <td className="py-4 px-6" style={cellStyle}>
+                <td className="py-4 px-6" style={NEUTRAL_VALUE_STYLE}>
                   {formatPrice(item.unitPrice)}
                 </td>
-                <td className="py-4 px-6" style={cellStyle}>
+                <td className="py-4 px-6" style={NEUTRAL_VALUE_STYLE}>
                   {item.quantity}
                 </td>
-                <td className="py-4 px-6" style={cellStyle}>
+                <td className="py-4 px-6" style={NEUTRAL_VALUE_STYLE}>
                   {formatPrice(item.lineTotal)}
                 </td>
               </tr>
@@ -328,11 +319,14 @@ function OrderDetailProducts({ items }: { items: OrderDetailItem[] }) {
           <li
             key={item.id}
             className="px-4 py-4 first:pt-2 border-b last:border-b-0"
-            style={{ borderColor }}
+            style={{ borderColor: BORDER_COLOR }}
           >
             <Link
               href={COMMERCE_URLS.PRODUCT_DETAIL(item.productId)}
-              className="flex gap-3 min-w-0 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--commerce-primary-main) rounded-md"
+              className={cn(
+                "flex gap-3 min-w-0 hover:opacity-80 rounded-md",
+                FOCUS_RING_COMMERCE
+              )}
             >
               <div className="relative w-16 h-20 shrink-0 rounded overflow-hidden bg-(--commerce-background-light)">
                 {item.productImageUrl ? (
@@ -346,24 +340,23 @@ function OrderDetailProducts({ items }: { items: OrderDetailItem[] }) {
                 ) : (
                   <div
                     className="w-full h-full flex items-center justify-center"
-                    style={{
-                      fontSize: commerceTypography.caption["2"].fontSize,
-                      color: commerceColors.text.tertiary,
-                    }}
+                    style={NO_IMAGE_PLACEHOLDER_STYLE}
                   >
                     No image
                   </div>
                 )}
               </div>
               <div className="flex flex-col gap-1 min-w-0 flex-1">
-                <span className="wrap-break-word" style={cellStyle}>
+                <span className="wrap-break-word" style={NEUTRAL_VALUE_STYLE}>
                   {item.productName || "—"}
                 </span>
-                <span style={captionStyle}>
+                <span style={PRODUCTS_TABLE_HEAD_CELL_STYLE}>
                   Price: {formatPrice(item.unitPrice)}
                 </span>
-                <span style={captionStyle}>Qty: {item.quantity}</span>
-                <span style={{ ...cellStyle, fontWeight: 600 }}>
+                <span style={PRODUCTS_TABLE_HEAD_CELL_STYLE}>
+                  Qty: {item.quantity}
+                </span>
+                <span style={{ ...NEUTRAL_VALUE_STYLE, fontWeight: 600 }}>
                   Subtotal: {formatPrice(item.lineTotal)}
                 </span>
               </div>
@@ -376,20 +369,6 @@ function OrderDetailProducts({ items }: { items: OrderDetailItem[] }) {
 }
 
 function OrderDetailShipping({ order }: { order: OrderDetail }) {
-  const borderColor = commerceColors.neutral["03"]["100"];
-  const labelStyle = {
-    fontSize: commerceTypography.caption["1"].fontSize,
-    lineHeight: 1.5,
-    fontFamily: commerceTypography.caption["1"].fontFamily,
-    color: commerceColors.text.tertiary,
-  };
-  const valueStyle = {
-    fontSize: commerceTypography.caption["1"].fontSize,
-    lineHeight: 1.5,
-    fontFamily: commerceTypography.caption["1"].fontFamily,
-    color: commerceColors.neutral["07"]["100"],
-  };
-
   const hasShipping =
     order.shippingName ||
     order.shippingPhone ||
@@ -401,22 +380,13 @@ function OrderDetailShipping({ order }: { order: OrderDetail }) {
   return (
     <section
       className="rounded-lg border p-6 mb-6"
-      style={{
-        borderColor,
-        backgroundColor: commerceColors.background.paper,
-      }}
+      style={SECTION_CARD_STYLE}
       aria-labelledby="order-shipping-title"
     >
       <h3
         id="order-shipping-title"
         className="mb-4"
-        style={{
-          fontSize: commerceTypography.headline.h7.fontSize,
-          lineHeight: "32px",
-          fontFamily: commerceTypography.headline.h7.fontFamily,
-          fontWeight: 600,
-          color: commerceColors.text.primary,
-        }}
+        style={SECTION_TITLE_STYLE}
       >
         Shipping Information
       </h3>
@@ -424,14 +394,14 @@ function OrderDetailShipping({ order }: { order: OrderDetail }) {
         <div className="flex flex-col gap-2">
           {order.shippingName && (
             <div>
-              <span style={labelStyle}>Name: </span>
-              <span style={valueStyle}>{order.shippingName}</span>
+              <span style={LABEL_STYLE}>Name: </span>
+              <span style={NEUTRAL_VALUE_STYLE}>{order.shippingName}</span>
             </div>
           )}
           {order.shippingPhone && (
             <div>
-              <span style={labelStyle}>Phone: </span>
-              <span style={valueStyle}>{order.shippingPhone}</span>
+              <span style={LABEL_STYLE}>Phone: </span>
+              <span style={NEUTRAL_VALUE_STYLE}>{order.shippingPhone}</span>
             </div>
           )}
           {(order.shippingAddressLine1 ||
@@ -439,8 +409,8 @@ function OrderDetailShipping({ order }: { order: OrderDetail }) {
             order.shippingZip ||
             order.shippingCountry) && (
             <div>
-              <span style={labelStyle}>Address: </span>
-              <span style={valueStyle}>
+              <span style={LABEL_STYLE}>Address: </span>
+              <span style={NEUTRAL_VALUE_STYLE}>
                 {[
                   order.shippingAddressLine1,
                   order.shippingAddressLine2,
@@ -456,7 +426,12 @@ function OrderDetailShipping({ order }: { order: OrderDetail }) {
           )}
         </div>
       ) : (
-        <p style={{ ...valueStyle, color: commerceColors.text.tertiary }}>
+        <p
+          style={{
+            ...NEUTRAL_VALUE_STYLE,
+            color: commerceColors.text.tertiary,
+          }}
+        >
           No shipping information available.
         </p>
       )}
@@ -469,77 +444,55 @@ function OrderDetailPayment({
 }: {
   payment: OrderDetailPayment | null;
 }) {
-  const borderColor = commerceColors.neutral["03"]["100"];
-  const labelStyle = {
-    fontSize: commerceTypography.caption["1"].fontSize,
-    lineHeight: 1.5,
-    fontFamily: commerceTypography.caption["1"].fontFamily,
-    color: commerceColors.text.tertiary,
-  };
-  const valueStyle = {
-    fontSize: commerceTypography.caption["1"].fontSize,
-    lineHeight: 1.5,
-    fontFamily: commerceTypography.caption["1"].fontFamily,
-    color: commerceColors.neutral["07"]["100"],
-  };
-
   return (
     <section
       className="rounded-lg border p-6"
-      style={{
-        borderColor,
-        backgroundColor: commerceColors.background.paper,
-      }}
+      style={SECTION_CARD_STYLE}
       aria-labelledby="order-payment-title"
     >
-      <h3
-        id="order-payment-title"
-        className="mb-4"
-        style={{
-          fontSize: commerceTypography.headline.h7.fontSize,
-          lineHeight: "32px",
-          fontFamily: commerceTypography.headline.h7.fontFamily,
-          fontWeight: 600,
-          color: commerceColors.text.primary,
-        }}
-      >
+      <h3 id="order-payment-title" className="mb-4" style={SECTION_TITLE_STYLE}>
         Payment Information
       </h3>
       {payment ? (
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
-            <span style={labelStyle}>Status: </span>
+            <span style={LABEL_STYLE}>Status: </span>
             <PaymentStatusBadge status={payment.status} />
           </div>
           <div>
-            <span style={labelStyle}>Method: </span>
-            <span style={valueStyle}>
+            <span style={LABEL_STYLE}>Method: </span>
+            <span style={NEUTRAL_VALUE_STYLE}>
               {payment.provider} / {payment.method}
             </span>
           </div>
           <div>
-            <span style={labelStyle}>Amount: </span>
-            <span style={valueStyle}>
+            <span style={LABEL_STYLE}>Amount: </span>
+            <span style={NEUTRAL_VALUE_STYLE}>
               {formatPrice(payment.amount)} ({payment.currency})
             </span>
           </div>
           {payment.transactionId && (
             <div>
-              <span style={labelStyle}>Transaction ID: </span>
-              <span style={valueStyle}>{payment.transactionId}</span>
+              <span style={LABEL_STYLE}>Transaction ID: </span>
+              <span style={NEUTRAL_VALUE_STYLE}>{payment.transactionId}</span>
             </div>
           )}
           {payment.approvedAt && (
             <div>
-              <span style={labelStyle}>Approved: </span>
-              <span style={valueStyle}>
+              <span style={LABEL_STYLE}>Approved: </span>
+              <span style={NEUTRAL_VALUE_STYLE}>
                 {formatDateTime(payment.approvedAt)}
               </span>
             </div>
           )}
         </div>
       ) : (
-        <p style={{ ...valueStyle, color: commerceColors.text.tertiary }}>
+        <p
+          style={{
+            ...NEUTRAL_VALUE_STYLE,
+            color: commerceColors.text.tertiary,
+          }}
+        >
           No payment information available.
         </p>
       )}

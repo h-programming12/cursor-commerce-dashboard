@@ -1,0 +1,35 @@
+---
+alwaysApply: true
+---
+
+OrderDetailSection.tsx 파일의 스타일 객체 중복을 제거해줘.
+
+현재 상황:
+
+- OrderDetailBreadcrumb, OrderDetailSummary, OrderDetailShipping, OrderDetailPayment
+  4개 함수에서 borderColor, labelStyle, valueStyle, 섹션 제목 스타일이 각각 반복 선언됨
+
+수정 요구사항:
+
+1. 파일 상단(import 아래)에 공용 상수 추출:
+
+   - BORDER_COLOR = commerceColors.neutral["03"]["100"]
+   - SECTION_CARD_STYLE = { borderColor, backgroundColor } (rounded-lg border 섹션 공통)
+   - SECTION_TITLE_STYLE = { fontSize: h7, lineHeight: "32px", fontWeight: 600, color: primary }
+   - LABEL_STYLE = { fontSize: caption-1, lineHeight: 1.5, color: tertiary }
+   - VALUE_STYLE = { fontSize: caption-1, lineHeight: 1.5, fontWeight: 600, color: primary }
+
+2. 각 함수 내부의 중복 변수 선언 제거하고 상수 참조로 교체
+
+3. valueStyle에서 color가 함수마다 다른 경우(text.primary vs neutral["07"]["100"]):
+   - VALUE_STYLE에 더 자주 쓰이는 값을 기본으로 설정
+   - 다른 값이 필요한 곳만 spread + override: { ...VALUE_STYLE, color: ... }
+
+주의사항:
+
+- 화면에 보이는 결과가 한 픽셀도 바뀌면 안 됨
+- 상수는 UPPER_SNAKE_CASE 네이밍
+- 상수 타입은 React.CSSProperties로 지정
+- captionStyle과 cellStyle (OrderDetailProducts 내부)도 공용 상수로 통합 가능한지 확인
+
+빌드 에러 확인 필수.

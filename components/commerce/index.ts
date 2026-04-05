@@ -65,4 +65,8 @@ export {
   AccountPagination,
   type AccountPaginationProps,
 } from "./AccountPagination";
+export {
+  AccountPageShell,
+  type AccountPageShellProps,
+} from "./AccountPageShell/AccountPageShell";
 export * from "./types";

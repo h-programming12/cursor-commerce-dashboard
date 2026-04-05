@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { COMMERCE_URLS, ACCOUNT_URLS } from "@/commons/constants/url";
 import { cn } from "@/commons/utils/cn";
+import { FOCUS_RING_COMMERCE_NEUTRAL } from "@/commons/styles/tailwind-patterns";
 import { useSearchStore } from "@/features/search/store/searchStore";
 import { useCartStore } from "@/commons/store/cart-store";
 import { commerceColors } from "@/commons/constants/color";
@@ -209,7 +210,8 @@ export function LayoutHeader({
               type="button"
               onClick={handleSearchClick}
               className={cn(
-                "p-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 rounded",
+                "p-2 transition-colors rounded",
+                FOCUS_RING_COMMERCE_NEUTRAL,
                 isSearchOpen
                   ? "text-(--commerce-neutral-07-100)"
                   : "text-(--commerce-text-primary) hover:text-(--commerce-neutral-07-100)"
@@ -228,7 +230,10 @@ export function LayoutHeader({
             {/* 사용자 아이콘 */}
             <Link
               href={ACCOUNT_URLS.ACCOUNT}
-              className="p-2 text-(--commerce-text-primary) hover:text-(--commerce-neutral-07-100) transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--commerce-neutral-07-100) focus-visible:ring-offset-2 rounded"
+              className={cn(
+                "p-2 text-(--commerce-text-primary) hover:text-(--commerce-neutral-07-100) transition-colors rounded",
+                FOCUS_RING_COMMERCE_NEUTRAL
+              )}
               aria-label="계정 페이지로 이동"
               onClick={onUserClick}
             >
@@ -238,7 +243,10 @@ export function LayoutHeader({
             {/* 장바구니 아이콘 */}
             <Link
               href={ACCOUNT_URLS.CART}
-              className="relative p-2 text-(--commerce-text-primary) hover:text-(--commerce-neutral-07-100) transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--commerce-neutral-07-100) focus-visible:ring-offset-2 rounded"
+              className={cn(
+                "relative p-2 text-(--commerce-text-primary) hover:text-(--commerce-neutral-07-100) transition-colors rounded",
+                FOCUS_RING_COMMERCE_NEUTRAL
+              )}
               aria-label={`장바구니로 이동${
                 cartItemCount > 0 ? ` (${cartItemCount}개 상품)` : ""
               }`}
@@ -264,7 +272,10 @@ export function LayoutHeader({
             {/* 모바일 햄버거 메뉴 */}
             <button
               type="button"
-              className="md:hidden p-2 text-(--commerce-text-primary) hover:text-(--commerce-neutral-07-100) transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--commerce-neutral-07-100) focus-visible:ring-offset-2 rounded"
+              className={cn(
+                "md:hidden p-2 text-(--commerce-text-primary) hover:text-(--commerce-neutral-07-100) transition-colors rounded",
+                FOCUS_RING_COMMERCE_NEUTRAL
+              )}
               aria-label="메뉴 열기"
               aria-expanded="false"
             >
