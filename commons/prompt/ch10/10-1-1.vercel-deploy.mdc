@@ -1,0 +1,20 @@
+---
+alwaysApply: true
+---
+
+현재 프로젝트를 Vercel에 배포하기 위한 체크리스트를 만들어줘.
+
+다음 항목을 확인해줘:
+
+1. package.json의 build 스크립트가 정상 동작하는지 (yarn build 실행)
+2. .env.local의 모든 환경 변수 목록을 정리하고,
+   각각 NEXT*PUBLIC* 여부와 Vercel에 등록해야 하는 이유를 설명
+3. next.config.ts에서 배포 시 주의할 설정이 있는지 확인
+4. vercel.json의 cron 설정이 올바른지 확인
+5. TypeScript 타입 에러가 없는지 tsc --noEmit으로 확인
+6. 빌드 결과물의 크기와 페이지 수를 정리
+
+체크리스트 결과를 표 형태로 정리하고,
+Vercel 대시보드에서 환경 변수를 등록할 때
+복사-붙여넣기할 수 있는 형태로 Key=Value 목록도 만들어줘.
+단, Secret 값은 마스킹 처리하고 실제 값은 .env.local에서 가져와야 한다고 표시해줘.
