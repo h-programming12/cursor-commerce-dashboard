@@ -152,6 +152,7 @@ export function CheckoutForm({
     if (
       Math.abs(serverSubtotal - Math.round(subtotal)) > 1 ||
       serverShippingFee !== shippingFee ||
+      Math.abs(serverDiscount - discount) > 1 ||
       Math.abs(serverTotal - total) > 1
     ) {
       setErrors({
@@ -219,14 +220,6 @@ export function CheckoutForm({
     border: sectionBorder,
     borderRadius: "4px",
     marginBottom: "24px",
-  };
-
-  const labelStyle: React.CSSProperties = {
-    fontFamily: commerceTypography.caption["2-bold"].fontFamily,
-    fontWeight: commerceTypography.caption["2-bold"].fontWeight,
-    fontSize: "12px",
-    lineHeight: "12px",
-    color: commerceColors.text.tertiary,
   };
 
   const sectionTitleStyle: React.CSSProperties = {

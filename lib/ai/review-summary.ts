@@ -40,9 +40,9 @@ function parseJSONResponse(text: string): ReviewSummaryResult {
       keywords: parsed.keywords,
     };
   } catch (error) {
-    // eslint-disable-next-line no-console
+     
     console.error("[parseJSONResponse] JSON 파싱 실패:", error);
-    // eslint-disable-next-line no-console
+     
     console.error("[parseJSONResponse] 원본 텍스트:", text);
     throw error;
   }

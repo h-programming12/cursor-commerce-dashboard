@@ -10,10 +10,6 @@ type ProductRow = Database["public"]["Tables"]["products"]["Row"];
 
 const PAGE_SIZE = 12;
 
-type InfiniteProductsPage = {
-  items: Product[];
-};
-
 export function useInfiniteProducts() {
   return useInfiniteQuery({
     queryKey: QUERY_KEYS.products.infinite(),

@@ -1,0 +1,33 @@
+---
+alwaysApply: true
+---
+
+우리 프로젝트에 GitHub Actions CI 파이프라인을 구성해줘.
+
+현재 프로젝트 상태:
+
+- Next.js 16 + TypeScript + yarn
+- ESLint v9 Flat Config (eslint.config.mjs)
+- package.json scripts: "lint": "eslint", "build": "next build"
+- Vercel로 배포 중 (10-1-1에서 설정 완료)
+
+요구사항:
+
+1. .github/workflows/ci.yml 파일 생성
+2. main 브랜치로의 push와 pull_request에서 트리거
+3. 순서: 코드 checkout → Node.js 설정 → 의존성 설치 → ESLint → tsc --noEmit → next build
+4. yarn 캐싱 적용으로 CI 속도 최적화
+5. 빌드에 필요한 NEXT+_PUBLIC_ 환경 변수 (4개)는 GitHub Secrets에서 주입
+6. 각 Step에 명확한 name 부여
+
+추가로: 7. eslint.config.mjs에 실무에서 중요한 규칙 추가:
+
+- no-console (warn, allow: warn/error)
+- @typescript-eslint/no-unused-vars (error, \_ 패턴 무시)
+- eqeqeq (error)
+
+8. yarn lint를 실행해서 현재 코드에 린트 에러가 없는지 확인
+9. 린트 에러가 있다면 수정 방법도 함께 제시
+
+마지막으로 GitHub Secrets에 등록해야 할 환경 변수 목록을
+Key 이름과 설명을 포함한 표로 정리해줘.

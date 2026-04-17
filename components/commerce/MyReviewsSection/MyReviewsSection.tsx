@@ -2,7 +2,6 @@ import { AccountPagination } from "@/components/commerce/AccountPagination/Accou
 import { commerceColors } from "@/commons/constants/color";
 import { commerceTypography } from "@/commons/constants/typography";
 import { ACCOUNT_URLS } from "@/commons/constants/url";
-import type { Review } from "@/components/commerce/types";
 import { MyReviewsEmptyState } from "./MyReviewsEmptyState";
 import { MyReviewListItem, type MyReviewItem } from "./MyReviewListItem";
 

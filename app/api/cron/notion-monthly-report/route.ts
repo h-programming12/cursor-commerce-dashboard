@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
   const month = lastDayOfLastMonth.getMonth() + 1;
   const title = `월간 리포트 - ${year}년 ${month}월`;
 
-  console.log("[notion] cron: 월간 리포트 생성 시작", {
+  console.warn("[notion] cron: 월간 리포트 생성 시작", {
     startDate,
     endDate,
     title,
@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  console.log("[notion] cron: 월간 리포트 생성 완료", result.pageUrl);
+  console.warn("[notion] cron: 월간 리포트 생성 완료", result.pageUrl);
   return NextResponse.json({
     success: true,
     pageUrl: result.pageUrl,

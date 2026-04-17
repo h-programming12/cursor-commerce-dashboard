@@ -26,10 +26,14 @@ export function generateProductDescriptionPrompt(
     `- 상품명: ${name}`,
   ];
 
-  if (price != null && Number.isFinite(price)) {
+  if (price !== null && price !== undefined && Number.isFinite(price)) {
     parts.push(`- 정가: ${new Intl.NumberFormat("ko-KR").format(price)}원`);
   }
-  if (sale_price != null && Number.isFinite(sale_price)) {
+  if (
+    sale_price !== null &&
+    sale_price !== undefined &&
+    Number.isFinite(sale_price)
+  ) {
     parts.push(
       `- 할인가: ${new Intl.NumberFormat("ko-KR").format(sale_price)}원`
     );

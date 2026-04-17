@@ -35,7 +35,7 @@ export function EnhancedReviewSummary({
   }, [displaySummary]);
 
   const handleRegenerated = useCallback((newSummary?: ReviewSummaryResult) => {
-    if (newSummary == null) return;
+    if (newSummary === null || newSummary === undefined) return;
     setPreviousSummary(displaySummaryRef.current);
     setDisplaySummary(newSummary);
   }, []);

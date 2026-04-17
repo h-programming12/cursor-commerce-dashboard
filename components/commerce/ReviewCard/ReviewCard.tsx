@@ -42,8 +42,10 @@ export const ReviewCard = React.forwardRef<HTMLDivElement, ReviewCardProps>(
     const [isPendingDelete, startDeleteTransition] = useTransition();
 
     const isOwnReview =
-      currentUserId != null &&
-      review.userId != null &&
+      currentUserId !== null &&
+      currentUserId !== undefined &&
+      review.userId !== null &&
+      review.userId !== undefined &&
       currentUserId === review.userId;
 
     const handleDelete = () => {

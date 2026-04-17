@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { cn } from "@/commons/utils/cn";
-import { commerceColors } from "@/commons/constants/color";
 import { Pagination } from "@/components/ui/pagination";
 
 export interface AccountPaginationProps {

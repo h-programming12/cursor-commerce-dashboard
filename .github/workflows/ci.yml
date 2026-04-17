@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  ci:
+    name: Lint, Type Check, Build
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+      NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
+      NEXT_PUBLIC_TOSS_CLIENT_KEY: ${{ secrets.NEXT_PUBLIC_TOSS_CLIENT_KEY }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+          cache-dependency-path: yarn.lock
+
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Run ESLint
+        run: yarn lint
+
+      - name: Run TypeScript Type Check
+        run: yarn tsc --noEmit
+
+      - name: Run Next.js Build
+        run: yarn build

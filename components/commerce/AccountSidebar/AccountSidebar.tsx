@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
 import { cn } from "@/commons/utils/cn";
@@ -183,9 +184,11 @@ export function AccountSidebar({
               }}
             >
               {imageUrl ? (
-                <img
+                <Image
                   src={imageUrl}
                   alt={displayNameText}
+                  width={80}
+                  height={80}
                   className="w-full h-full object-cover"
                 />
               ) : (

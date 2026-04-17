@@ -32,7 +32,7 @@ export async function checkAdminAccess(): Promise<boolean> {
     .maybeSingle();
 
   if (error) {
-    // eslint-disable-next-line no-console
+     
     console.error("[checkAdminAccess] 사용자 조회 실패:", error);
     return false;
   }

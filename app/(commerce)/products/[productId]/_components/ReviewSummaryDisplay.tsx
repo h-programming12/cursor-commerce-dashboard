@@ -137,7 +137,7 @@ export const ReviewSummaryDisplay: React.FC<ReviewSummaryDisplayProps> = ({
         setSummary(result);
       } catch (fetchError) {
         if (!isMounted) return;
-        // eslint-disable-next-line no-console
+         
         console.error("[ReviewSummaryDisplay] 요약 조회 실패:", fetchError);
         setError("AI 리뷰 요약을 불러오지 못했습니다.");
       } finally {

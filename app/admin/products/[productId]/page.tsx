@@ -132,7 +132,7 @@ export default async function AdminProductDetailPage({
             </dd>
             <dt style={labelStyle}>할인가</dt>
             <dd style={valueStyle}>
-              {product.sale_price != null
+              {product.sale_price !== null && product.sale_price !== undefined
                 ? `${new Intl.NumberFormat("ko-KR").format(
                     Number(product.sale_price)
                   )}원`
@@ -198,7 +198,9 @@ export default async function AdminProductDetailPage({
           <dd style={valueStyle}>{product.review_count}</dd>
           <dt style={labelStyle}>평균 평점</dt>
           <dd style={valueStyle}>
-            {product.rating_avg != null ? product.rating_avg.toFixed(1) : "-"}
+            {product.rating_avg !== null && product.rating_avg !== undefined
+              ? product.rating_avg.toFixed(1)
+              : "-"}
           </dd>
           <dt style={labelStyle}>판매 수량</dt>
           <dd style={valueStyle}>{product.sold_quantity}</dd>

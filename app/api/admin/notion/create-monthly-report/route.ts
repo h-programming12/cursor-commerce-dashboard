@@ -38,7 +38,7 @@ export async function POST() {
   const startDate = start.toISOString().split("T")[0];
   const title = `월간 리포트 (최근 30일) - ${endDate}`;
 
-  console.log(
+  console.warn(
     "[notion] 월간 리포트(수동) 요청:",
     JSON.stringify({ startDate, endDate, title })
   );

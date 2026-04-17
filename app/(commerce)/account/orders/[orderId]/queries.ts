@@ -148,7 +148,7 @@ export async function getOrderDetail(
     const productName = row.product_name ?? product?.name ?? "";
     const productImageUrl = row.product_image_url ?? product?.image_url ?? null;
     const lineTotal =
-      row.line_subtotal != null
+      row.line_subtotal !== null && row.line_subtotal !== undefined
         ? Number(row.line_subtotal)
         : row.quantity * row.unit_price;
     return {

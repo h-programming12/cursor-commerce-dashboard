@@ -46,7 +46,6 @@ export async function getReviewSummary(
     .maybeSingle();
 
   if (error) {
-    // eslint-disable-next-line no-console
     console.error("[getReviewSummary] 상품 조회 실패:", error);
     return null;
   }
@@ -59,7 +58,6 @@ export async function getReviewSummary(
   try {
     return row.review_summary as unknown as ReviewSummaryResult;
   } catch (parseError) {
-    // eslint-disable-next-line no-console
     console.error("[getReviewSummary] review_summary 파싱 실패:", parseError);
     return null;
   }
@@ -93,7 +91,6 @@ export async function generateAiReviewSummary(
     .eq("product_id", productId);
 
   if (reviewsError) {
-    // eslint-disable-next-line no-console
     console.error("[generateAiReviewSummary] 리뷰 조회 실패:", reviewsError);
     return {
       success: false,
@@ -103,7 +100,7 @@ export async function generateAiReviewSummary(
   }
 
   const reviews = (reviewRows as ReviewRow[]).filter((review) => {
-    if (review.content == null) return false;
+    if (review.content === null || review.content === undefined) return false;
     const contentText = String(review.content).trim();
     return contentText.length > 0;
   });
@@ -125,7 +122,6 @@ export async function generateAiReviewSummary(
       }))
     );
   } catch (aiError) {
-    // eslint-disable-next-line no-console
     console.error("[generateAiReviewSummary] AI 요약 생성 실패:", aiError);
     return {
       success: false,
@@ -142,7 +138,6 @@ export async function generateAiReviewSummary(
     .eq("id", productId);
 
   if (updateError) {
-    // eslint-disable-next-line no-console
     console.error(
       "[generateAiReviewSummary] 리뷰 요약 업데이트 실패:",
       updateError
@@ -189,7 +184,7 @@ export async function getReviewStats(productId: string): Promise<ReviewStats> {
   }
 
   const reviews = (reviewRows as ReviewRow[]).filter((r) => {
-    if (r.content == null) return false;
+    if (r.content === null || r.content === undefined) return false;
     return String(r.content).trim().length > 0;
   });
   const count = reviews.length;

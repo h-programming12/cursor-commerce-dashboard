@@ -147,7 +147,9 @@ export async function getMonthlyReportData(
     totalRevenue += amt;
     orderStatuses[o.status] = (orderStatuses[o.status] ?? 0) + 1;
     const day =
-      o.created_at != null && o.created_at.length >= 10
+      o.created_at !== null &&
+      o.created_at !== undefined &&
+      o.created_at.length >= 10
         ? o.created_at.slice(0, 10)
         : "";
     if (day) {
@@ -161,7 +163,7 @@ export async function getMonthlyReportData(
   for (const it of items) {
     const name = (it.product_name?.trim() || "상품").slice(0, 500);
     const lineTotal =
-      it.line_subtotal != null
+      it.line_subtotal !== null && it.line_subtotal !== undefined
         ? Number(it.line_subtotal)
         : Number(it.quantity) * Number(it.unit_price);
     const cur = productMap.get(name) ?? { quantity: 0, revenue: 0 };
@@ -288,7 +290,7 @@ export async function getOrderReportData(
 
   const items: OrderReportLineItem[] = itemRows.map((row) => {
     const lineTotal =
-      row.line_subtotal != null
+      row.line_subtotal !== null && row.line_subtotal !== undefined
         ? Number(row.line_subtotal)
         : Number(row.quantity) * Number(row.unit_price);
     return {

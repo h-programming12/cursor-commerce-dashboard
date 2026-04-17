@@ -1,8 +1,6 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import { requireAdminAccess } from "@/lib/auth/admin";
 import { getUserDetail } from "@/app/admin/queries";
-import { getAdminOrderDetailUrl } from "@/commons/constants/url";
 
 function formatDate(iso: string | null): string {
   if (!iso) return "-";

@@ -606,7 +606,10 @@ export async function getPaymentDetail(
     approved_at: p.approved_at,
     created_at: p.created_at,
     order_status: order?.status,
-    order_total_amount: order != null ? Number(order.total_amount) : undefined,
+    order_total_amount:
+      order !== null && order !== undefined
+        ? Number(order.total_amount)
+        : undefined,
   };
 }
 
@@ -753,7 +756,7 @@ export async function getOrderDetail(
 
   const orderItems: OrderDetailItem[] = items.map((row) => {
     const subtotal =
-      row.line_subtotal != null
+      row.line_subtotal !== null && row.line_subtotal !== undefined
         ? Number(row.line_subtotal)
         : row.quantity * Number(row.unit_price);
     return {
@@ -764,7 +767,9 @@ export async function getOrderDetail(
       quantity: row.quantity,
       unit_price: Number(row.unit_price),
       sale_price:
-        row.unit_sale_price != null ? Number(row.unit_sale_price) : null,
+        row.unit_sale_price !== null && row.unit_sale_price !== undefined
+          ? Number(row.unit_sale_price)
+          : null,
       discount_amount: null,
       subtotal,
       created_at: row.created_at,
@@ -794,10 +799,17 @@ export async function getOrderDetail(
     payment_status: o.payment_status,
     total_amount: Number(o.total_amount),
     product_total_amount:
-      o.subtotal_amount != null ? Number(o.subtotal_amount) : null,
-    delivery_fee: o.shipping_fee != null ? Number(o.shipping_fee) : null,
+      o.subtotal_amount !== null && o.subtotal_amount !== undefined
+        ? Number(o.subtotal_amount)
+        : null,
+    delivery_fee:
+      o.shipping_fee !== null && o.shipping_fee !== undefined
+        ? Number(o.shipping_fee)
+        : null,
     discount_total:
-      o.discount_amount != null ? Number(o.discount_amount) : null,
+      o.discount_amount !== null && o.discount_amount !== undefined
+        ? Number(o.discount_amount)
+        : null,
     toss_order_id: o.toss_order_id,
     created_at: o.created_at,
     updated_at: o.updated_at,

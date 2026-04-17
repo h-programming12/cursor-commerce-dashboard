@@ -74,7 +74,9 @@ export async function createProduct(
 
   const price = Number(priceRaw);
   const salePrice =
-    salePriceRaw != null && String(salePriceRaw).trim() !== ""
+    salePriceRaw !== null &&
+    salePriceRaw !== undefined &&
+    String(salePriceRaw).trim() !== ""
       ? Number(salePriceRaw)
       : null;
 
@@ -88,7 +90,8 @@ export async function createProduct(
     };
   }
   if (
-    salePrice != null &&
+    salePrice !== null &&
+    salePrice !== undefined &&
     (!Number.isFinite(salePrice) || salePrice < 0 || salePrice >= price)
   ) {
     return {
@@ -165,7 +168,9 @@ export async function updateProduct(
 
   const price = Number(priceRaw);
   const salePrice =
-    salePriceRaw != null && String(salePriceRaw).trim() !== ""
+    salePriceRaw !== null &&
+    salePriceRaw !== undefined &&
+    String(salePriceRaw).trim() !== ""
       ? Number(salePriceRaw)
       : null;
 
@@ -179,7 +184,8 @@ export async function updateProduct(
     };
   }
   if (
-    salePrice != null &&
+    salePrice !== null &&
+    salePrice !== undefined &&
     (!Number.isFinite(salePrice) || salePrice < 0 || salePrice >= price)
   ) {
     return {

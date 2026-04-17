@@ -43,11 +43,15 @@ export async function POST(request: NextRequest) {
   const input: ProductDescriptionInput = {
     name,
     price:
-      body.price != null && Number.isFinite(Number(body.price))
+      body.price !== null &&
+      body.price !== undefined &&
+      Number.isFinite(Number(body.price))
         ? Number(body.price)
         : undefined,
     sale_price:
-      body.sale_price != null && Number.isFinite(Number(body.sale_price))
+      body.sale_price !== null &&
+      body.sale_price !== undefined &&
+      Number.isFinite(Number(body.sale_price))
         ? Number(body.sale_price)
         : undefined,
     categories:

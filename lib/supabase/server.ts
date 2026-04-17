@@ -18,7 +18,7 @@ export async function createClient() {
           cookiesToSet.forEach(({ name, value, options }) => {
             cookieStore.set(name, value, options);
           });
-        } catch (error) {
+        } catch {
           // Server Component에서 호출된 경우 무시
         }
       },

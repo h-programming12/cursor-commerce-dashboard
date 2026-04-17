@@ -21,7 +21,7 @@ function formatDate(iso: string | null): string {
 }
 
 function formatAmount(amount: number | null | undefined): string {
-  if (amount == null) return "-";
+  if (amount === null || amount === undefined) return "-";
   return new Intl.NumberFormat("ko-KR").format(amount) + "원";
 }
 
@@ -292,7 +292,7 @@ export default async function AdminOrderDetailPage({
                       {formatAmount(item.unit_price)}
                     </td>
                     <td className="px-4 py-2 text-right" style={valueStyle}>
-                      {item.sale_price != null
+                      {item.sale_price !== null && item.sale_price !== undefined
                         ? formatAmount(item.sale_price)
                         : "-"}
                     </td>

@@ -122,7 +122,10 @@ export default async function AdminPaymentDetailPage({
         </dl>
       </section>
 
-      {(payment.order_status != null || payment.order_total_amount != null) && (
+      {(payment.order_status !== null ||
+        payment.order_status !== undefined ||
+        payment.order_total_amount !== null ||
+        payment.order_total_amount !== undefined) && (
         <section style={cardStyle}>
           <h2
             style={{
@@ -139,20 +142,22 @@ export default async function AdminPaymentDetailPage({
             className="grid gap-3"
             style={{ gridTemplateColumns: "auto 1fr" }}
           >
-            {payment.order_status != null && (
-              <>
-                <dt style={labelStyle}>주문 상태</dt>
-                <dd style={valueStyle}>{payment.order_status}</dd>
-              </>
-            )}
-            {payment.order_total_amount != null && (
-              <>
-                <dt style={labelStyle}>주문 금액</dt>
-                <dd style={valueStyle}>
-                  {formatAmount(payment.order_total_amount)}
-                </dd>
-              </>
-            )}
+            {payment.order_status !== null &&
+              payment.order_status !== undefined && (
+                <>
+                  <dt style={labelStyle}>주문 상태</dt>
+                  <dd style={valueStyle}>{payment.order_status}</dd>
+                </>
+              )}
+            {payment.order_total_amount !== null &&
+              payment.order_total_amount !== undefined && (
+                <>
+                  <dt style={labelStyle}>주문 금액</dt>
+                  <dd style={valueStyle}>
+                    {formatAmount(payment.order_total_amount)}
+                  </dd>
+                </>
+              )}
           </dl>
         </section>
       )}

@@ -50,7 +50,9 @@ export function ProductForm({ mode, product }: ProductFormProps) {
     name: product?.name ?? "",
     price: product ? String(product.price) : "",
     sale_price:
-      product && product.sale_price != null ? String(product.sale_price) : "",
+      product && product.sale_price !== null && product.sale_price !== undefined
+        ? String(product.sale_price)
+        : "",
     description: product?.description ?? "",
     image_url: product?.image_url ?? "",
     status: product?.status ?? "registered",

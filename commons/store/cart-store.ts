@@ -72,7 +72,9 @@ export const useCartStore = create<CartState>()(
               const quantity = Number(row.quantity ?? 1);
               const unitPrice = Number(row.unitPrice ?? 0);
               const salePrice =
-                row.salePrice != null ? Number(row.salePrice) : null;
+                row.salePrice !== null && row.salePrice !== undefined
+                  ? Number(row.salePrice)
+                  : null;
               return {
                 id: productId,
                 name: productName,

@@ -86,7 +86,9 @@ export async function POST(request: NextRequest) {
     const productId = (row.product_id as string) ?? product?.id ?? "";
     const price = Number(product?.price ?? 0);
     const salePrice =
-      product?.sale_price != null ? Number(product.sale_price) : null;
+      product?.sale_price !== null && product?.sale_price !== undefined
+        ? Number(product.sale_price)
+        : null;
     const unitPrice = salePrice ?? price;
     const quantity = Number(row.quantity ?? 1);
     const lineSubtotal = Math.round(unitPrice * quantity);

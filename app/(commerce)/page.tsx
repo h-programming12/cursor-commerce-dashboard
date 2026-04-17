@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useInfiniteProducts } from "@/features/products/api/useInfiniteProducts";
 import {
   ProductGrid,
@@ -25,7 +25,10 @@ export default function CommerceHomePage() {
   } = useInfiniteProducts();
 
   // 모든 페이지의 상품을 하나의 배열로 합치기
-  const products = data?.pages.flatMap((page) => page.items) ?? [];
+  const products = useMemo(
+    () => data?.pages.flatMap((page) => page.items) ?? [],
+    [data]
+  );
 
   const addItem = useCartStore((state) => state.addItem);
 

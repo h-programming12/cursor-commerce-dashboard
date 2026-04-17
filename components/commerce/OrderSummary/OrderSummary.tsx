@@ -111,19 +111,21 @@ export function OrderSummary({
               >
                 {item.productName}
               </p>
-              {item.color != null && item.color !== "" && (
-                <p
-                  style={{
-                    fontFamily: commerceTypography.caption["1"].fontFamily,
-                    fontWeight: commerceTypography.caption["1"].fontWeight,
-                    fontSize: "12px",
-                    lineHeight: "20px",
-                    color: commerceColors.text.tertiary,
-                  }}
-                >
-                  Color: {item.color}
-                </p>
-              )}
+              {item.color !== null &&
+                item.color !== undefined &&
+                item.color !== "" && (
+                  <p
+                    style={{
+                      fontFamily: commerceTypography.caption["1"].fontFamily,
+                      fontWeight: commerceTypography.caption["1"].fontWeight,
+                      fontSize: "12px",
+                      lineHeight: "20px",
+                      color: commerceColors.text.tertiary,
+                    }}
+                  >
+                    Color: {item.color}
+                  </p>
+                )}
               <p
                 style={{
                   fontFamily: commerceTypography.body["2-semi"].fontFamily,

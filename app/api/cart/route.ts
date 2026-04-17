@@ -47,30 +47,32 @@ export async function GET() {
     .eq("user_id", userId);
 
   if (error) {
-    return NextResponse.json(
-      { error: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  const items: CartItemDto[] = (rows ?? []).map((row: Record<string, unknown>) => {
-    const product = row.products as Record<string, unknown> | null;
-    const productId = (row.product_id as string) ?? (product?.id as string);
-    const price = Number(product?.price ?? 0);
-    const salePrice = product?.sale_price != null ? Number(product.sale_price) : null;
-    const unitPrice = salePrice ?? price;
-    const quantity = Number(row.quantity ?? 1);
-    return {
-      id: row.id as string,
-      productId,
-      productName: (product?.name as string) ?? "",
-      productImageUrl: (product?.image_url as string) ?? null,
-      quantity,
-      unitPrice,
-      salePrice,
-      totalPrice: unitPrice * quantity,
-    };
-  });
+  const items: CartItemDto[] = (rows ?? []).map(
+    (row: Record<string, unknown>) => {
+      const product = row.products as Record<string, unknown> | null;
+      const productId = (row.product_id as string) ?? (product?.id as string);
+      const price = Number(product?.price ?? 0);
+      const salePrice =
+        product?.sale_price !== null && product?.sale_price !== undefined
+          ? Number(product.sale_price)
+          : null;
+      const unitPrice = salePrice ?? price;
+      const quantity = Number(row.quantity ?? 1);
+      return {
+        id: row.id as string,
+        productId,
+        productName: (product?.name as string) ?? "",
+        productImageUrl: (product?.image_url as string) ?? null,
+        quantity,
+        unitPrice,
+        salePrice,
+        totalPrice: unitPrice * quantity,
+      };
+    }
+  );
 
   return NextResponse.json({ items });
 }
@@ -104,22 +106,28 @@ export async function POST(request: NextRequest) {
 
   type CartRow = { id: string; quantity: number } | null;
   const existing = existingRow as CartRow;
-  const newQuantity = existing
-    ? existing.quantity + quantity
-    : quantity;
+  const newQuantity = existing ? existing.quantity + quantity : quantity;
 
   type CartUpdate = Database["public"]["Tables"]["cart_items"]["Update"];
   type CartInsert = Database["public"]["Tables"]["cart_items"]["Insert"];
   let upsertError: { message: string; code?: string } | null = null;
-  if (existing != null) {
+  if (existing !== null && existing !== undefined) {
     const payload: CartUpdate = {
       quantity: newQuantity,
       updated_at: new Date().toISOString(),
     };
-    const res = await supabase.from("cart_items").update(payload as never).eq("user_id", userId).eq("product_id", productId);
+    const res = await supabase
+      .from("cart_items")
+      .update(payload as never)
+      .eq("user_id", userId)
+      .eq("product_id", productId);
     upsertError = res.error;
   } else {
-    const payload: CartInsert = { user_id: userId, product_id: productId, quantity: newQuantity };
+    const payload: CartInsert = {
+      user_id: userId,
+      product_id: productId,
+      quantity: newQuantity,
+    };
     const res = await supabase.from("cart_items").insert(payload as never);
     upsertError = res.error;
   }
@@ -129,10 +137,7 @@ export async function POST(request: NextRequest) {
     if (code === "23503") {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
-    return NextResponse.json(
-      { error: upsertError.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: upsertError.message }, { status: 500 });
   }
 
   return NextResponse.json({ success: true });
@@ -166,10 +171,7 @@ export async function PATCH(request: NextRequest) {
       .eq("user_id", userId)
       .eq("product_id", productId);
     if (deleteError) {
-      return NextResponse.json(
-        { error: deleteError.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: deleteError.message }, { status: 500 });
     }
     return NextResponse.json({ success: true });
   }
@@ -185,10 +187,7 @@ export async function PATCH(request: NextRequest) {
     .eq("product_id", productId);
 
   if (updateError) {
-    return NextResponse.json(
-      { error: updateError.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: updateError.message }, { status: 500 });
   }
   return NextResponse.json({ success: true });
 }
@@ -213,10 +212,7 @@ export async function DELETE(request: NextRequest) {
     .eq("product_id", productId);
 
   if (error) {
-    return NextResponse.json(
-      { error: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
   return NextResponse.json({ success: true });
 }
