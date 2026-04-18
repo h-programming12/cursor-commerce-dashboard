@@ -1,0 +1,90 @@
+---
+alwaysApply: true
+---
+
+이 프로젝트에 Playwright E2E 테스트 환경을 세팅하고
+핵심 Page Object Model(POM)을 생성해줘.
+
+현재 상황:
+
+- Next.js 15 프로젝트, Supabase Auth(쿠키 기반), TossPayments 결제
+- 테스트 관련 설정이 전혀 없음 (playwright.config.ts 없음, e2e/ 디렉토리 없음)
+- 로그인 페이지: app/(auth)/login/page.tsx
+  - 이메일 Input에 aria-label="Email address"
+  - 비밀번호 Input에 aria-label="Password"
+  - 로그인 버튼: <Button type="submit">Sign In</Button>
+  - 로그인 성공 시 router.push("/")
+- 상품 목록: app/(commerce)/products/page.tsx (무한스크롤)
+- 상품 상세: app/(commerce)/products/[productId]/page.tsx
+  - "Add to Cart" 버튼으로 장바구니 추가
+- 장바구니: app/(commerce)/cart/page.tsx
+  - Checkout 링크로 결제 페이지 이동
+- 결제: app/(commerce)/checkout/page.tsx
+  - 서버 컴포넌트, 미로그인 시 /login으로 redirect
+  - 장바구니 비어있으면 /cart로 redirect
+  - 제목: "Check Out" (h1)
+- 주문 내역: app/(commerce)/account/orders/page.tsx
+  - 주문 번호 #으로 시작하는 8자리 대문자
+- URL 상수: commons/constants/url.ts (AUTH_URLS, COMMERCE_URLS, ACCOUNT_URLS)
+
+요구사항:
+
+1. Playwright 설치 및 설정:
+
+   - yarn add -D @playwright/test
+   - playwright.config.ts 생성 (baseURL: "<http://localhost:3000>", NEXT_PUBLIC_SITE_URL)
+   - Chromium만 사용, viewport: 1280x720
+   - testDir: "./e2e/tests"
+   - storageState를 활용한 인증 프로젝트 분리\*
+     - setup 프로젝트: e2e/fixtures/auth.setup.ts 실행
+     - chromium 프로젝트: setup에 의존, storageState: "e2e/.auth/user.json"
+
+2. 디렉토리 구조 생성:
+   e2e/
+   ├── fixtures/
+   │ ├── auth.setup.ts ← 로그인 후 storageState 저장
+   │ └── test-data.ts ← TEST_USER, URLS 상수
+   ├── pages/ ← Page Object Model
+   │ ├── LoginPage.ts
+   │ ├── HomePage.ts
+   │ ├── ProductDetailPage.ts
+   │ ├── CartPage.ts
+   │ ├── CheckoutPage.ts
+   │ └── OrdersPage.ts
+   └── tests/ ← (테스트 파일은 다음 프롬프트에서)
+
+3. Page Object Model 구현 규칙:
+
+   - Locator 우선순위: getByRole > getByLabel > getByText > getByTestId
+   - CSS 클래스 기반 셀렉터 절대 사용 금지
+   - 각 POM 클래스에 goto() 메서드 포함
+   - 사용자 행동은 메서드로 노출 (login, addToCart, fillShippingInfo 등)
+   - assertion은 POM에 넣지 않음 (테스트 파일에서 수행)
+
+4. test-data.ts:
+
+   - TEST_USER: { email, password } — process.env에서 읽기 (TEST_USER_EMAIL, TEST_USER_PASSWORD)
+   - URLS: commons/constants/url.ts의 값과 동일하게 유지
+
+5. auth.setup.ts:
+
+   - LoginPage를 사용해 로그인
+   - page.context().storageState({ path: "e2e/.auth/user.json" }) 저장
+   - e2e/.auth/ 디렉토리는 .gitignore에 추가
+
+6. package.json 스크립트 추가:
+
+   - "test:e2e": "playwright test"
+   - "test:e2e:ui": "playwright test --ui"
+   - "test:e2e:debug": "playwright test --debug"
+
+7. .gitignore 추가:
+   - e2e/.auth/
+   - test-results/
+   - playwright-report/
+
+주의사항:
+
+- 실제 프로덕션 코드의 aria-label, 버튼 텍스트, heading 텍스트를 확인해서 locator 작성
+- POM 파일에서 import { type Page, type Locator } from "@playwright/test" 사용
+- 타입 명시적으로 작성 (any 금지)

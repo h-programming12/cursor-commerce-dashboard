@@ -1,0 +1,83 @@
+---
+alwaysApply: true
+---
+
+결제 위젯을 우회하여 API 레벨로 주문을 생성하고
+전체 구매 플로우를 통합 검증하는 테스트를 작성해줘.
+
+현재 상황:
+
+- e2e/tests/에 auth, shopping-flow, checkout-flow, order-history 테스트 있음
+- 토스페이먼츠 결제 위젯은 E2E로 테스트할 수 없음
+- 주문 생성 API: POST /api/orders
+  - 인증 필요 (Supabase 세션 쿠키)
+  - 요청 body: { clientSubtotal, clientShippingFee, clientDiscount, clientTotal,
+    lineItems, shippingInfo, contactEmail, contactFirstName,
+    contactLastName, contactPhone }
+  - 응답: { orderId, tossOrderId }
+  - 장바구니(cart_items)에 상품이 있어야 함
+  - 서버에서 가격 검증 후 orders, payments, order_items 테이블에 INSERT
+  - 성공 시 cart_items 삭제
+- 결제 확인 API: POST /api/payments/confirm
+  - body: { orderId, paymentKey, amount }
+  - 토스 API로 결제 확인 → DB 업데이트 (payments.status → paid, orders.status → 결제완료)
+- 무료 배송 기준: 50,000원 이상이면 배송비 0, 미만이면 2,500원
+- DB 스키마: orders, order_items, payments, cart_items, products 테이블
+
+작성할 테스트:
+
+1. e2e/tests/api-order.spec.ts — API 레벨 주문 생성:
+
+   - Playwright의 request.newContext()로 API 호출
+   - 인증된 상태에서 API 호출 (storageState의 쿠키 활용)
+
+   테스트 케이스:
+
+   - "장바구니에 상품이 있을 때 POST /api/orders로 주문을 생성할 수 있다"
+     → 사전 조건: 장바구니에 상품 추가 (POST /api/cart)
+     → POST /api/orders 호출
+     → 응답 status 200, orderId 존재 확인
+     → GET /account/orders 페이지에서 생성된 주문 표시 확인 (E2E)
+
+   - "장바구니가 비어있으면 주문 생성이 실패한다"
+     → 빈 장바구니 상태에서 POST /api/orders
+     → 400 또는 에러 응답 확인
+
+2. e2e/tests/full-purchase-flow.spec.ts — 전체 구매 플로우 통합:
+   이 테스트는 E2E + API를 조합하여 전체 플로우를 커버한다.
+
+   단계별 설계:
+   Step 1: 홈페이지 → 상품 목록 확인 (E2E)
+   Step 2: 상품 상세 → Add to Cart (E2E)
+   Step 3: 장바구니 → 상품 확인 (E2E)
+   Step 4: 결제 페이지 → 도달 확인 + 배송 정보 입력 (E2E)
+   Step 5: POST /api/orders → 주문 생성 (API) - 이 시점에서 page.request를 사용해 API 직접 호출 - 결제 위젯 단계를 API 호출로 대체
+   Step 6: /account/orders → 생성된 주문이 목록에 표시되는지 확인 (E2E) - Step 5에서 받은 orderId로 주문 존재 확인
+
+   검증 포인트:
+
+   - Step 2에서 추가한 상품명이 Step 3 장바구니에 표시
+   - Step 4에서 금액이 0이 아님
+   - Step 5에서 API 응답에 orderId 존재
+   - Step 6에서 주문 번호가 /account/orders 페이지에 표시
+
+구현 시 주의사항:
+
+- page.request.post()로 API 호출 시 브라우저 쿠키가 자동 포함됨
+  (같은 page context에서 호출하면 인증 유지)
+- API 응답의 orderId를 변수에 저장하고 이후 단계에서 사용
+- 주문 생성 후 장바구니가 비워지므로, 이후 장바구니 테스트에 영향 주의
+- test.afterAll에서 테스트로 생성된 주문을 정리하는 건 선택사항
+  (테스트 DB를 주기적으로 리셋하는 전략이 더 일반적)
+- 금액 계산 로직:
+  subtotal = unitPrice × quantity (각 라인 아이템)
+  shippingFee = subtotal >= 50000 ? 0 : 2500
+  total = subtotal + shippingFee
+
+참고 파일:
+
+- app/api/orders/route.ts — 주문 생성 API 구현
+- app/api/payments/confirm/route.ts — 결제 확인 API 구현
+- app/api/cart/route.ts — 장바구니 API
+- commons/constants/url.ts — URL 상수
+- app/(commerce)/checkout/page.tsx — 결제 페이지 서버 컴포넌트
