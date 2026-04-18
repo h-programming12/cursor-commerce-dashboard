@@ -34,8 +34,15 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     const generatedId = useId();
     const inputId = id || generatedId;
 
-    const baseStyles =
-      "w-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2";
+    const focusRingClass =
+      variant === "commerce"
+        ? "focus-visible:ring-[var(--commerce-neutral-07-100)] focus-visible:ring-offset-[var(--commerce-background-default)]"
+        : "focus-visible:ring-[var(--admin-neutral-07-100)] focus-visible:ring-offset-[var(--admin-background-default)]";
+
+    const baseStyles = cn(
+      "w-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+      focusRingClass
+    );
 
     const variantStyles = {
       commerce: {
