@@ -1,3 +1,7 @@
+/**
+ * 장바구니 CRUD API. 인증된 사용자의 `cart_items`만 대상으로 합니다.
+ * E2E: `e2e/tests/api-order.spec.ts` 및 order 헬퍼의 `page.request` 호출
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/supabase";

@@ -1,3 +1,7 @@
+/**
+ * 주문 생성 API. 장바구니·서버 금액 검증 후 orders / payments / order_items를 트랜잭션에 가깝게 생성합니다.
+ * E2E: `e2e/tests/api-order.spec.ts`, `e2e/tests/full-purchase-flow.spec.ts`
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
