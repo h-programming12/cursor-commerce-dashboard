@@ -1,0 +1,204 @@
+name: Post-deploy checks
+
+on:
+  deployment_status:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: Health and smoke
+    if: github.event.deployment_status.state == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Resolve deployment URL
+        id: meta
+        run: |
+          set -euo pipefail
+          base="${{ github.event.deployment_status.target_url }}"
+          base="${base%/}"
+          if [ -z "$base" ]; then
+            echo "::error::deployment_status.target_url이 비어 있습니다."
+            exit 1
+          fi
+          echo "base_url=$base" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for cold start
+        id: wait
+        if: steps.meta.outcome == 'success' && !cancelled()
+        run: sleep 15
+
+      - name: GET /api/health
+        id: health
+        if: always() && steps.wait.outcome == 'success' && !cancelled()
+        run: |
+          set -uo pipefail
+          base="${{ steps.meta.outputs.base_url }}"
+          code="$(curl -sS -o /dev/null -w "%{http_code}" --max-time 30 "$base/api/health" || true)"
+          echo "http_code=${code:-err}" >> "$GITHUB_OUTPUT"
+
+      - name: Smoke GET /
+        id: smoke_root
+        if: always() && steps.wait.outcome == 'success' && !cancelled()
+        run: |
+          set -uo pipefail
+          base="${{ steps.meta.outputs.base_url }}"
+          code="$(curl -sS -o /dev/null -w "%{http_code}" --max-time 30 "$base/" || true)"
+          echo "http_code=${code:-err}" >> "$GITHUB_OUTPUT"
+
+      - name: Smoke GET /products
+        id: smoke_products
+        if: always() && steps.wait.outcome == 'success' && !cancelled()
+        run: |
+          set -uo pipefail
+          base="${{ steps.meta.outputs.base_url }}"
+          code="$(curl -sS -o /dev/null -w "%{http_code}" --max-time 30 "$base/products" || true)"
+          echo "http_code=${code:-err}" >> "$GITHUB_OUTPUT"
+
+      - name: Smoke GET /login
+        id: smoke_login
+        if: always() && steps.wait.outcome == 'success' && !cancelled()
+        run: |
+          set -uo pipefail
+          base="${{ steps.meta.outputs.base_url }}"
+          code="$(curl -sS -o /dev/null -w "%{http_code}" --max-time 30 "$base/login" || true)"
+          echo "http_code=${code:-err}" >> "$GITHUB_OUTPUT"
+
+      - name: Smoke GET /admin (follow redirects)
+        id: smoke_admin
+        if: always() && steps.wait.outcome == 'success' && !cancelled()
+        run: |
+          set -uo pipefail
+          base="${{ steps.meta.outputs.base_url }}"
+          code="$(curl -sS -L -o /dev/null -w "%{http_code}" --max-time 30 "$base/admin" || true)"
+          echo "http_code=${code:-err}" >> "$GITHUB_OUTPUT"
+
+      - name: Notify Slack
+        if: always() && !cancelled()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          BASE_URL: ${{ steps.meta.outputs.base_url }}
+          COMMIT_SHA: ${{ github.event.deployment.sha }}
+          META_OUTCOME: ${{ steps.meta.outcome }}
+          WAIT_OUTCOME: ${{ steps.wait.outcome }}
+          TARGET_URL_RAW: ${{ github.event.deployment_status.target_url }}
+          HEALTH_HTTP: ${{ steps.health.outputs.http_code }}
+          ROOT_HTTP: ${{ steps.smoke_root.outputs.http_code }}
+          PRODUCTS_HTTP: ${{ steps.smoke_products.outputs.http_code }}
+          LOGIN_HTTP: ${{ steps.smoke_login.outputs.http_code }}
+          ADMIN_HTTP: ${{ steps.smoke_admin.outputs.http_code }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SLACK_WEBHOOK_URL:-}" ]; then
+            echo "SLACK_WEBHOOK_URL 미설정 — Slack 전송 생략"
+            exit 0
+          fi
+
+          python3 << 'PY'
+          import json
+          import os
+          import urllib.error
+          import urllib.request
+
+          def icon(ok: bool) -> str:
+              return "✅" if ok else "❌"
+
+          webhook = os.environ["SLACK_WEBHOOK_URL"]
+          base = os.environ.get("BASE_URL") or ""
+          commit = os.environ.get("COMMIT_SHA") or ""
+          meta_outcome = os.environ.get("META_OUTCOME") or ""
+          wait_outcome = os.environ.get("WAIT_OUTCOME") or ""
+          target_raw = os.environ.get("TARGET_URL_RAW") or ""
+
+          health = os.environ.get("HEALTH_HTTP") or ""
+          root = os.environ.get("ROOT_HTTP") or ""
+          products = os.environ.get("PRODUCTS_HTTP") or ""
+          login = os.environ.get("LOGIN_HTTP") or ""
+          admin = os.environ.get("ADMIN_HTTP") or ""
+
+          server = os.environ.get("GITHUB_SERVER_URL", "https://github.com").rstrip("/")
+          repo = os.environ.get("GITHUB_REPOSITORY", "")
+          run_id = os.environ.get("GITHUB_RUN_ID", "")
+          run_link = f"{server}/{repo}/actions/runs/{run_id}" if repo and run_id else server
+
+          if meta_outcome != "success" or not base:
+              header = "🚨 배포 후 체크 — 배포 URL 확인 실패"
+              lines = [
+                  f"*메타 단계*: `{meta_outcome}`",
+                  f"*deployment_status.target_url*: `{target_raw or '(비어 있음)'}`",
+              ]
+          elif wait_outcome != "success":
+              header = "🚨 배포 후 체크 — 대기 단계 실패"
+              lines = [
+                  f"*대기 단계 outcome*: `{wait_outcome}`",
+                  f"*배포 URL*: {base}",
+              ]
+          else:
+              checks = [
+                  ("GET /api/health (200)", health == "200"),
+                  ("GET / (200)", root == "200"),
+                  ("GET /products (200)", products == "200"),
+                  ("GET /login (200)", login == "200"),
+                  ("GET /admin (-L, 200)", admin == "200"),
+              ]
+              codes = [health, root, products, login, admin]
+              ok = all(c[1] for c in checks)
+              header = "✅ 배포 후 체크 — 모두 통과" if ok else "🚨 배포 후 체크 — 일부 실패"
+              lines = [
+                  f"{icon(v)} *{label}* — HTTP `{h or 'n/a'}`"
+                  for (label, v), h in zip(checks, codes)
+              ]
+
+          footer = f"*배포 URL*: {base or '(없음)'}\n*커밋 SHA*: `{commit or 'n/a'}`"
+          text_lines = "\n".join(lines + ["", footer])
+
+          blocks = [
+              {"type": "header", "text": {"type": "plain_text", "text": header, "emoji": True}},
+              {"type": "section", "text": {"type": "mrkdwn", "text": text_lines}},
+              {
+                  "type": "context",
+                  "elements": [{"type": "mrkdwn", "text": f"<{run_link}|워크플로 실행>"}],
+              },
+          ]
+
+          payload = json.dumps({"blocks": blocks}).encode("utf-8")
+          req = urllib.request.Request(
+              webhook,
+              data=payload,
+              headers={"Content-Type": "application/json; charset=utf-8"},
+              method="POST",
+          )
+          try:
+              with urllib.request.urlopen(req, timeout=30) as resp:
+                  if resp.status not in (200, 201):
+                      raise SystemExit(f"Slack 응답 HTTP {resp.status}")
+          except urllib.error.HTTPError as e:
+              raise SystemExit(f"Slack HTTP 오류: {e.code} {e.reason}") from e
+          PY
+
+      - name: Assert all checks passed
+        if: always() && steps.wait.outcome == 'success' && !cancelled()
+        run: |
+          set -euo pipefail
+          ok=1
+          h="${{ steps.health.outputs.http_code }}"
+          r="${{ steps.smoke_root.outputs.http_code }}"
+          p="${{ steps.smoke_products.outputs.http_code }}"
+          l="${{ steps.smoke_login.outputs.http_code }}"
+          a="${{ steps.smoke_admin.outputs.http_code }}"
+          for pair in "health:$h" "root:$r" "products:$p" "login:$l" "admin:$a"; do
+            name="${pair%%:*}"
+            code="${pair#*:}"
+            if [ "$code" != "200" ]; then
+              echo "::error::$name HTTP $code (기대 200)"
+              ok=0
+            fi
+          done
+          if [ "$ok" -ne 1 ]; then
+            exit 1
+          fi

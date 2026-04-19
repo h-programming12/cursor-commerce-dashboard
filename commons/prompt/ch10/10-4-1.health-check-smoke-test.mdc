@@ -1,0 +1,50 @@
+---
+alwaysApply: true
+---
+
+배포 후 자동 체크 시스템을 구성해줘.
+
+현재 상황:
+
+- Vercel에 배포 중 (GitHub 연동, main 브랜치 Push → 자동 배포)
+- .github/workflows/ci.yml에 ESLint + TypeScript + Build CI 있음
+- lib/slack/notify.ts에 Slack Bot Token으로 알림 발송 구현 있음
+- /api/health 엔드포인트는 아직 없음
+
+요구사항:
+
+1. app/api/health/route.ts 생성:
+
+   - GET 요청에 200 응답
+   - 응답 JSON: { status: "ok", timestamp, version }
+   - version은 process.env.VERCEL_GIT_COMMIT_SHA 앞 7자리
+   - (선택) Supabase 연결 체크 추가 — 실패 시 503 + status: "degraded"
+
+2. .github/workflows/post-deploy.yml 생성:
+
+   - 트리거: deployment_status 이벤트
+   - 조건: state == 'success'
+   - timeout: 5분
+   - Step 순서:
+     a. 배포 URL 추출 (github.event.deployment_status.target_url)
+     b. 15초 대기 (cold start 안정화)
+     c. 헬스 체크: GET /api/health → 200 확인
+     d. 스모크 테스트: GET /, /products, /login, /admin
+     - 각 테스트 독립 실행 (if: success() || failure())
+     - 어드민은 302(리다이렉트)도 정상으로 처리 (-L 옵션)
+       e. Slack 알림: 전체 결과를 한 메시지로 전송
+     - 성공: ✅ 모든 체크 통과
+     - 실패: 🚨 일부 체크 실패 + 실패 항목 표시
+     - 배포 URL, 커밋 SHA 포함
+
+3. Slack Webhook 관련:
+   - SLACK_WEBHOOK_URL을 GitHub Secrets에서 가져오기
+   - Slack 메시지 포맷: Block Kit (header + section + context)
+   - 각 체크 항목별 ✅/❌ 이모지 표시
+
+주의사항:
+
+- curl 사용 시 --max-time 옵션으로 타임아웃 설정
+- 각 Step의 HTTP 상태 코드를 outputs에 저장하여 Slack 메시지에서 참조
+- 기존 ci.yml은 수정하지 않음 (별도 워크플로우)
+- .gitignore에 test-results/ 추가 확인
