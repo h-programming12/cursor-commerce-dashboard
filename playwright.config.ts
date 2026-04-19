@@ -8,17 +8,37 @@ const baseURL = (
   process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
 ).replace(/\/$/, "");
 
+const isCI = !!process.env.CI;
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  reporter: [["html", { open: "never" }]],
+  forbidOnly: isCI,
+  retries: isCI ? 2 : 0,
+  workers: isCI ? 1 : undefined,
+  reporter: isCI
+    ? [
+        ["list"],
+        ["html", { open: "never" }],
+        ["json", { outputFile: "test-results/results.json" }],
+        ["github"],
+      ]
+    : [["html", { open: "never" }]],
   use: {
     baseURL,
     trace: "on-first-retry",
     viewport: { width: 1280, height: 720 },
   },
+  ...(isCI
+    ? {
+        webServer: {
+          command: "yarn build && yarn start",
+          url: baseURL,
+          reuseExistingServer: false,
+          timeout: 300_000,
+        },
+      }
+    : {}),
   projects: [
     {
       name: "setup",

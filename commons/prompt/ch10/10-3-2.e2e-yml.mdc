@@ -1,0 +1,26 @@
+---
+alwaysApply: true
+---
+
+우리 프로젝트에 Playwright E2E 테스트를 GitHub Actions로 자동 실행하는 파이프라인을 만들어줘.
+
+다음 파일들을 생성/수정해줘:
+
+1. `.github/workflows/e2e.yml`
+
+   - PR이 main 브랜치로 올라올 때 자동 실행
+   - Chromium만 설치 (--with-deps)
+   - 환경변수는 GitHub Secrets에서 가져오기
+   - 테스트 결과를 PR 코멘트에 자동 게시 (daun/playwright-report-summary@v3)
+   - 아티팩트로 playwright-report 업로드
+
+2. `playwright.config.ts`
+
+   - CI 환경 최적화 (forbidOnly, retries, workers, reporter)
+   - webServer는 CI에서 yarn build && yarn start 사용
+   - JSON 리포터 출력 경로: test-results/results.json
+
+3. `package.json`
+   - test:e2e, test:e2e:ui 스크립트 추가
+
+필요한 GitHub Secrets 목록도 정리해줘.
