@@ -1,3 +1,6 @@
+/**
+ * 토스 결제 승인 콜백 처리: 금액·주문 소유 검증 후 주문/결제 상태 갱신.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";

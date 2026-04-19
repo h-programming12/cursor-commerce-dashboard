@@ -24,8 +24,12 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 py-12">
+      <main
+        className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 py-12"
+        aria-labelledby="cart-heading"
+      >
         <h1
+          id="cart-heading"
           className="mb-8"
           style={{
             fontFamily: "Poppins",
@@ -76,13 +80,17 @@ export default function CartPage() {
             Continue Shopping
           </Link>
         </div>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 py-12">
+    <main
+      className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 py-12"
+      aria-labelledby="cart-heading"
+    >
       <h1
+        id="cart-heading"
         className="mb-8"
         style={{
           fontFamily: "Poppins",
@@ -232,6 +240,6 @@ export default function CartPage() {
           </div>
         </aside>
       </div>
-    </div>
+    </main>
   );
 }

@@ -1,3 +1,7 @@
+/**
+ * 체크아웃 주문 생성: 서버가 장바구니·배송비를 재계산해 클라이언트 금액과 대조합니다.
+ * 불일치 시 400으로 조작 방지.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 

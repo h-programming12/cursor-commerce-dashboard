@@ -1,3 +1,6 @@
+/**
+ * 관리자 UI에서 호출: MCP 설정을 읽고 Notion 월간 리포트 페이지를 수동 생성.
+ */
 import { NextResponse } from "next/server";
 import { getMcpSettings } from "@/app/admin/queries";
 import { checkAdminAccess } from "@/lib/auth/admin";

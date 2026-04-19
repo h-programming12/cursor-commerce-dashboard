@@ -72,6 +72,7 @@ export default function LoginPage() {
       {/* Left: Background Image */}
       <div
         className="hidden min-h-screen w-[calc(1209/1920*100%)] shrink-0 bg-cover bg-center bg-no-repeat lg:block"
+        aria-hidden
         style={{
           backgroundImage: `url(https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=958&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D)`,
         }}
@@ -106,6 +107,7 @@ export default function LoginPage() {
 
           {/* Title */}
           <h1
+            id="login-page-title"
             className="mb-2"
             style={{
               fontFamily: commerceTypography.headline.h4.fontFamily,
@@ -119,6 +121,7 @@ export default function LoginPage() {
             Sign In
           </h1>
           <p
+            id="login-page-description"
             className="mb-8"
             style={{
               fontFamily: "var(--font-inter), Inter, sans-serif",
@@ -139,7 +142,12 @@ export default function LoginPage() {
             </Link>
           </p>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+          <form
+            onSubmit={handleSubmit}
+            className="flex flex-col gap-6"
+            aria-labelledby="login-page-title"
+            aria-describedby="login-page-description"
+          >
             <Input
               variant="commerce"
               type="email"

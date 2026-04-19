@@ -1,3 +1,6 @@
+/**
+ * Notion 연동 스모크 테스트: 지정 부모 아래 테스트 페이지 생성.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import {
   APIErrorCode,

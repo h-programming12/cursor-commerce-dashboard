@@ -1,5 +1,8 @@
 "use client";
 
+/**
+ * `/products` 전용 목록 페이지 (홈과 동일 훅·그리드, URL만 분리).
+ */
 import { useInfiniteProducts } from "@/features/products/api/useInfiniteProducts";
 import { ProductGrid, LoadingSkeletonGrid } from "@/components/commerce";
 import { cn } from "@/commons/utils/cn";
@@ -35,7 +38,7 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className="w-full">
+    <main className="w-full" aria-label="전체 상품">
       <div className="mx-auto max-w-[1440px] px-4 md:px-6 lg:px-6 py-6 md:py-8 lg:py-12">
         <h1
           className="text-4xl font-bold text-center mb-12"
@@ -78,6 +81,6 @@ export default function ProductsPage() {
           </>
         )}
       </div>
-    </div>
+    </main>
   );
 }

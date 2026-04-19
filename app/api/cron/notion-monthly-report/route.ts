@@ -1,3 +1,6 @@
+/**
+ * 스케줄러(CRON_SECRET) 전용: 월간 Notion 리포트 자동 생성 엔드포인트.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { createMonthlyReport } from "@/lib/notion/create-report";
 import { getSupabaseServiceClient } from "@/lib/supabase/service";
