@@ -69,23 +69,26 @@ export default function CommerceHomePage() {
 
   if (isError) {
     return (
-      <div className="flex min-h-[400px] items-center justify-center">
-        <div className="text-center">
-          <p
-            className="text-lg"
-            style={{ color: "var(--commerce-semantic-error)" }}
-          >
-            오류 발생: {error?.message || "알 수 없는 오류"}
-          </p>
+      <main className="w-full" aria-label="스토어 메인">
+        <div className="flex min-h-[400px] items-center justify-center">
+          <div className="text-center">
+            <p
+              className="text-lg"
+              style={{ color: "var(--commerce-semantic-error)" }}
+            >
+              오류 발생: {error?.message || "알 수 없는 오류"}
+            </p>
+          </div>
         </div>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="w-full">
+    <main className="w-full" aria-label="스토어 메인">
       <div className="mx-auto max-w-[1440px] px-4 md:px-6 lg:px-6 py-6 md:py-8 lg:py-12">
         <h1
+          id="home-products-heading"
           className="text-4xl font-bold text-center mb-12"
           style={{ color: "var(--commerce-text-primary)" }}
         >
@@ -115,6 +118,6 @@ export default function CommerceHomePage() {
         )}
       </div>
       <HomeHeroSection className="mt-12" />
-    </div>
+    </main>
   );
 }

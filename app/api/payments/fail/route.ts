@@ -1,3 +1,6 @@
+/**
+ * 결제 실패/취소 시 주문·결제 레코드를 안전하게 실패 상태로 정리합니다.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 

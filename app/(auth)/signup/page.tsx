@@ -92,6 +92,7 @@ export default function SignupPage() {
       {/* Left: Background Image */}
       <div
         className="hidden min-h-screen w-[calc(1209/1920*100%)] shrink-0 bg-cover bg-center bg-no-repeat lg:block"
+        aria-hidden
         style={{
           backgroundImage: `url(https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=958&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D)`,
         }}

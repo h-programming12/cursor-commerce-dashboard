@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+/** zustand `persist` 미들웨어로 장바구니 상태를 localStorage에 유지합니다. */
+
 export type ProductStatus = "visible" | "hidden" | "sold_out";
 
 export interface CartItem {

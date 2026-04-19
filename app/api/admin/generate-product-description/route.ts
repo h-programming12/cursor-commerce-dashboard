@@ -1,3 +1,6 @@
+/**
+ * 관리자 전용: 상품 메타 입력을 받아 Gemini로 설명 문구 초안 생성.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { checkAdminAccess } from "@/lib/auth/admin";
 import { generateGeminiText } from "@/lib/ai/gemini";

@@ -1,3 +1,7 @@
+/**
+ * 로그인 사용자 장바구니 CRUD (Supabase `cart_items`).
+ * 클라이언트 스토어와 동기화되며, 비로그인 시 401.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/supabase";
